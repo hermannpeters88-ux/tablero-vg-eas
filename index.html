@@ -34,6 +34,37 @@
   .cross-deco { position:fixed; font-weight:900; pointer-events:none; z-index:0; color:#e8782a; }
   * { margin:0; padding:0; box-sizing:border-box; }
   html { font-size: 18px; } /* base grande para TV */
+
+  /* ── RESPONSIVE — Mobile & Tablet ── */
+  @media (max-width: 1200px) {
+    html { font-size: 15px; }
+    body { padding: 20px 24px; }
+    .summary-grid { grid-template-columns: repeat(3,1fr); }
+    .team-grid.cols-3 { grid-template-columns: repeat(2,1fr); }
+  }
+
+  @media (max-width: 768px) {
+    html { font-size: 13px; }
+    body { padding: 14px 16px; }
+    .header { flex-wrap: wrap; gap: 10px; }
+    .header-right { flex-wrap: wrap; gap: 8px; }
+    .summary-grid { grid-template-columns: repeat(2,1fr); gap: 10px; }
+    .team-grid.cols-3,
+    .team-grid.cols-2 { grid-template-columns: 1fr; }
+    .person-card { border-radius: 14px; }
+    .task-section { border-right: none !important; border-bottom: 1px solid #e0dce8; padding-bottom: 16px; margin-bottom: 16px; }
+    /* Podio: apilar verticalmente */
+    .podio-wrap { flex-direction: column !important; align-items: stretch !important; }
+  }
+
+  @media (max-width: 480px) {
+    html { font-size: 12px; }
+    body { padding: 10px 12px; }
+    .summary-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+    .logo { width: 40px !important; height: 40px !important; }
+    /* Cobros: montos en columna */
+    .cobros-montos { flex-direction: column !important; }
+  }
   body {
     font-family:'DM Sans',sans-serif;
     background: #2d1a4e;
@@ -45,7 +76,7 @@
       repeating-linear-gradient(135deg, transparent, transparent 60px, rgba(232,120,42,0.04) 60px, rgba(232,120,42,0.04) 62px),
       repeating-linear-gradient(45deg, transparent, transparent 60px, rgba(232,120,42,0.04) 60px, rgba(232,120,42,0.04) 62px);
     min-height:100vh; color:#1a1a2e;
-    padding:32px 40px;
+    padding: clamp(10px, 3vw, 40px) clamp(12px, 4vw, 40px);
     overflow-x:hidden;
     position:relative;
   }
@@ -2286,7 +2317,7 @@ function renderCobrosCartera(){
         <div style="font-family:'Space Mono',monospace;font-size:.6rem;font-weight:800;color:${barColor};flex-shrink:0">${pct}%</div>
       </div>
       <!-- Montos -->
-      <div style="display:flex;gap:6px;margin-bottom:${facturasHtml?'10px':'0'}">
+      <div class="cobros-montos" style="display:flex;gap:6px;margin-bottom:${facturasHtml?'10px':'0'}">
         <div style="flex:1;background:#10b98110;border-radius:6px;padding:5px 8px;text-align:center">
           <div style="font-size:.48rem;color:#10b981;font-weight:700;text-transform:uppercase">Cobrado</div>
           <div style="font-family:'Space Mono',monospace;font-size:.62rem;font-weight:800;color:#10b981">${fmtGs(c.cobrado)}</div>
@@ -2316,7 +2347,7 @@ function renderCobrosCartera(){
     </div>
 
     <!-- Resumen general -->
-    <div style="display:flex;gap:10px;margin-bottom:16px">
+    <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px">
       <!-- Gauge cobrado -->
       <div style="background:#f5f3f8;border-radius:12px;padding:12px 14px;flex:1;display:flex;align-items:center;gap:12px;border:1px solid #e0dce8">
         <div style="position:relative;width:56px;height:56px;flex-shrink:0">
@@ -2366,7 +2397,7 @@ function renderCobrosCartera(){
         const mp = moraPct(c);
         const color = mp <= 30 ? '#10b981' : mp <= 50 ? '#f59e0b' : '#ef4444';
         const icon  = mp <= 30 ? '✅' : mp <= 50 ? '⚠️' : '🔴';
-        return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #f0eef5">
+        return `<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #f0eef5">
           <div style="flex:1;font-size:.65rem;font-weight:700;color:#1a1a2e">${c.nombre}</div>
           <div style="font-size:.55rem;font-weight:700;color:${color}">${icon} ${mp}% mora</div>
           <div style="width:60px;height:5px;background:#e8e3f0;border-radius:3px;overflow:hidden">
