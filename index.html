@@ -7,22 +7,27 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg-deep: #2d1a4e;
-    --bg-card: rgba(255,255,255,0.97);
-    --bg-inner: #f0f0f5;
-    --border: #e0dce8;
-    --border-light: #d1cce0;
-    --text-bright: #1a1a2e;
-    --text-mid: #555566;
-    --text-dim: #888899;
+    --bg-deep: #07071a;
+    --bg-card: rgba(255,255,255,0.04);
+    --bg-inner: rgba(255,255,255,0.06);
+    --border: rgba(255,255,255,0.1);
+    --border-light: rgba(255,255,255,0.06);
+    --text-bright: #ffffff;
+    --text-mid: rgba(255,255,255,0.65);
+    --text-dim: rgba(255,255,255,0.38);
     --green: #10b981;
     --yellow: #f59e0b;
     --red: #ef4444;
-    --indigo: #623F98;
-    --purple: #623F98;
-    --gold: #F5C518;
-    --amber: #f59e0b;
+    --indigo: #a855f7;
+    --purple: #a855f7;
+    --gold: #fbbf24;
+    --amber: #f97316;
     --cyan: #06b6d4;
+    --neon-green: #10b981;
+    --neon-purple: #a855f7;
+    --neon-orange: #f97316;
+    --neon-blue: #60a5fa;
+    --neon-red: #ef4444;
   }
 
   /* ── VG Asociados decorative crosses (watermark) ── */
@@ -101,15 +106,14 @@
   }
   body {
     font-family:'DM Sans',sans-serif;
-    background: #2d1a4e;
+    background: #07071a;
     background-image:
-      /* Scattered cross pattern as watermark */
-      radial-gradient(circle at 15% 25%, rgba(232,120,42,0.06) 0%, transparent 50%),
-      radial-gradient(circle at 85% 75%, rgba(232,120,42,0.06) 0%, transparent 50%),
-      radial-gradient(circle at 50% 50%, rgba(232,120,42,0.03) 0%, transparent 70%),
-      repeating-linear-gradient(135deg, transparent, transparent 60px, rgba(232,120,42,0.04) 60px, rgba(232,120,42,0.04) 62px),
-      repeating-linear-gradient(45deg, transparent, transparent 60px, rgba(232,120,42,0.04) 60px, rgba(232,120,42,0.04) 62px);
-    min-height:100vh; color:#1a1a2e;
+      radial-gradient(ellipse at 20% 10%, rgba(168,85,247,0.12) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 90%, rgba(249,115,22,0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 60% 40%, rgba(16,185,129,0.05) 0%, transparent 40%),
+      repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(255,255,255,0.015) 40px, rgba(255,255,255,0.015) 41px),
+      repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(255,255,255,0.015) 40px, rgba(255,255,255,0.015) 41px);
+    min-height:100vh; color:#ffffff;
     padding: clamp(10px, 3vw, 40px) clamp(12px, 4vw, 40px);
     overflow-x:hidden;
     position:relative;
@@ -3659,9 +3663,10 @@ function render(){
 
     // Helpers
     const fmtG = v => v ? '₲'+Math.round(v).toLocaleString('es-PY') : '—';
-    const pctColor = p => p>=80?'#22c55e':p>=60?'#f59e0b':'#ef4444';
-    const bar = (v,c) => `<div style="height:3px;background:#e5e7eb;border-radius:2px;margin:3px 0 2px"><div style="height:3px;background:${c};width:${Math.min(v,100)}%;border-radius:2px"></div></div>`;
-    const miniCard = (title,items,bg,bl) => `<div style="background:${bg};border-left:2px solid ${bl};border-radius:3px;padding:3px 5px;flex:1;overflow:hidden"><div style="font-size:.58em;font-weight:700;color:${bl};margin-bottom:1px">${title}</div>${items.map(i=>`<div style="font-size:.55em;color:${i[1]||'#666'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${i[0]}</div>`).join('')}</div>`;
+    const pctColor = p => p>=80?'#10b981':p>=60?'#f59e0b':'#ef4444';
+    const pctGlow = p => p>=80?'rgba(16,185,129,0.7)':p>=60?'rgba(245,158,11,0.7)':'rgba(239,68,68,0.7)';
+    const bar = (v,c) => `<div style="height:4px;background:rgba(255,255,255,0.08);border-radius:2px;margin:3px 0 3px"><div style="height:4px;background:linear-gradient(90deg,${c},${c}aa);width:${Math.min(v,100)}%;border-radius:2px;box-shadow:0 0 8px ${c}99;transition:width .8s ease"></div></div>`;
+    const miniCard = (title,items,bg,bl) => `<div style="background:rgba(255,255,255,0.04);border-left:2px solid ${bl};border-radius:4px;padding:4px 6px;flex:1;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(255,255,255,0.05)"><div style="font-size:.56em;font-weight:700;color:${bl};margin-bottom:2px;text-shadow:0 0 8px ${bl}88">${title}</div>${items.map(i=>`<div style="font-size:.52em;color:${i[1]||'rgba(255,255,255,0.6)'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${i[0]}</div>`).join('')}</div>`;
 
     // Scores
     const sc = window._realScores || {};
@@ -3707,16 +3712,17 @@ function render(){
 
     // ── Card builder ──
     const card = (content, flex, color) =>
-      `<div style="flex:${flex};min-height:0;overflow:hidden;background:white;border-radius:5px;border-left:3px solid ${color};padding:5px 7px;display:flex;flex-direction:column;box-sizing:border-box">${content}</div>`;
+      `<div style="flex:${flex};min-height:0;overflow:hidden;background:rgba(255,255,255,0.04);border-radius:8px;border:1px solid rgba(255,255,255,0.07);border-left:3px solid ${color};padding:6px 8px;display:flex;flex-direction:column;box-sizing:border-box;box-shadow:0 0 24px ${color}18,inset 0 1px 0 rgba(255,255,255,0.06)">${content}</div>`;
 
     const personHead = (name, role, score, photoId) => {
       const photo = photoId && MEMBER_PHOTOS && MEMBER_PHOTOS[photoId] ? MEMBER_PHOTOS[photoId] : null;
-      return `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">
-        <div style="display:flex;align-items:center;gap:6px">
-          ${photo ? `<img src="${photo}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid ${pctColor(score)}">` : ''}
-          <div><div style="font-size:.85em;font-weight:700;color:#1a1a2e">${name}</div><div style="font-size:.55em;color:#888">${role}</div></div>
+      const sc = pctColor(score); const gl = pctGlow(score);
+      return `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
+        <div style="display:flex;align-items:center;gap:7px">
+          ${photo ? `<img src="${photo}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid ${sc};box-shadow:0 0 12px ${gl}">` : ''}
+          <div><div style="font-size:.87em;font-weight:700;color:#fff">${name}</div><div style="font-size:.52em;color:rgba(255,255,255,0.45)">${role}</div></div>
         </div>
-        <div style="font-size:1.3em;font-weight:800;color:${pctColor(score)};line-height:1">${score}%</div>
+        <div style="font-size:1.35em;font-weight:800;color:${sc};text-shadow:0 0 14px ${gl};line-height:1">${score}%</div>
       </div>`;
     };
 
@@ -3727,7 +3733,7 @@ function render(){
         ${bar(hScore,'#f97316')}
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:2px;margin-bottom:3px">
           ${[['Ledy',lScore],['Vero',vScore],['Cartera',(appData.clientesContabilidad?.length||appData.clientes?.clientes?.length||0)+'c'],['Cobrar',fmtG(appData.ledy?.asamblea?.totalCobrar)]].map(([k,v])=>
-            `<div style="background:#f8f9fa;border-radius:2px;padding:2px;text-align:center"><div style="font-size:.5em;color:#888">${k}</div><div style="font-size:.62em;font-weight:700;color:#1a1a2e">${v}</div></div>`
+            `<div style="background:rgba(255,255,255,0.07);border-radius:2px;padding:2px;text-align:center"><div style="font-size:.5em;color:#888">${k}</div><div style="font-size:.62em;font-weight:700;color:#fff">${v}</div></div>`
           ).join('')}
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;flex:1">
@@ -3749,7 +3755,7 @@ function render(){
         ${bar(lScore,'#f59e0b')}
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;margin-bottom:3px">
           ${[['Rody',rodyScore,'#f97316'],['Maga',magaScore,'#22c55e'],['Randy',randyScore,'#a855f7']].map(([n,s,c])=>
-            `<div style="background:#f8f9fa;border-radius:2px;padding:2px;text-align:center"><div style="font-size:.5em;color:#888">${n}</div><div style="font-size:.7em;font-weight:700;color:${c}">${s}%</div></div>`
+            `<div style="background:rgba(255,255,255,0.07);border-radius:2px;padding:2px;text-align:center"><div style="font-size:.5em;color:#888">${n}</div><div style="font-size:.7em;font-weight:700;color:${c}">${s}%</div></div>`
           ).join('')}
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;flex:1">
@@ -3791,16 +3797,16 @@ function render(){
       `,'0.85','#ec4899'),
 
       card(`
-        <div style="font-size:.72em;font-weight:700;color:#1a1a2e;margin-bottom:3px">📋 Pendientes del equipo</div>
+        <div style="font-size:.72em;font-weight:700;color:#fff;margin-bottom:3px">📋 Pendientes del equipo</div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px;margin-bottom:3px">
           ${[['Rody',rodyPend.length,'#f97316'],['Maga',magaPend.length,'#22c55e'],['Randy',randyPend.length,'#a855f7']].map(([n,v,c])=>
             `<div style="background:${c}18;border-radius:3px;padding:3px;text-align:center"><div style="font-size:.52em;color:#666">${n}</div><div style="font-size:1.3em;font-weight:700;color:${c};line-height:1.1">${v}</div></div>`
           ).join('')}
         </div>
         <div style="font-size:.55em;display:flex;flex-direction:column;gap:1px;overflow:hidden">
-          ${rodyPend.slice(0,2).map(t=>`<div style="color:#dc2626;background:#fef2f2;padding:1px 4px;border-radius:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">⚠ ${t.tarea} · Rody</div>`).join('')}
-          ${magaPend.slice(0,1).map(t=>`<div style="color:#dc2626;background:#fef2f2;padding:1px 4px;border-radius:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">⚠ ${t.tarea} · Maga</div>`).join('')}
-          ${randyPend.slice(0,1).map(t=>`<div style="color:#f97316;background:#fff7ed;padding:1px 4px;border-radius:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">⏳ ${t.tarea} · Randy</div>`).join('')}
+          ${rodyPend.slice(0,2).map(t=>`<div style="color:#dc2626;background:rgba(239,68,68,0.12);padding:1px 4px;border-radius:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">⚠ ${t.tarea} · Rody</div>`).join('')}
+          ${magaPend.slice(0,1).map(t=>`<div style="color:#dc2626;background:rgba(239,68,68,0.12);padding:1px 4px;border-radius:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">⚠ ${t.tarea} · Maga</div>`).join('')}
+          ${randyPend.slice(0,1).map(t=>`<div style="color:#f97316;background:rgba(249,115,22,0.12);padding:1px 4px;border-radius:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">⏳ ${t.tarea} · Randy</div>`).join('')}
         </div>
       `,'1.1','#f59e0b'),
     ].join('');
@@ -3819,7 +3825,7 @@ function render(){
       card(`
         <div style="font-size:.72em;font-weight:700;margin-bottom:1px">🏆 Ranking — ${month.name||'Abril'} 2026</div>
         <div style="height:3px;background:#e5e7eb;border-radius:2px;margin-bottom:1px"><div style="height:3px;background:linear-gradient(90deg,#f59e0b,#ef4444);width:82%;border-radius:2px"></div></div>
-        <div style="font-size:.5em;color:#999;text-align:center;margin-bottom:3px">Ledy y Verónica fuera · Equipo competitivo: 82%</div>
+        <div style="font-size:.5em;color:rgba(255,255,255,0.38);text-align:center;margin-bottom:3px">Ledy y Verónica fuera · Equipo competitivo: 82%</div>
         <div style="display:flex;justify-content:space-around;align-items:flex-end;flex:1;gap:4px">
           ${sorted.map((p,i)=>{
             const sz = i===0?46:36;
@@ -3835,7 +3841,7 @@ function render(){
                 <div style="font-size:${i===0?1.05:0.9}em;font-weight:700;color:white">${p.s}%</div>
                 <div style="font-size:.45em;color:rgba(255,255,255,0.8)">${p.p}% · ${p.t}</div>
               </div>
-              <div style="background:#f8f9fa;border-radius:0 0 3px 3px;width:100%;padding:1px;font-size:.48em;color:#666;text-align:center">Score real</div>
+              <div style="background:rgba(255,255,255,0.07);border-radius:0 0 3px 3px;width:100%;padding:1px;font-size:.48em;color:rgba(255,255,255,0.5);text-align:center">Score real</div>
             </div>`;
           }).join('')}
         </div>
@@ -3845,8 +3851,8 @@ function render(){
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">
           <div style="font-size:.72em;font-weight:700">📅 Vencimientos — ${month.name||'Abril'}</div>
           <div style="display:flex;gap:2px">
-            <span style="font-size:.55em;background:#dcfce7;color:#166534;padding:1px 4px;border-radius:2px;font-weight:700">${cerrados} ✓</span>
-            <span style="font-size:.55em;background:#fef2f2;color:#dc2626;padding:1px 4px;border-radius:2px;font-weight:700">${atrasados} ⚠</span>
+            <span style="font-size:.55em;background:rgba(16,185,129,0.15);color:#10b981;padding:1px 4px;border-radius:2px;font-weight:700">${cerrados} ✓</span>
+            <span style="font-size:.55em;background:rgba(239,68,68,0.12);color:#dc2626;padding:1px 4px;border-radius:2px;font-weight:700">${atrasados} ⚠</span>
           </div>
         </div>
         <div id="tv-venc-scroll" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:1px">
@@ -3872,11 +3878,11 @@ function render(){
         <div style="flex:1;display:flex;flex-direction:column;gap:2px">
           ${[{n:'ICHO',d:icho,c:'#7c3aed'},{n:'VG Contabilidad',d:vgc,c:'#22c55e'},{n:'AIMA',d:aima,c:'#f59e0b'}].map(({n,d,c})=>`
             <div style="background:${c}0e;border-left:2px solid ${c};border-radius:3px;padding:3px 5px;flex:1;display:flex;flex-direction:column;justify-content:space-between">
-              <div style="font-size:.65em;font-weight:700;color:${c}">${n} <span style="font-weight:400;color:#666;font-size:.85em">${d.pendientesCount?'· '+d.pendientesCount+' pend.':''}</span></div>
+              <div style="font-size:.65em;font-weight:700;color:${c}">${n} <span style="font-weight:400;color:rgba(255,255,255,0.5);font-size:.85em">${d.pendientesCount?'· '+d.pendientesCount+' pend.':''}</span></div>
               <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;margin-top:2px">
-                <div style="background:white;border-radius:2px;padding:2px;text-align:center"><div style="font-size:.48em;color:#666">Total</div><div style="font-size:.68em;font-weight:700;color:${c}">${fmtG(d.totalACobrar||d.cobrado)}</div></div>
-                <div style="background:white;border-radius:2px;padding:2px;text-align:center"><div style="font-size:.48em;color:#666">Cobrado</div><div style="font-size:.68em;font-weight:700;color:#22c55e">${fmtG(d.cobrado)}</div></div>
-                <div style="background:white;border-radius:2px;padding:2px;text-align:center"><div style="font-size:.48em;color:#666">Pendiente</div><div style="font-size:.68em;font-weight:700;color:#f97316">${fmtG(d.pendiente||(d.totalACobrar-d.cobrado))}</div></div>
+                <div style="background:rgba(255,255,255,0.07);border-radius:2px;padding:2px;text-align:center"><div style="font-size:.48em;color:#666">Total</div><div style="font-size:.68em;font-weight:700;color:${c}">${fmtG(d.totalACobrar||d.cobrado)}</div></div>
+                <div style="background:rgba(255,255,255,0.07);border-radius:2px;padding:2px;text-align:center"><div style="font-size:.48em;color:#666">Cobrado</div><div style="font-size:.68em;font-weight:700;color:#22c55e">${fmtG(d.cobrado)}</div></div>
+                <div style="background:rgba(255,255,255,0.07);border-radius:2px;padding:2px;text-align:center"><div style="font-size:.48em;color:#666">Pendiente</div><div style="font-size:.68em;font-weight:700;color:#f97316">${fmtG(d.pendiente||(d.totalACobrar-d.cobrado))}</div></div>
               </div>
             </div>`
           ).join('')}
@@ -3886,12 +3892,12 @@ function render(){
       card(`
         <div style="font-size:.72em;font-weight:700;margin-bottom:2px">🔴 Mora ${pm.mesAnterior||'Mes Ant.'} + Cobros ${pm.mes||'—'}</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-bottom:3px;flex-shrink:0">
-          <div style="background:#f0fdf4;border-radius:3px;padding:3px;text-align:center">
+          <div style="background:rgba(16,185,129,0.1);border-radius:3px;padding:3px;text-align:center">
             <div style="font-size:.46em;color:#666">✅ Cobrado</div>
             <div style="font-size:.88em;font-weight:800;color:#22c55e;font-family:'Space Mono',monospace">${pmRes.pctCobrado||0}%</div>
             <div style="font-size:.46em;color:#555">${fmtG(pmRes.cobrado||0)} · ${pmRes.nCobrado||0}c</div>
           </div>
-          <div style="background:#fef2f2;border-radius:3px;padding:3px;text-align:center">
+          <div style="background:rgba(239,68,68,0.12);border-radius:3px;padding:3px;text-align:center">
             <div style="font-size:.46em;color:#666">⏳ Pendiente</div>
             <div style="font-size:.88em;font-weight:800;color:#ef4444;font-family:'Space Mono',monospace">${100-(pmRes.pctCobrado||0)}%</div>
             <div style="font-size:.46em;color:#555">${fmtG(pmRes.pendiente||0)} · ${pmRes.nPendiente||0}c</div>
@@ -3900,7 +3906,7 @@ function render(){
         ${pmMoraAnt.length > 0 ? `
         <div style="font-size:.54em;font-weight:700;color:#dc2626;margin-bottom:1px;flex-shrink:0">⚠ Mora arrastrada ${pm.mesAnterior||''} (${pmMoraAnt.length} · ${fmtG(pmRes.totalMoraAnterior||0)})</div>
         <div style="display:flex;flex-direction:column;gap:1px;overflow:hidden;flex:1">
-          ${pmMoraAnt.slice(0,5).map(c=>`<div style="display:flex;justify-content:space-between;font-size:.52em;background:#fef2f2;padding:1px 4px;border-radius:2px;color:#dc2626;overflow:hidden">
+          ${pmMoraAnt.slice(0,5).map(c=>`<div style="display:flex;justify-content:space-between;font-size:.52em;background:rgba(239,68,68,0.12);padding:1px 4px;border-radius:2px;color:#dc2626;overflow:hidden">
             <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">⚠ ${c.cliente}</span>
             <span style="font-weight:800;margin-left:3px;flex-shrink:0">${fmtG(c.monto)}</span>
           </div>`).join('')}
@@ -3908,7 +3914,7 @@ function render(){
         ` : `<div style="font-size:.56em;color:#22c55e;font-weight:700;text-align:center;padding:6px 0;flex:1">✅ Sin mora arrastrada de ${pm.mesAnterior||'mes anterior'}</div>`}
         ${pmMoraMes.length > 0 ? `
         <div style="font-size:.54em;font-weight:700;color:#f97316;margin-top:2px;flex-shrink:0">⏰ Mora ${pm.mes||''} (${pmMoraMes.length})</div>
-        ${pmMoraMes.slice(0,3).map(c=>`<div style="display:flex;justify-content:space-between;font-size:.52em;background:#fff7ed;padding:1px 4px;border-radius:2px;color:#c2410c;overflow:hidden">
+        ${pmMoraMes.slice(0,3).map(c=>`<div style="display:flex;justify-content:space-between;font-size:.52em;background:rgba(249,115,22,0.12);padding:1px 4px;border-radius:2px;color:#c2410c;overflow:hidden">
           <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">↳ ${c.cliente} (día ${c.ven})</span>
           <span style="font-weight:800;margin-left:3px;flex-shrink:0">${fmtG(c.monto)}</span>
         </div>`).join('')}
@@ -3920,7 +3926,7 @@ function render(){
         ${pmUI.length === 0 ? `
           <div style="font-size:.56em;color:#22c55e;font-weight:700;text-align:center;padding:8px 0;flex:1">✅ Sin servicios pendientes</div>
         ` : `
-          <div style="font-size:.52em;color:#555;margin-bottom:2px;flex-shrink:0">${pmUI.length} servicio${pmUI.length>1?'s':''} · ${fmtG(pmRes.totalUIpend||0)}</div>
+          <div style="font-size:.52em;color:rgba(255,255,255,0.55);margin-bottom:2px;flex-shrink:0">${pmUI.length} servicio${pmUI.length>1?'s':''} · ${fmtG(pmRes.totalUIpend||0)}</div>
           <div style="display:flex;flex-direction:column;gap:1px;overflow:hidden;flex:1">
             ${pmUI.slice(0,7).map(u=>{
               const el=(u.estado||'').toLowerCase();
@@ -3942,15 +3948,15 @@ function render(){
     const opCard = (name, photoId, role, score, prod, tareas, horasStr, pendList, urgList, color) => card(`
       ${personHead(name, role+' · '+prod+'% prod', score, photoId)}
       ${bar(score, color)}
-      <div style="font-size:.52em;color:#999;margin-bottom:2px">${tareas} tareas · ${horasStr}</div>
+      <div style="font-size:.52em;color:rgba(255,255,255,0.38);margin-bottom:2px">${tareas} tareas · ${horasStr}</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;flex:1">
-        <div style="background:#fef2f2;border-radius:3px;padding:3px 4px;border-left:2px solid #ef4444;font-size:.55em;overflow:hidden">
-          <div style="font-weight:700;color:#991b1b;margin-bottom:1px">⚠ Mora/Urgentes</div>
+        <div style="background:rgba(239,68,68,0.12);border-radius:3px;padding:3px 4px;border-left:2px solid #ef4444;font-size:.55em;overflow:hidden">
+          <div style="font-weight:700;color:#ef4444;margin-bottom:1px">⚠ Mora/Urgentes</div>
           ${urgList.length ? `<div style="color:#dc2626;font-weight:600;font-size:.9em;margin-bottom:1px">${urgList.length} cliente${urgList.length>1?'s':''} en mora</div>`+urgList.slice(0,4).map(u=>`<div style="color:#dc2626;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">⚠ ${u}</div>`).join('') : '<div style="color:#22c55e">Sin mora</div>'}
         </div>
-        <div style="background:#fff7ed;border-radius:3px;padding:3px 4px;border-left:2px solid ${color};font-size:.55em;overflow:hidden">
-          <div style="font-weight:700;color:#92400e;margin-bottom:1px">Pendientes (${pendList.length})</div>
-          ${pendList.slice(0,5).map(p=>`<div style="color:#666;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p}</div>`).join('')}
+        <div style="background:rgba(249,115,22,0.12);border-radius:3px;padding:3px 4px;border-left:2px solid ${color};font-size:.55em;overflow:hidden">
+          <div style="font-weight:700;color:#f97316;margin-bottom:1px">Pendientes (${pendList.length})</div>
+          ${pendList.slice(0,5).map(p=>`<div style="color:rgba(255,255,255,0.5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p}</div>`).join('')}
         </div>
       </div>
     `, '1', color);
@@ -3968,24 +3974,27 @@ function render(){
 
     // ── BUILD TV ROOT ──
     const tvHtml = `
-      <div style="flex-shrink:0;padding:3px 12px;display:flex;justify-content:space-between;align-items:center;background:#150929;border-bottom:1px solid #3d2a6e">
-        <span style="font-size:.75em;color:#a89fd4;font-weight:500">${month.name||'Abril'} 2026 · Semana ${month.currentWeek||5} · Actualizado: ${new Date().toLocaleTimeString('es-PY',{hour:'2-digit',minute:'2-digit'})}</span>
-        <div style="display:flex;gap:5px">
-          <span style="font-size:.65em;background:#1a4a2e;color:#4ade80;padding:2px 7px;border-radius:3px">● EN VIVO</span>
-          <span style="font-size:.65em;background:#1a3a5e;color:#60a5fa;padding:2px 7px;border-radius:3px">● Al día</span>
+      <div style="flex-shrink:0;padding:5px 18px;display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,0.5);border-bottom:1px solid rgba(168,85,247,0.25);backdrop-filter:blur(12px)">
+        <div style="display:flex;align-items:center;gap:16px">
+          <span style="font-family:'Space Mono',monospace;font-size:.82em;font-weight:700;background:linear-gradient(90deg,#a855f7,#f97316);-webkit-background-clip:text;-webkit-text-fill-color:transparent">VG EAS</span>
+          <span style="font-size:.68em;color:rgba(255,255,255,0.5)">${month.name||'Junio'} 2026 · Sem ${month.currentWeek||1} · ${new Date().toLocaleTimeString('es-PY',{hour:'2-digit',minute:'2-digit'})}</span>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span style="font-size:.6em;background:rgba(16,185,129,0.12);color:#10b981;padding:3px 10px;border-radius:20px;border:1px solid rgba(16,185,129,0.35);font-weight:700">● EN VIVO</span>
+          <span style="font-size:.6em;background:rgba(96,165,250,0.12);color:#60a5fa;padding:3px 10px;border-radius:20px;border:1px solid rgba(96,165,250,0.3);font-weight:700">AUTO-REFRESH 3min</span>
         </div>
       </div>
-      <div style="flex:1;display:grid;grid-template-columns:1fr 1fr 1fr;min-height:0;overflow:hidden">
-        <div style="padding:4px;display:flex;flex-direction:column;gap:3px;overflow:hidden;border-right:1px solid rgba(255,255,255,0.1)">
-          <div style="font-size:.58em;color:#a89fd4;font-weight:700;text-transform:uppercase;text-align:center;padding:2px;background:#2a1a50;border-radius:3px;flex-shrink:0">● Directivos</div>
+      <div style="flex:1;display:grid;grid-template-columns:1fr 1fr 1fr;min-height:0;overflow:hidden;gap:0">
+        <div style="padding:5px;display:flex;flex-direction:column;gap:4px;overflow:hidden;border-right:1px solid rgba(255,255,255,0.05)">
+          <div style="font-size:.52em;color:rgba(168,85,247,0.9);font-weight:700;text-transform:uppercase;text-align:center;padding:3px;background:rgba(168,85,247,0.08);border-radius:4px;border:1px solid rgba(168,85,247,0.18);flex-shrink:0;letter-spacing:1.5px">◈ DIRECTIVOS</div>
           ${col1}
         </div>
-        <div style="padding:4px;display:flex;flex-direction:column;gap:3px;overflow:hidden;border-right:1px solid rgba(255,255,255,0.1)">
-          <div style="font-size:.58em;color:#a89fd4;font-weight:700;text-transform:uppercase;text-align:center;padding:2px;background:#2a1a50;border-radius:3px;flex-shrink:0">● Podio & Gestión</div>
+        <div style="padding:5px;display:flex;flex-direction:column;gap:4px;overflow:hidden;border-right:1px solid rgba(255,255,255,0.05)">
+          <div style="font-size:.52em;color:rgba(249,115,22,0.9);font-weight:700;text-transform:uppercase;text-align:center;padding:3px;background:rgba(249,115,22,0.08);border-radius:4px;border:1px solid rgba(249,115,22,0.18);flex-shrink:0;letter-spacing:1.5px">◈ PODIO & GESTIÓN</div>
           ${col2}
         </div>
-        <div style="padding:4px;display:flex;flex-direction:column;gap:3px;overflow:hidden">
-          <div style="font-size:.58em;color:#a89fd4;font-weight:700;text-transform:uppercase;text-align:center;padding:2px;background:#2a1a50;border-radius:3px;flex-shrink:0">● Equipo Operativo</div>
+        <div style="padding:5px;display:flex;flex-direction:column;gap:4px;overflow:hidden">
+          <div style="font-size:.52em;color:rgba(16,185,129,0.9);font-weight:700;text-transform:uppercase;text-align:center;padding:3px;background:rgba(16,185,129,0.08);border-radius:4px;border:1px solid rgba(16,185,129,0.18);flex-shrink:0;letter-spacing:1.5px">◈ EQUIPO OPERATIVO</div>
           ${col3}
         </div>
       </div>`;
@@ -3996,7 +4005,7 @@ function render(){
       root.id = 'tv-root';
       document.body.appendChild(root);
     }
-    root.style.cssText = `position:fixed;top:0;left:0;width:${BASE_W}px;height:${BASE_H}px;transform:scale(${scale});transform-origin:top left;overflow:hidden;display:flex;flex-direction:column;font-size:26px;`;
+    root.style.cssText = `position:fixed;top:0;left:0;width:${BASE_W}px;height:${BASE_H}px;transform:scale(${scale});transform-origin:top left;overflow:hidden;display:flex;flex-direction:column;font-size:28px;background:#07071a;background-image:radial-gradient(ellipse at 15% 10%,rgba(168,85,247,0.1) 0%,transparent 45%),radial-gradient(ellipse at 85% 90%,rgba(249,115,22,0.07) 0%,transparent 45%),repeating-linear-gradient(0deg,transparent,transparent 50px,rgba(255,255,255,0.012) 50px,rgba(255,255,255,0.012) 51px),repeating-linear-gradient(90deg,transparent,transparent 50px,rgba(255,255,255,0.012) 50px,rgba(255,255,255,0.012) 51px);font-family:'DM Sans',sans-serif;color:#fff;`;
     root.innerHTML = tvHtml;
 
     // Scroll automático en vencimientos
