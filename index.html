@@ -109,7 +109,7 @@
       radial-gradient(circle at 50% 50%, rgba(232,120,42,0.03) 0%, transparent 70%),
       repeating-linear-gradient(135deg, transparent, transparent 60px, rgba(232,120,42,0.04) 60px, rgba(232,120,42,0.04) 62px),
       repeating-linear-gradient(45deg, transparent, transparent 60px, rgba(232,120,42,0.04) 60px, rgba(232,120,42,0.04) 62px);
-    min-height:100vh; color:#1a1a2e;
+    min-height:100vh; color:#ffffff;
     padding: clamp(10px, 3vw, 40px) clamp(12px, 4vw, 40px);
     overflow-x:hidden;
     position:relative;
@@ -3865,7 +3865,7 @@ function render(){
             </div>`;
           }).join('')}
         </div>
-      `,'1.0','#3b82f6'),
+      `,'1.15','#3b82f6'),
 
       card(`
         <div style="font-size:.72em;font-weight:700;margin-bottom:3px">💰 Cobros Cartera</div>
@@ -3881,7 +3881,7 @@ function render(){
             </div>`
           ).join('')}
         </div>
-      `,'0.7','#10b981'),
+      `,'0.6','#10b981'),
 
       card(`
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;flex:1;min-height:0;overflow:hidden">
@@ -3908,7 +3908,7 @@ function render(){
             </div>
           </div>
         </div>
-      `,'0.65','#ef4444'),
+      `,'0.55','#ef4444'),
     ].join('');
 
     // ── COL 3 ──
@@ -3969,7 +3969,7 @@ function render(){
       root.id = 'tv-root';
       document.body.appendChild(root);
     }
-    root.style.cssText = `position:fixed;top:0;left:0;width:${BASE_W}px;height:${BASE_H}px;transform:scale(${scale});transform-origin:top left;overflow:hidden;display:flex;flex-direction:column;font-size:26px;background:#0d0d1a;`;
+    root.style.cssText = `position:fixed;top:0;left:0;width:${BASE_W}px;height:${BASE_H}px;transform:scale(${scale});transform-origin:top left;overflow:hidden;display:flex;flex-direction:column;font-size:26px;background:#0d0d1a;color:#fff;`;
     root.innerHTML = tvHtml;
 
     // Scroll automático en vencimientos
