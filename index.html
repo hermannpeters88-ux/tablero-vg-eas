@@ -3707,7 +3707,9 @@ function render(){
 
     // ── Card builder ──
     const card = (content, flex, color) =>
-      `<div style="flex:${flex};min-height:0;overflow:hidden;background:rgba(255,255,255,0.05);border-radius:6px;border:1px solid rgba(255,255,255,0.08);border-left:3px solid ${color};padding:5px 7px;display:flex;flex-direction:column;box-sizing:border-box;box-shadow:0 0 18px ${color}1a">${content}</div>`;
+      `<div style="flex:${flex};min-height:0;overflow:hidden;background:rgba(255,255,255,0.05);border-radius:6px;border:1px solid rgba(255,255,255,0.08);border-left:3px solid ${color};padding:5px 7px;display:flex;flex-direction:column;box-sizing:border-box;box-shadow:0 0 18px ${color}1a">
+        <div data-autoscroll style="flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;-ms-overflow-style:none;display:flex;flex-direction:column">${content}</div>
+      </div>`;
 
     const personHead = (name, role, score, photoId) => {
       const photo = photoId && MEMBER_PHOTOS && MEMBER_PHOTOS[photoId] ? MEMBER_PHOTOS[photoId] : null;
@@ -4015,6 +4017,29 @@ function render(){
       requestAnimationFrame(step);
     });
   }, 2500);
+
+  // ── Auto-scroll genérico para TODAS las cards ──
+  setTimeout(()=>{
+    root.querySelectorAll('[data-autoscroll]').forEach(el => {
+      if (el.scrollHeight <= el.clientHeight + 2) return;
+      let dir = 1, paused = false;
+      const speed = 0.4, pauseMs = 2500;
+      function step(){
+        if(!paused){
+          el.scrollTop += speed * dir;
+          if(el.scrollTop + el.clientHeight >= el.scrollHeight - 2){
+            paused = true;
+            setTimeout(()=>{ dir = -1; paused = false; }, pauseMs);
+          } else if(el.scrollTop <= 0 && dir === -1){
+            paused = true;
+            setTimeout(()=>{ dir = 1; paused = false; }, pauseMs);
+          }
+        }
+        requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    });
+  }, 3000);
 
   // Auto-scroll para Vencimientos (TV sin touch)
   setTimeout(()=>{
