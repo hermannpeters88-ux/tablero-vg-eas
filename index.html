@@ -3867,7 +3867,7 @@ function render(){
             </div>`;
           }).join('')}
         </div>
-      `,'1.15','#3b82f6'),
+      `,'0.8','#3b82f6'),
 
       card(`
         <div style="font-size:.72em;font-weight:700;margin-bottom:3px">💰 Cobros Cartera</div>
@@ -3951,15 +3951,15 @@ function render(){
         </div>
       </div>
       <div style="flex:1;display:grid;grid-template-columns:1fr 1fr 1fr;min-height:0;overflow:hidden">
-        <div style="padding:4px;display:flex;flex-direction:column;gap:3px;overflow:hidden;border-right:1px solid rgba(255,255,255,0.1)">
+        <div style="padding:2px 3px;display:flex;flex-direction:column;gap:3px;overflow:hidden;border-right:1px solid rgba(255,255,255,0.1)">
           <div style="font-size:.58em;color:#a89fd4;font-weight:700;text-transform:uppercase;text-align:center;padding:2px;background:#2a1a50;border-radius:3px;flex-shrink:0">● Directivos</div>
           ${col1}
         </div>
-        <div style="padding:4px;display:flex;flex-direction:column;gap:3px;overflow:hidden;border-right:1px solid rgba(255,255,255,0.1)">
+        <div style="padding:2px 3px;display:flex;flex-direction:column;gap:3px;overflow:hidden;border-right:1px solid rgba(255,255,255,0.1)">
           <div style="font-size:.58em;color:#a89fd4;font-weight:700;text-transform:uppercase;text-align:center;padding:2px;background:#2a1a50;border-radius:3px;flex-shrink:0">● Podio & Gestión</div>
           ${col2}
         </div>
-        <div style="padding:4px;display:flex;flex-direction:column;gap:3px;overflow:hidden">
+        <div style="padding:2px 3px;display:flex;flex-direction:column;gap:3px;overflow:hidden">
           <div style="font-size:.58em;color:#a89fd4;font-weight:700;text-transform:uppercase;text-align:center;padding:2px;background:#2a1a50;border-radius:3px;flex-shrink:0">● Equipo Operativo</div>
           ${col3}
         </div>
@@ -4020,26 +4020,30 @@ function render(){
 
   // ── Auto-scroll genérico para TODAS las cards ──
   setTimeout(()=>{
+    const scrollItems = [];
     root.querySelectorAll('[data-autoscroll]').forEach(el => {
-      if (el.scrollHeight <= el.clientHeight + 2) return;
-      let dir = 1, paused = false;
-      const speed = 0.4, pauseMs = 2500;
-      function step(){
-        if(!paused){
-          el.scrollTop += speed * dir;
-          if(el.scrollTop + el.clientHeight >= el.scrollHeight - 2){
-            paused = true;
-            setTimeout(()=>{ dir = -1; paused = false; }, pauseMs);
-          } else if(el.scrollTop <= 0 && dir === -1){
-            paused = true;
-            setTimeout(()=>{ dir = 1; paused = false; }, pauseMs);
-          }
-        }
-        requestAnimationFrame(step);
+      if(el.scrollHeight > el.clientHeight + 4){
+        scrollItems.push({ el, dir:1, paused:false, pauseEnd:0 });
       }
-      requestAnimationFrame(step);
     });
-  }, 3000);
+    if(scrollItems.length === 0) return;
+    const SPEED = 0.45, PAUSE_MS = 2800;
+    function tick(){
+      const now = Date.now();
+      scrollItems.forEach(s => {
+        if(!s.el.isConnected) return;
+        if(s.paused){ if(now >= s.pauseEnd) s.paused = false; return; }
+        s.el.scrollTop += SPEED * s.dir;
+        if(s.el.scrollTop + s.el.clientHeight >= s.el.scrollHeight - 2){
+          s.paused = true; s.dir = -1; s.pauseEnd = now + PAUSE_MS;
+        } else if(s.el.scrollTop <= 0 && s.dir === -1){
+          s.paused = true; s.dir = 1; s.pauseEnd = now + PAUSE_MS;
+        }
+      });
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }, 3500);
 
   // Auto-scroll para Vencimientos (TV sin touch)
   setTimeout(()=>{
