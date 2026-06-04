@@ -101,7 +101,7 @@
   }
   body {
     font-family:'DM Sans',sans-serif;
-    background: #0d0d1a;
+    background: #2d1a4e;
     background-image:
       /* Scattered cross pattern as watermark */
       radial-gradient(circle at 15% 25%, rgba(232,120,42,0.06) 0%, transparent 50%),
@@ -109,7 +109,7 @@
       radial-gradient(circle at 50% 50%, rgba(232,120,42,0.03) 0%, transparent 70%),
       repeating-linear-gradient(135deg, transparent, transparent 60px, rgba(232,120,42,0.04) 60px, rgba(232,120,42,0.04) 62px),
       repeating-linear-gradient(45deg, transparent, transparent 60px, rgba(232,120,42,0.04) 60px, rgba(232,120,42,0.04) 62px);
-    min-height:100vh; color:#ffffff;
+    min-height:100vh; color:#1a1a2e;
     padding: clamp(10px, 3vw, 40px) clamp(12px, 4vw, 40px);
     overflow-x:hidden;
     position:relative;
@@ -324,7 +324,7 @@
     display:flex!important;flex-direction:column!important;
     overflow:hidden!important;
     font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif!important;
-    background:#0d0d1a!important;
+    background:#150929!important;
   }
 }
 </style>
@@ -3660,7 +3660,7 @@ function render(){
     // Helpers
     const fmtG = v => v ? '₲'+Math.round(v).toLocaleString('es-PY') : '—';
     const pctColor = p => p>=80?'#22c55e':p>=60?'#f59e0b':'#ef4444';
-    const bar = (v,c) => `<div style="height:3px;background:rgba(255,255,255,0.1);border-radius:2px;margin:3px 0 2px"><div style="height:3px;background:${c};width:${Math.min(v,100)}%;border-radius:2px;box-shadow:0 0 6px ${c}88"></div></div>`;
+    const bar = (v,c) => `<div style="height:3px;background:#e5e7eb;border-radius:2px;margin:3px 0 2px"><div style="height:3px;background:${c};width:${Math.min(v,100)}%;border-radius:2px"></div></div>`;
     const miniCard = (title,items,bg,bl) => `<div style="background:${bg};border-left:2px solid ${bl};border-radius:3px;padding:3px 5px;flex:1;overflow:hidden"><div style="font-size:.58em;font-weight:700;color:${bl};margin-bottom:1px">${title}</div>${items.map(i=>`<div style="font-size:.55em;color:${i[1]||'#666'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${i[0]}</div>`).join('')}</div>`;
 
     // Scores
@@ -3707,18 +3707,18 @@ function render(){
 
     // ── Card builder ──
     const card = (content, flex, color) =>
-      `<div style="flex:${flex};min-height:0;overflow:hidden;background:rgba(255,255,255,0.05);border-radius:6px;border:1px solid rgba(255,255,255,0.08);border-left:3px solid ${color};padding:5px 7px;display:flex;flex-direction:column;box-sizing:border-box;box-shadow:0 0 18px ${color}1a">
-        <div data-autoscroll style="flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;-ms-overflow-style:none;display:flex;flex-direction:column">${content}</div>
+      `<div style="flex:${flex};min-height:0;overflow:hidden;background:white;border-radius:5px;border-left:3px solid ${color};padding:5px 7px;display:flex;flex-direction:column;box-sizing:border-box">
+        <div data-autoscroll style="flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;-ms-overflow-style:none">${content}</div>
       </div>`;
 
     const personHead = (name, role, score, photoId) => {
       const photo = photoId && MEMBER_PHOTOS && MEMBER_PHOTOS[photoId] ? MEMBER_PHOTOS[photoId] : null;
       return `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">
         <div style="display:flex;align-items:center;gap:6px">
-          ${photo ? `<img src="${photo}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid ${pctColor(score)};box-shadow:0 0 8px ${pctColor(score)}88">` : ''}
-          <div><div style="font-size:.85em;font-weight:700;color:#fff">${name}</div><div style="font-size:.55em;color:rgba(255,255,255,0.5)">${role}</div></div>
+          ${photo ? `<img src="${photo}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid ${pctColor(score)}">` : ''}
+          <div><div style="font-size:.85em;font-weight:700;color:#1a1a2e">${name}</div><div style="font-size:.55em;color:#888">${role}</div></div>
         </div>
-        <div style="font-size:1.3em;font-weight:800;color:${pctColor(score)};text-shadow:0 0 10px ${pctColor(score)}99;line-height:1">${score}%</div>
+        <div style="font-size:1.3em;font-weight:800;color:${pctColor(score)};line-height:1">${score}%</div>
       </div>`;
     };
 
@@ -3895,7 +3895,7 @@ function render(){
             </div>
             <div style="display:flex;flex-direction:column;gap:1px;overflow:hidden;flex:1">
               ${pmMoraAnt.length > 0
-                ? pmMoraAnt.slice(0,4).map(c=>`<div style="display:flex;justify-content:space-between;font-size:.5em;background:#fef2f2;padding:1px 3px;border-radius:2px;color:#dc2626;overflow:hidden"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">⚠ ${c.cliente}</span><span style="font-weight:700;flex-shrink:0;margin-left:2px">${fmtG(c.monto)}</span></div>`).join('')
+                ? pmMoraAnt.slice(0,4).map(c=>`<div style="display:flex;justify-content:space-between;font-size:.58em;background:#fef2f2;padding:2px 4px;border-radius:2px;color:#dc2626;overflow:hidden;margin-bottom:1px"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-weight:600">⚠ ${c.cliente}</span><span style="font-weight:800;flex-shrink:0;margin-left:4px">${fmtG(c.monto)}</span></div>`).join('')
                 : `<div style="font-size:.52em;color:#22c55e;font-weight:700;padding:4px 0">✅ Sin mora</div>`
               }
             </div>
@@ -3904,7 +3904,7 @@ function render(){
             <div style="font-size:.6em;font-weight:700;color:#8b5cf6;flex-shrink:0">⚡ Un Impacto <span style="color:#888;font-weight:400">${pmUI.length}c · ${fmtG(pmRes.totalUIpend||0)}</span></div>
             <div style="display:flex;flex-direction:column;gap:1px;overflow:hidden;flex:1">
               ${pmUI.length > 0
-                ? pmUI.slice(0,5).map(u=>{const el=(u.estado||'').toLowerCase();const isMid=el.includes('50');const tc=isMid?'#854d0e':'#dc2626';const bg=isMid?'#fef9c3':'#fef2f2';return `<div style="display:flex;justify-content:space-between;font-size:.5em;background:${bg};padding:1px 3px;border-radius:2px;color:${tc};overflow:hidden"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${isMid?'🟡':'⚠'} ${u.cliente}${u.detalle?' · '+u.detalle:''}</span><span style="font-weight:700;flex-shrink:0;margin-left:2px">${fmtG(u.monto)}</span></div>`;}).join('')
+                ? pmUI.slice(0,5).map(u=>{const el=(u.estado||'').toLowerCase();const isMid=el.includes('50');const tc=isMid?'#854d0e':'#dc2626';const bg=isMid?'#fef9c3':'#fef2f2';return `<div style="display:flex;justify-content:space-between;font-size:.58em;background:${bg};padding:2px 4px;border-radius:2px;color:${tc};overflow:hidden;margin-bottom:1px"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-weight:600">${isMid?'🟡':'⚠'} ${u.cliente}${u.detalle?' · '+u.detalle:''}</span><span style="font-weight:800;flex-shrink:0;margin-left:4px">${fmtG(u.monto)}</span></div>`;}).join('')
                 : `<div style="font-size:.52em;color:#22c55e;font-weight:700;padding:4px 0">✅ Sin pendientes</div>`
               }
             </div>
@@ -3943,7 +3943,7 @@ function render(){
 
     // ── BUILD TV ROOT ──
     const tvHtml = `
-      <div style="flex-shrink:0;padding:3px 12px;display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,0.6);border-bottom:1px solid rgba(168,85,247,0.3);backdrop-filter:blur(10px)">
+      <div style="flex-shrink:0;padding:3px 12px;display:flex;justify-content:space-between;align-items:center;background:#150929;border-bottom:1px solid #3d2a6e">
         <span style="font-size:.75em;color:#a89fd4;font-weight:500">${month.name||'Abril'} 2026 · Semana ${month.currentWeek||5} · Actualizado: ${new Date().toLocaleTimeString('es-PY',{hour:'2-digit',minute:'2-digit'})}</span>
         <div style="display:flex;gap:5px">
           <span style="font-size:.65em;background:#1a4a2e;color:#4ade80;padding:2px 7px;border-radius:3px">● EN VIVO</span>
@@ -3952,15 +3952,15 @@ function render(){
       </div>
       <div style="flex:1;display:grid;grid-template-columns:1fr 1fr 1fr;min-height:0;overflow:hidden">
         <div style="padding:4px;display:flex;flex-direction:column;gap:3px;overflow:hidden;border-right:1px solid rgba(255,255,255,0.1)">
-          <div style="font-size:.55em;color:rgba(255,255,255,0.7);font-weight:700;text-transform:uppercase;text-align:center;padding:2px 4px;background:rgba(255,255,255,0.06);border-radius:4px;border:1px solid rgba(255,255,255,0.1);flex-shrink:0;letter-spacing:1px">● Directivos</div>
+          <div style="font-size:.58em;color:#a89fd4;font-weight:700;text-transform:uppercase;text-align:center;padding:2px;background:#2a1a50;border-radius:3px;flex-shrink:0">● Directivos</div>
           ${col1}
         </div>
         <div style="padding:4px;display:flex;flex-direction:column;gap:3px;overflow:hidden;border-right:1px solid rgba(255,255,255,0.1)">
-          <div style="font-size:.55em;color:rgba(255,255,255,0.7);font-weight:700;text-transform:uppercase;text-align:center;padding:2px 4px;background:rgba(255,255,255,0.06);border-radius:4px;border:1px solid rgba(255,255,255,0.1);flex-shrink:0;letter-spacing:1px">● Podio & Gestión</div>
+          <div style="font-size:.58em;color:#a89fd4;font-weight:700;text-transform:uppercase;text-align:center;padding:2px;background:#2a1a50;border-radius:3px;flex-shrink:0">● Podio & Gestión</div>
           ${col2}
         </div>
         <div style="padding:4px;display:flex;flex-direction:column;gap:3px;overflow:hidden">
-          <div style="font-size:.55em;color:rgba(255,255,255,0.7);font-weight:700;text-transform:uppercase;text-align:center;padding:2px 4px;background:rgba(255,255,255,0.06);border-radius:4px;border:1px solid rgba(255,255,255,0.1);flex-shrink:0;letter-spacing:1px">● Equipo Operativo</div>
+          <div style="font-size:.58em;color:#a89fd4;font-weight:700;text-transform:uppercase;text-align:center;padding:2px;background:#2a1a50;border-radius:3px;flex-shrink:0">● Equipo Operativo</div>
           ${col3}
         </div>
       </div>`;
@@ -3971,7 +3971,7 @@ function render(){
       root.id = 'tv-root';
       document.body.appendChild(root);
     }
-    root.style.cssText = `position:fixed;top:0;left:0;width:${BASE_W}px;height:${BASE_H}px;transform:scale(${scale});transform-origin:top left;overflow:hidden;display:flex;flex-direction:column;font-size:26px;background:#0d0d1a;color:#fff;`;
+    root.style.cssText = `position:fixed;top:0;left:0;width:${BASE_W}px;height:${BASE_H}px;transform:scale(${scale});transform-origin:top left;overflow:hidden;display:flex;flex-direction:column;font-size:26px;background:#150929;`;
     root.innerHTML = tvHtml;
 
     // Scroll automático en vencimientos
