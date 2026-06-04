@@ -3654,8 +3654,9 @@ function render(){
   function renderTV(){
     const vw = window.innerWidth;   // 1920 en TV
     const vh = window.innerHeight;  // 936 en TV
-    const BASE_W = 1920, BASE_H = 936;
-    const scale = Math.min(vw/BASE_W, vh/BASE_H);
+    const BASE_W = 1920;
+    const scale = vw / BASE_W;
+    const BASE_H = Math.ceil(vh / scale);
 
     // Helpers
     const fmtG = v => v ? '₲'+Math.round(v).toLocaleString('es-PY') : '—';
@@ -3708,7 +3709,7 @@ function render(){
     // ── Card builder ──
     const card = (content, flex, color) =>
       `<div style="flex:${flex};min-height:0;overflow:hidden;background:white;border-radius:5px;border-left:3px solid ${color};padding:5px 7px;display:flex;flex-direction:column;box-sizing:border-box">
-        <div data-autoscroll style="flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;-ms-overflow-style:none">${content}</div>
+        <div class="tv-sc" style="will-change:transform">${content}</div>
       </div>`;
 
     const personHead = (name, role, score, photoId) => {
@@ -4018,27 +4019,29 @@ function render(){
     });
   }, 2500);
 
-  // ── Auto-scroll genérico para TODAS las cards ──
+  // ── Auto-scroll con transform:translateY — funciona siempre ──
   setTimeout(()=>{
-    const scrollItems = [];
-    root.querySelectorAll('[data-autoscroll]').forEach(el => {
-      if(el.scrollHeight > el.clientHeight + 4){
-        scrollItems.push({ el, dir:1, paused:false, pauseEnd:0 });
-      }
+    const items = [];
+    root.querySelectorAll('.tv-sc').forEach(inner => {
+      const outer = inner.parentElement;
+      if(!outer) return;
+      const contentH = inner.getBoundingClientRect().height;
+      const visibleH = outer.getBoundingClientRect().height;
+      if(contentH <= visibleH + 8) return; // cabe completo, no scrollear
+      const maxOff = contentH - visibleH + 10;
+      items.push({ inner, outer, maxOff, off:0, dir:1, paused:false, pauseEnd:0 });
     });
-    if(scrollItems.length === 0) return;
-    const SPEED = 0.45, PAUSE_MS = 2800;
+    if(items.length === 0) return;
+    const SPEED = 0.45, PAUSE = 2800;
     function tick(){
       const now = Date.now();
-      scrollItems.forEach(s => {
-        if(!s.el.isConnected) return;
+      items.forEach(s => {
+        if(!s.inner.isConnected) return;
         if(s.paused){ if(now >= s.pauseEnd) s.paused = false; return; }
-        s.el.scrollTop += SPEED * s.dir;
-        if(s.el.scrollTop + s.el.clientHeight >= s.el.scrollHeight - 2){
-          s.paused = true; s.dir = -1; s.pauseEnd = now + PAUSE_MS;
-        } else if(s.el.scrollTop <= 0 && s.dir === -1){
-          s.paused = true; s.dir = 1; s.pauseEnd = now + PAUSE_MS;
-        }
+        s.off += SPEED * s.dir;
+        if(s.off >= s.maxOff){ s.off = s.maxOff; s.paused = true; s.dir = -1; s.pauseEnd = now + PAUSE; }
+        else if(s.off <= 0){ s.off = 0; s.paused = true; s.dir = 1; s.pauseEnd = now + PAUSE; }
+        s.inner.style.transform = `translateY(-${s.off}px)`;
       });
       requestAnimationFrame(tick);
     }
