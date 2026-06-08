@@ -2451,40 +2451,6 @@ function renderAntiguedadBloque(res){
   </div>`;
 }
 
-function renderIchoMoraCard(){
-  const m = appData?.ichoMora || {};
-  if(m.error || (!m.facturado && !m.totalCobrado)) return '';
-  const fmtGs = n => n > 0 ? '₲ ' + Math.round(n).toLocaleString('es-PY') : '—';
-  const pctCob = m.facturado > 0 ? Math.round(m.totalCobrado / m.facturado * 100) : 0;
-  return `
-  <div class="divider"></div>
-  <div class="task-section">
-    <div class="section-title" style="margin-bottom:10px">
-      <span class="icon">📊</span> ICHO — Resumen Mora
-      <span class="src-tag">Libro Ventas ICHO 2026 · Hoja Resumen Mora</span>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-      <div style="background:#fee2e215;border:1px solid #fee2e2;border-radius:10px;padding:10px 12px">
-        <div style="font-size:.45rem;font-weight:700;color:#991b1b;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">Facturas Vencidas</div>
-        <div style="font-family:'Space Mono',monospace;font-size:.8rem;font-weight:800;color:#ef4444">${fmtGs(m.facturasVencidas)}</div>
-      </div>
-      <div style="background:#ffedd515;border:1px solid #fed7aa;border-radius:10px;padding:10px 12px">
-        <div style="font-size:.45rem;font-weight:700;color:#9a3412;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">Fac. No Vencidas</div>
-        <div style="font-family:'Space Mono',monospace;font-size:.8rem;font-weight:800;color:#f97316">${fmtGs(m.facNoVencidas)}</div>
-      </div>
-      <div style="background:#d1fae515;border:1px solid #a7f3d0;border-radius:10px;padding:10px 12px">
-        <div style="font-size:.45rem;font-weight:700;color:#065f46;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">Total Cobrado</div>
-        <div style="font-family:'Space Mono',monospace;font-size:.8rem;font-weight:800;color:#10b981">${fmtGs(m.totalCobrado)}</div>
-      </div>
-      <div style="background:#ede9fe15;border:1px solid #ddd6fe;border-radius:10px;padding:10px 12px">
-        <div style="font-size:.45rem;font-weight:700;color:#4c1d95;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">Facturado Total</div>
-        <div style="font-family:'Space Mono',monospace;font-size:.8rem;font-weight:800;color:#7c3aed">${fmtGs(m.facturado)}</div>
-        <div style="font-size:.48rem;color:#9890aa;margin-top:2px">${pctCob}% cobrado</div>
-      </div>
-    </div>
-  </div>`;
-}
-
 function renderCobrosCartera(){
   const data = COBROS_DATA;
   const hoy = new Date().getDate();
@@ -2593,6 +2559,33 @@ function renderCobrosCartera(){
           <div style="font-family:'Space Mono',monospace;font-size:.62rem;font-weight:800;color:#623098">${c.nombre==='ICHO' ? fmtGs(c.facturado) : (c.facturado > 0 ? fmtGs(c.facturado) : fmtGs(c.totalACobrar))}</div>
         </div>
       </div>
+      <!-- ICHO: Resumen Mora (4 indicadores de hoja Resumen Mora) -->
+      ${(()=>{
+        if(c.nombre !== 'ICHO') return '';
+        const im = appData?.ichoMora;
+        if(!im || im.error || (!im.facturado && !im.totalCobrado)) return '';
+        return `<div style="border-top:1px solid #f0eef5;padding-top:8px;margin-top:4px">
+          <div style="font-size:.45rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">📊 Resumen Mora</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">
+            <div style="background:#fee2e215;border-radius:6px;padding:6px 8px;border:1px solid #fee2e2">
+              <div style="font-size:.42rem;color:#991b1b;font-weight:700;text-transform:uppercase">Fact. Vencidas</div>
+              <div style="font-family:'Space Mono',monospace;font-size:.6rem;font-weight:800;color:#ef4444">${fmtGs(im.facturasVencidas)}</div>
+            </div>
+            <div style="background:#ffedd515;border-radius:6px;padding:6px 8px;border:1px solid #fed7aa">
+              <div style="font-size:.42rem;color:#9a3412;font-weight:700;text-transform:uppercase">Fac. No Vencidas</div>
+              <div style="font-family:'Space Mono',monospace;font-size:.6rem;font-weight:800;color:#f97316">${fmtGs(im.facNoVencidas)}</div>
+            </div>
+            <div style="background:#d1fae515;border-radius:6px;padding:6px 8px;border:1px solid #a7f3d0">
+              <div style="font-size:.42rem;color:#065f46;font-weight:700;text-transform:uppercase">Total Cobrado</div>
+              <div style="font-family:'Space Mono',monospace;font-size:.6rem;font-weight:800;color:#10b981">${fmtGs(im.totalCobrado)}</div>
+            </div>
+            <div style="background:#ede9fe15;border-radius:6px;padding:6px 8px;border:1px solid #ddd6fe">
+              <div style="font-size:.42rem;color:#4c1d95;font-weight:700;text-transform:uppercase">Facturado</div>
+              <div style="font-family:'Space Mono',monospace;font-size:.6rem;font-weight:800;color:#7c3aed">${fmtGs(im.facturado)}</div>
+            </div>
+          </div>
+        </div>`;
+      })()}
       <!-- Detalle facturas pendientes (solo con datos en vivo) -->
       ${facturasHtml ? `<div style="border-top:1px solid #f0eef5;padding-top:8px">${facturasHtml}</div>` : ''}
       ${c.antiguedadResumen ? renderAntiguedadBloque(c.antiguedadResumen) : ''}
@@ -2788,9 +2781,6 @@ function renderVeroCard(){
   }
 
   // (Secciones "Alertas del equipo" y "Tareas varias hoy" removidas — no aportan info útil en la card de Vero)
-
-  // ── ICHO Resumen Mora ──
-  html += renderIchoMoraCard();
 
   // ── GESTIÓN DE COBROS — Cartera VG Administración ──
   html += renderCobrosCartera();
@@ -3910,45 +3900,27 @@ function render(){
       card(`
         <div style="font-size:.72em;font-weight:700;margin-bottom:3px">💰 Cobros Cartera</div>
         <div style="flex:1;display:flex;flex-direction:column;gap:2px">
-          ${[{n:'ICHO',d:icho,c:'#7c3aed'},{n:'VG Contabilidad',d:vgc,c:'#22c55e'},{n:'AIMA',d:aima,c:'#f59e0b'}].map(({n,d,c})=>`
-            <div style="background:${c}0e;border-left:2px solid ${c};border-radius:3px;padding:3px 5px;flex:1;display:flex;flex-direction:column;justify-content:space-between">
+          ${[{n:'ICHO',d:icho,c:'#7c3aed'},{n:'VG Contabilidad',d:vgc,c:'#22c55e'},{n:'AIMA',d:aima,c:'#f59e0b'}].map(({n,d,c})=>{
+            const im = n==='ICHO' ? (appData?.ichoMora||{}) : {};
+            const hasIchoMora = n==='ICHO' && (im.facturado||im.totalCobrado);
+            return `<div style="background:${c}0e;border-left:2px solid ${c};border-radius:3px;padding:3px 5px;flex:1;display:flex;flex-direction:column;justify-content:space-between">
               <div style="font-size:.65em;font-weight:700;color:${c}">${n} <span style="font-weight:400;color:#666;font-size:.85em">${d.pendientesCount?'· '+d.pendientesCount+' pend.':''}</span></div>
+              ${hasIchoMora ? `
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-top:2px">
+                <div style="background:#fee2e222;border-radius:2px;padding:2px;text-align:center"><div style="font-size:.44em;color:#991b1b">Vencidas</div><div style="font-size:.62em;font-weight:800;color:#ef4444">${fmtG(im.facturasVencidas)}</div></div>
+                <div style="background:#ffedd522;border-radius:2px;padding:2px;text-align:center"><div style="font-size:.44em;color:#9a3412">No Venc.</div><div style="font-size:.62em;font-weight:800;color:#f97316">${fmtG(im.facNoVencidas)}</div></div>
+                <div style="background:#d1fae522;border-radius:2px;padding:2px;text-align:center"><div style="font-size:.44em;color:#065f46">Cobrado</div><div style="font-size:.62em;font-weight:800;color:#10b981">${fmtG(im.totalCobrado)}</div></div>
+                <div style="background:#ede9fe22;border-radius:2px;padding:2px;text-align:center"><div style="font-size:.44em;color:#4c1d95">Facturado</div><div style="font-size:.62em;font-weight:800;color:#7c3aed">${fmtG(im.facturado)}</div></div>
+              </div>` : `
               <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;margin-top:2px">
                 <div style="background:white;border-radius:2px;padding:2px;text-align:center"><div style="font-size:.48em;color:#666">Total</div><div style="font-size:.68em;font-weight:700;color:${c}">${fmtG(d.totalACobrar||d.cobrado)}</div></div>
                 <div style="background:white;border-radius:2px;padding:2px;text-align:center"><div style="font-size:.48em;color:#666">Cobrado</div><div style="font-size:.68em;font-weight:700;color:#22c55e">${fmtG(d.cobrado)}</div></div>
                 <div style="background:white;border-radius:2px;padding:2px;text-align:center"><div style="font-size:.48em;color:#666">Pendiente</div><div style="font-size:.68em;font-weight:700;color:#f97316">${fmtG(d.pendiente||(d.totalACobrar-d.cobrado))}</div></div>
-              </div>
-            </div>`
-          ).join('')}
+              </div>`}
+            </div>`;
+          }).join('')}
         </div>
       `,'0.9','#10b981'),
-
-      (()=>{
-        const im = appData?.ichoMora||{};
-        if(!im.facturado && !im.totalCobrado) return '';
-        const pctC = im.facturado>0?Math.round(im.totalCobrado/im.facturado*100):0;
-        return card(`
-          <div style="font-size:.72em;font-weight:700;margin-bottom:3px">📊 ICHO Mora</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;flex:1">
-            <div style="background:#fee2e222;border-left:2px solid #ef4444;border-radius:3px;padding:3px 5px">
-              <div style="font-size:.5em;color:#991b1b;font-weight:700">Vencidas</div>
-              <div style="font-size:.68em;font-weight:800;color:#ef4444">${fmtG(im.facturasVencidas)}</div>
-            </div>
-            <div style="background:#ffedd522;border-left:2px solid #f97316;border-radius:3px;padding:3px 5px">
-              <div style="font-size:.5em;color:#9a3412;font-weight:700">No Venc.</div>
-              <div style="font-size:.68em;font-weight:800;color:#f97316">${fmtG(im.facNoVencidas)}</div>
-            </div>
-            <div style="background:#d1fae522;border-left:2px solid #10b981;border-radius:3px;padding:3px 5px">
-              <div style="font-size:.5em;color:#065f46;font-weight:700">Cobrado</div>
-              <div style="font-size:.68em;font-weight:800;color:#10b981">${fmtG(im.totalCobrado)}</div>
-            </div>
-            <div style="background:#ede9fe22;border-left:2px solid #7c3aed;border-radius:3px;padding:3px 5px">
-              <div style="font-size:.5em;color:#4c1d95;font-weight:700">Facturado · ${pctC}%</div>
-              <div style="font-size:.68em;font-weight:800;color:#7c3aed">${fmtG(im.facturado)}</div>
-            </div>
-          </div>
-        `,'0.8','#7c3aed');
-      })(),
 
     ].join('');
 
