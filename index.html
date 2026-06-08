@@ -2586,6 +2586,25 @@ function renderCobrosCartera(){
           </div>
         </div>`;
       })()}
+      <!-- AIMA: Facturación y Mora -->
+      ${(()=>{
+        if(c.nombre !== 'AIMA') return '';
+        const ar = appData?.aimaResumen;
+        if(!ar || ar.error || (!ar.facturacion && !ar.mora)) return '';
+        return `<div style="border-top:1px solid #f0eef5;padding-top:8px;margin-top:4px">
+          <div style="font-size:.45rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">📊 Reportes AIMA</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">
+            <div style="background:#ede9fe15;border-radius:6px;padding:6px 8px;border:1px solid #ddd6fe">
+              <div style="font-size:.42rem;color:#4c1d95;font-weight:700;text-transform:uppercase">Facturación Total</div>
+              <div style="font-family:'Space Mono',monospace;font-size:.6rem;font-weight:800;color:#7c3aed">${fmtGs(ar.facturacion)}</div>
+            </div>
+            <div style="background:#fee2e215;border-radius:6px;padding:6px 8px;border:1px solid #fee2e2">
+              <div style="font-size:.42rem;color:#991b1b;font-weight:700;text-transform:uppercase">Mora Pendiente</div>
+              <div style="font-family:'Space Mono',monospace;font-size:.6rem;font-weight:800;color:#ef4444">${fmtGs(ar.mora)}</div>
+            </div>
+          </div>
+        </div>`;
+      })()}
       <!-- Detalle facturas pendientes (solo con datos en vivo) -->
       ${facturasHtml ? `<div style="border-top:1px solid #f0eef5;padding-top:8px">${facturasHtml}</div>` : ''}
       ${c.antiguedadResumen ? renderAntiguedadBloque(c.antiguedadResumen) : ''}
@@ -3902,7 +3921,9 @@ function render(){
         <div style="flex:1;display:flex;flex-direction:column;gap:3px">
           ${[{n:'ICHO',d:icho,c:'#7c3aed'},{n:'VG Contabilidad',d:vgc,c:'#22c55e'},{n:'AIMA',d:aima,c:'#f59e0b'}].map(({n,d,c})=>{
             const im = n==='ICHO' ? (appData?.ichoMora||{}) : {};
+            const ar = n==='AIMA' ? (appData?.aimaResumen||{}) : {};
             const hasIchoMora = n==='ICHO' && (im.facturado||im.totalCobrado);
+            const hasAima = n==='AIMA' && (ar.facturacion||ar.mora);
             return `<div style="background:${c}0e;border-left:2px solid ${c};border-radius:3px;padding:3px 5px;flex:${hasIchoMora?'1.6':'1'};display:flex;flex-direction:column;justify-content:space-between">
               <div style="font-size:.62em;font-weight:700;color:${c};margin-bottom:2px">${n} <span style="font-weight:400;color:#666;font-size:.85em">${d.pendientesCount?'· '+d.pendientesCount+' pend.':''}</span></div>
               ${hasIchoMora ? `
@@ -3911,6 +3932,10 @@ function render(){
                 <div style="background:#ffedd522;border-radius:2px;padding:2px 1px;text-align:center"><div style="font-size:.4em;color:#9a3412;white-space:nowrap">No Venc.</div><div style="font-size:.55em;font-weight:800;color:#f97316;white-space:nowrap">${fmtG(im.facNoVencidas)}</div></div>
                 <div style="background:#d1fae522;border-radius:2px;padding:2px 1px;text-align:center"><div style="font-size:.4em;color:#065f46;white-space:nowrap">Cobrado</div><div style="font-size:.55em;font-weight:800;color:#10b981;white-space:nowrap">${fmtG(im.totalCobrado)}</div></div>
                 <div style="background:#ede9fe22;border-radius:2px;padding:2px 1px;text-align:center"><div style="font-size:.4em;color:#4c1d95;white-space:nowrap">Facturado</div><div style="font-size:.55em;font-weight:800;color:#7c3aed;white-space:nowrap">${fmtG(im.facturado)}</div></div>
+              </div>` : hasAima ? `
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px">
+                <div style="background:#ede9fe22;border-radius:2px;padding:2px;text-align:center"><div style="font-size:.44em;color:#4c1d95">Facturado</div><div style="font-size:.62em;font-weight:800;color:#7c3aed">${fmtG(ar.facturacion)}</div></div>
+                <div style="background:#fee2e222;border-radius:2px;padding:2px;text-align:center"><div style="font-size:.44em;color:#991b1b">Mora</div><div style="font-size:.62em;font-weight:800;color:#ef4444">${fmtG(ar.mora)}</div></div>
               </div>` : `
               <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px">
                 <div style="background:white;border-radius:2px;padding:2px;text-align:center"><div style="font-size:.44em;color:#666">Total</div><div style="font-size:.62em;font-weight:700;color:${c}">${fmtG(d.totalACobrar||d.cobrado)}</div></div>
