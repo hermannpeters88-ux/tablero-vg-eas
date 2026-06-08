@@ -3899,28 +3899,28 @@ function render(){
 
       card(`
         <div style="font-size:.72em;font-weight:700;margin-bottom:3px">💰 Cobros Cartera</div>
-        <div style="flex:1;display:flex;flex-direction:column;gap:2px">
+        <div style="flex:1;display:flex;flex-direction:column;gap:3px">
           ${[{n:'ICHO',d:icho,c:'#7c3aed'},{n:'VG Contabilidad',d:vgc,c:'#22c55e'},{n:'AIMA',d:aima,c:'#f59e0b'}].map(({n,d,c})=>{
             const im = n==='ICHO' ? (appData?.ichoMora||{}) : {};
             const hasIchoMora = n==='ICHO' && (im.facturado||im.totalCobrado);
-            return `<div style="background:${c}0e;border-left:2px solid ${c};border-radius:3px;padding:3px 5px;flex:1;display:flex;flex-direction:column;justify-content:space-between">
-              <div style="font-size:.65em;font-weight:700;color:${c}">${n} <span style="font-weight:400;color:#666;font-size:.85em">${d.pendientesCount?'· '+d.pendientesCount+' pend.':''}</span></div>
+            return `<div style="background:${c}0e;border-left:2px solid ${c};border-radius:3px;padding:3px 5px;flex:${hasIchoMora?'1.6':'1'};display:flex;flex-direction:column;justify-content:space-between">
+              <div style="font-size:.62em;font-weight:700;color:${c};margin-bottom:2px">${n} <span style="font-weight:400;color:#666;font-size:.85em">${d.pendientesCount?'· '+d.pendientesCount+' pend.':''}</span></div>
               ${hasIchoMora ? `
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-top:2px">
-                <div style="background:#fee2e222;border-radius:2px;padding:2px;text-align:center"><div style="font-size:.44em;color:#991b1b">Vencidas</div><div style="font-size:.62em;font-weight:800;color:#ef4444">${fmtG(im.facturasVencidas)}</div></div>
-                <div style="background:#ffedd522;border-radius:2px;padding:2px;text-align:center"><div style="font-size:.44em;color:#9a3412">No Venc.</div><div style="font-size:.62em;font-weight:800;color:#f97316">${fmtG(im.facNoVencidas)}</div></div>
-                <div style="background:#d1fae522;border-radius:2px;padding:2px;text-align:center"><div style="font-size:.44em;color:#065f46">Cobrado</div><div style="font-size:.62em;font-weight:800;color:#10b981">${fmtG(im.totalCobrado)}</div></div>
-                <div style="background:#ede9fe22;border-radius:2px;padding:2px;text-align:center"><div style="font-size:.44em;color:#4c1d95">Facturado</div><div style="font-size:.62em;font-weight:800;color:#7c3aed">${fmtG(im.facturado)}</div></div>
+              <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:2px">
+                <div style="background:#fee2e222;border-radius:2px;padding:2px 1px;text-align:center"><div style="font-size:.4em;color:#991b1b;white-space:nowrap">Vencidas</div><div style="font-size:.55em;font-weight:800;color:#ef4444;white-space:nowrap">${fmtG(im.facturasVencidas)}</div></div>
+                <div style="background:#ffedd522;border-radius:2px;padding:2px 1px;text-align:center"><div style="font-size:.4em;color:#9a3412;white-space:nowrap">No Venc.</div><div style="font-size:.55em;font-weight:800;color:#f97316;white-space:nowrap">${fmtG(im.facNoVencidas)}</div></div>
+                <div style="background:#d1fae522;border-radius:2px;padding:2px 1px;text-align:center"><div style="font-size:.4em;color:#065f46;white-space:nowrap">Cobrado</div><div style="font-size:.55em;font-weight:800;color:#10b981;white-space:nowrap">${fmtG(im.totalCobrado)}</div></div>
+                <div style="background:#ede9fe22;border-radius:2px;padding:2px 1px;text-align:center"><div style="font-size:.4em;color:#4c1d95;white-space:nowrap">Facturado</div><div style="font-size:.55em;font-weight:800;color:#7c3aed;white-space:nowrap">${fmtG(im.facturado)}</div></div>
               </div>` : `
-              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;margin-top:2px">
-                <div style="background:white;border-radius:2px;padding:2px;text-align:center"><div style="font-size:.48em;color:#666">Total</div><div style="font-size:.68em;font-weight:700;color:${c}">${fmtG(d.totalACobrar||d.cobrado)}</div></div>
-                <div style="background:white;border-radius:2px;padding:2px;text-align:center"><div style="font-size:.48em;color:#666">Cobrado</div><div style="font-size:.68em;font-weight:700;color:#22c55e">${fmtG(d.cobrado)}</div></div>
-                <div style="background:white;border-radius:2px;padding:2px;text-align:center"><div style="font-size:.48em;color:#666">Pendiente</div><div style="font-size:.68em;font-weight:700;color:#f97316">${fmtG(d.pendiente||(d.totalACobrar-d.cobrado))}</div></div>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px">
+                <div style="background:white;border-radius:2px;padding:2px;text-align:center"><div style="font-size:.44em;color:#666">Total</div><div style="font-size:.62em;font-weight:700;color:${c}">${fmtG(d.totalACobrar||d.cobrado)}</div></div>
+                <div style="background:white;border-radius:2px;padding:2px;text-align:center"><div style="font-size:.44em;color:#666">Cobrado</div><div style="font-size:.62em;font-weight:700;color:#22c55e">${fmtG(d.cobrado)}</div></div>
+                <div style="background:white;border-radius:2px;padding:2px;text-align:center"><div style="font-size:.44em;color:#666">Pendiente</div><div style="font-size:.62em;font-weight:700;color:#f97316">${fmtG(d.pendiente||(d.totalACobrar-d.cobrado))}</div></div>
               </div>`}
             </div>`;
           }).join('')}
         </div>
-      `,'0.9','#10b981'),
+      `,'1.3','#10b981'),
 
     ].join('');
 
