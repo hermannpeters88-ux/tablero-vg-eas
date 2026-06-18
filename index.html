@@ -3287,6 +3287,19 @@ function renderVencimientosCard(){
 
 function render(){
   if(!appData)return;
+  // Sync VG Contabilidad en COBROS_DATA desde procesoMes (fuente: Proceso Junio)
+  const _pm = appData.procesoMes;
+  if(_pm && _pm.resumen && !_pm.error){
+    const _vgIdx = COBROS_DATA.clientes.findIndex(c => c.nombre === 'VG Contabilidad');
+    if(_vgIdx >= 0){
+      COBROS_DATA.clientes[_vgIdx] = {
+        ...COBROS_DATA.clientes[_vgIdx],
+        totalACobrar: (_pm.resumen.cobrado||0) + (_pm.resumen.pendiente||0),
+        cobrado:      _pm.resumen.cobrado||0,
+        estado:       _pm.resumen.pendiente > 0 ? 'pendiente' : 'aldia'
+      };
+    }
+  }
   // Cachear scores reales para que todas las cards usen los mismos números
   window._realScores = computeRealScores();
   const team=appData.team.filter(m=>!m.error);
