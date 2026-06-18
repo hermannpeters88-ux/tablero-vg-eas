@@ -1165,22 +1165,21 @@ function getPendientesPersona(personaId){
         });
       });
     }
-    // Sumar clientes urgentes (atrasados o en riesgo)
+    // Sumar todos los clientes no cobrados
     const cli = getClientesContabilidad(['magal']);
     cli.forEach(c => {
       const est = getClienteEstado(c);
-      if(est.key === 'atrasado' || est.key === 'enriesgo'){
-        items.push({
-          tarea: c.razonSocial || c.nombre || 'Cliente',
-          estado: est.label,
-          enProceso: false,
-          tipo: 'cliente',
-          vencimientoDia: c.vencimientoDia,
-          avancePct: c.avancePct || 0,
-          estadoKey: est.key,
-          emoji: est.emoji
-        });
-      }
+      if(est.key === 'completado') return;
+      items.push({
+        tarea: c.razonSocial || c.nombre || 'Cliente',
+        estado: est.label,
+        enProceso: false,
+        tipo: 'cliente',
+        vencimientoDia: c.vencimientoDia,
+        avancePct: c.avancePct || 0,
+        estadoKey: est.key,
+        emoji: est.emoji
+      });
     });
   } else if(personaId === 'rody'){
     // Fuente 1: Tareas puntuales de la planilla "Tareas pendientes Rodolfo Peters"
@@ -1195,22 +1194,21 @@ function getPendientesPersona(personaId){
         });
       });
     }
-    // Fuente 2: clientes contabilidad urgentes
+    // Fuente 2: todos los clientes no cobrados
     const cli = getClientesContabilidad(['rodi','rody']);
     cli.forEach(c => {
       const est = getClienteEstado(c);
-      if(est.key === 'atrasado' || est.key === 'enriesgo'){
-        items.push({
-          tarea: c.razonSocial || c.nombre || 'Cliente',
-          estado: est.label,
-          enProceso: false,
-          tipo: 'cliente',
-          vencimientoDia: c.vencimientoDia,
-          avancePct: c.avancePct || 0,
-          estadoKey: est.key,
-          emoji: est.emoji
-        });
-      }
+      if(est.key === 'completado') return;
+      items.push({
+        tarea: c.razonSocial || c.nombre || 'Cliente',
+        estado: est.label,
+        enProceso: false,
+        tipo: 'cliente',
+        vencimientoDia: c.vencimientoDia,
+        avancePct: c.avancePct || 0,
+        estadoKey: est.key,
+        emoji: est.emoji
+      });
     });
     // Fuente 3: Tareas diarias rutinarias del detalle que NO están al 100%
     // FIX: excluir tareas sin días asignados en el mes
