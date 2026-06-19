@@ -931,7 +931,7 @@ function getRecoveryPlan(personaId, scoreActual){
       // Tomamos los clientes urgentes de AMBOS
       const clientesRody = topClientesUrgentes(['rodi','rody'], 5);
       const clientesMaga = topClientesUrgentes(['maga','magal'], 5);
-      const todos = [...clientesRody.map(c=>({...c,_resp:'Rody'})), ...clientesMaga.map(c=>({...c,_resp:'Maga'}))]
+      const todos = [...clientesRody.map(c=>({...c,_resp:'Rody',_est:getClienteEstado(c)})), ...clientesMaga.map(c=>({...c,_resp:'Maga',_est:getClienteEstado(c)}))]
         .sort((a,b) => {
           if(a._est.key !== b._est.key) return a._est.key === 'atrasado' ? -1 : 1;
           return (a.vencimientoDia||99) - (b.vencimientoDia||99);
@@ -963,7 +963,7 @@ function getRecoveryPlan(personaId, scoreActual){
       // Mezcla clientes urgentes de TODO el equipo + flagging del cuello de botella
       const clientesRody = topClientesUrgentes(['rodi','rody'], 3);
       const clientesMaga = topClientesUrgentes(['maga','magal'], 3);
-      const todos = [...clientesRody.map(c=>({...c,_resp:'Rody'})), ...clientesMaga.map(c=>({...c,_resp:'Maga'}))]
+      const todos = [...clientesRody.map(c=>({...c,_resp:'Rody',_est:getClienteEstado(c)})), ...clientesMaga.map(c=>({...c,_resp:'Maga',_est:getClienteEstado(c)}))]
         .sort((a,b) => {
           if(a._est.key !== b._est.key) return a._est.key === 'atrasado' ? -1 : 1;
           return (a.vencimientoDia||99) - (b.vencimientoDia||99);
