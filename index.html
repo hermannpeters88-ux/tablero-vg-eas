@@ -951,7 +951,7 @@ function getRecoveryPlan(personaId, scoreActual){
       const totalCount = getDetalleForMember("Randy").length;
       const faltan = totalCount - todayCount;
       if(faltan > 0){
-        acciones.push({ icon:'📋', text:`Randy debe tildar ${faltan} tarea${faltan>1?'s':''} de hoy`, detail:'Sin tildar aún' });
+        acciones.push({ icon:'📋', text:`GIA debe tildar ${faltan} tarea${faltan>1?'s':''} de hoy`, detail:'Sin tildar aún' });
       }
       tareasFlojas.slice(0, 3 - acciones.length).forEach(t=>{
         acciones.push({ icon:'⏰', text:t._name, detail:`Semana al ${t.weekPct||0}%` });
@@ -2753,7 +2753,7 @@ function renderVeroCard(){
   const veroValidDone = veroValidDetalle.filter(t=>t.todayChecked).length;
   if(veroValidDetalle.length>0){
     html+=`<div class="task-section">
-      <div class="section-title"><span class="icon">📌</span> Tareas diarias Randy (${veroValidDone}/${veroValidDetalle.length})</div>`;
+      <div class="section-title"><span class="icon">📌</span> Tareas diarias GIA (${veroValidDone}/${veroValidDetalle.length})</div>`;
     veroValidDetalle.slice(0,8).forEach(task=>{
       const ws=getStatus(task.weekPct);
       html+=`<div class="task-row">
@@ -2771,7 +2771,7 @@ function renderVeroCard(){
   const rtpVero = appData.randyTareasPend;
   if(rtpVero && rtpVero.total>0){
     html+=`<div class="task-section">
-      <div class="section-title"><span class="icon">📋</span> Tareas Randy — ${rtpVero.total} total (${rtpVero.pctRealizado}% completado)</div>
+      <div class="section-title"><span class="icon">📋</span> Tareas GIA — ${rtpVero.total} total (${rtpVero.pctRealizado}% completado)</div>
       <div style="display:flex;gap:8px;margin-bottom:10px">
         <div style="background:#ef444422;border-radius:6px;padding:6px 10px;flex:1;text-align:center">
           <div style="font-size:1rem;font-weight:800;color:#ef4444;font-family:'Space Mono',monospace">${rtpVero.pendientes}</div>
@@ -3594,7 +3594,7 @@ function render(){
         const teamAvg = competitors.length > 0
           ? Math.round(competitors.reduce((s,c)=>s+(c.monthlyPct||0),0) / competitors.length)
           : 0;
-        return renderMonthProgressBar(teamAvg, { label:"📆 Avance del Equipo Competitivo (Randy + Rody + Maga)" });
+        return renderMonthProgressBar(teamAvg, { label:"📆 Avance del Equipo Competitivo (GIA + Rody + Maga)" });
       })()}
       ${(function(){
         // Plan de recuperación INDIVIDUAL para cada competidor cuyo SCORE esté bajo
@@ -3869,7 +3869,7 @@ function render(){
     const sorted = [
       {id:'rody', n:'Rodolfo P.',s:rodyScore,p:100,t:'25/28'},
       {id:'maga', n:'Magalí M.',s:magaScore,p:100,t:'34/35'},
-      {id:'randy',n:'Randy P.',s:randyScore,p:17,t:'4/22'},
+      {id:'randy',n:'GIA',s:randyScore,p:17,t:'4/22'},
     ].sort((a,b)=>b.s-a.s);
     const medals=['🥇','🥈','🥉'];
     const podC=['#f59e0b','#94a3b8','#cd7f32'];
