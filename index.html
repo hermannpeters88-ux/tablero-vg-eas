@@ -1242,11 +1242,13 @@ function getPendientesPersona(personaId){
     const score = (it) => {
       if(it.tipo === 'cliente' && it.estadoKey === 'atrasado') return 0;
       if(it.tipo === 'cliente' && it.estadoKey === 'enriesgo') return 1;
-      if(it.tipo === 'tarea' && !it.enProceso) return 2; // pendiente sin arrancar
-      if(it.tipo === 'tarea' && it.enProceso) return 3;
-      if(it.tipo === 'rutina' && !it.enProceso) return 4;
-      if(it.tipo === 'rutina' && it.enProceso) return 5;
-      return 6;
+      if(it.tipo === 'cliente' && it.estadoKey === 'aldia') return 2;
+      if(it.tipo === 'cliente' && it.estadoKey === 'futuro') return 3; // Pendiente (aún no vence)
+      if(it.tipo === 'tarea' && !it.enProceso) return 4; // pendiente sin arrancar
+      if(it.tipo === 'tarea' && it.enProceso) return 5;
+      if(it.tipo === 'rutina' && !it.enProceso) return 6;
+      if(it.tipo === 'rutina' && it.enProceso) return 7;
+      return 8;
     };
     return score(a) - score(b);
   });
