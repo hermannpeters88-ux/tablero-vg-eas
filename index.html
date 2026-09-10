@@ -1649,14 +1649,24 @@ async function fetchData(){
     // Cache-busting: agregar timestamp a cada URL
     const ts = Date.now();
     const bust = (url) => url + (url.includes('?') ? '&' : '?') + '_t=' + ts;
-    
+
+    // Fetch con timeout corto: si la red está en un estado raro (ej: el router
+    // todavía no terminó de reconectarse a internet), no nos quedamos colgados
+    // esperando el fetch del navegador — fallamos rápido y dejamos que el
+    // reintento automático (cada 10s) se encargue.
+    const fetchTimeout = (url, ms=10000) => {
+      const controller = new AbortController();
+      const id = setTimeout(() => controller.abort(), ms);
+      return fetch(url, {cache:'no-store', signal: controller.signal}).finally(() => clearTimeout(id));
+    };
+
     // Cargar TODAS las APIs en paralelo
     const [resMain, resPend, resVenc, resRody, resCobros] = await Promise.all([
-      fetch(bust(API_URL), {cache:'no-store'}).catch(e=>null),
-      fetch(bust(API_PENDIENTES), {cache:'no-store'}).catch(e=>null),
-      fetch(bust(API_VENCIMIENTOS), {cache:'no-store'}).catch(e=>null),
-      fetch(bust(API_RODY_TAREAS), {cache:'no-store'}).catch(e=>null),
-      fetch(bust(API_COBROS), {cache:'no-store'}).catch(e=>null)
+      fetchTimeout(bust(API_URL)).catch(e=>null),
+      fetchTimeout(bust(API_PENDIENTES)).catch(e=>null),
+      fetchTimeout(bust(API_VENCIMIENTOS)).catch(e=>null),
+      fetchTimeout(bust(API_RODY_TAREAS)).catch(e=>null),
+      fetchTimeout(bust(API_COBROS)).catch(e=>null)
     ]);
 
     // API principal (obligatoria)
@@ -1711,6 +1721,7 @@ async function fetchData(){
     }catch(e){ console.log("Cobros no disponible:",e); }
 
     // Un solo render con todos los datos
+    window._retryAttempts = 0;
     render();
 
     // ── RANDY TAREAS: ya viene incluido en API_COBROS (randyTareasPend) ──────
@@ -1721,13 +1732,21 @@ async function fetchData(){
 
     
   }catch(err){
+    // Reintento automático: si falla la conexión inicial (ej: la TV carga
+    // la página antes de que el router termine de reconectarse a internet
+    // después de un corte nocturno), no dependemos de que alguien haga clic
+    // en "Reintentar" — el tablero solo vuelve a intentar cada 10s.
+    window._retryAttempts = (window._retryAttempts || 0) + 1;
     document.getElementById("app").innerHTML=`
       <div class="loading">
         <div style="font-size:64px;margin-bottom:20px">⚠️</div>
         <p style="color:#ef4444;font-weight:700;font-size:1.2rem">Error al cargar datos</p>
         <p style="color:var(--text-mid);margin-top:10px">${err.message}</p>
-        <button onclick="fetchData()" style="margin-top:28px;padding:14px 32px;border-radius:12px;border:none;background:#623F98;color:#fff;font-size:1rem;font-weight:700;cursor:pointer">Reintentar</button>
+        <p style="color:var(--text-dim);margin-top:14px;font-size:.85rem">Reintentando automáticamente… (intento ${window._retryAttempts})</p>
+        <button onclick="fetchData()" style="margin-top:28px;padding:14px 32px;border-radius:12px;border:none;background:#623F98;color:#fff;font-size:1rem;font-weight:700;cursor:pointer">Reintentar ahora</button>
       </div>`;
+    clearTimeout(window._retryTimer);
+    window._retryTimer = setTimeout(fetchData, 10000);
   }
 }
 
@@ -1897,7 +1916,7 @@ function renderPersonCard(member, delay=0){
             <div style="font-size:.5rem;color:var(--text-dim);font-weight:700;text-transform:uppercase">Pend.</div>
           </div>
           <div style="background:#f59e0b22;border-radius:6px;padding:6px 10px;flex:1;text-align:center">
-            <div style="font-size:1rem;font-weight:800;color:#f59e0b;font-family:'Space Mono',monospace">${rtp.enProceso}</div>
+            <div style="font-size:1rem;font-weight:800;color:#f59e0b;font-family:'Space Mono',monospace">${(rtp.tareas||[]).filter(t=>t.enProceso && !t.realizada).length}</div>
             <div style="font-size:.5rem;color:var(--text-dim);font-weight:700;text-transform:uppercase">Proceso</div>
           </div>
           <div style="background:#10b98122;border-radius:6px;padding:6px 10px;flex:1;text-align:center">
@@ -2093,18 +2112,21 @@ function renderLedyCard(){
   // COLUMNA DERECHA: Tareas pendientes propias de Ledy (preferir nueva fuente)
   const tp = appData.tareasPendLedy || appData.rodyTareasPend;
   if(tp && tp.total>0){
-    html+=`<div class="section-title"><span class="icon">📋</span> Tareas Pendientes — ${tp.total} total (${tp.pctRealizado}% completado) <span class="src-tag">Tareas Maga-Ledy · Ledy</span></div>
+    const realizadasLedy = tp.total - tp.pendientes;
+    const enProcesoLedy = (tp.tareas||[]).filter(t=>t.enProceso && !t.realizada).length;
+    const pctRealizadoLedy = Math.round((realizadasLedy / tp.total) * 100);
+    html+=`<div class="section-title"><span class="icon">📋</span> Tareas Pendientes — ${tp.total} total (${pctRealizadoLedy}% completado) <span class="src-tag">Tareas Maga-Ledy · Ledy</span></div>
       <div style="display:flex;gap:10px;margin-bottom:12px">
         <div style="background:#ef444422;border-radius:8px;padding:8px 12px;flex:1;text-align:center">
           <div style="font-size:1.2rem;font-weight:800;color:#ef4444;font-family:'Space Mono',monospace">${tp.pendientes}</div>
           <div style="font-size:.55rem;color:var(--text-dim);font-weight:700;text-transform:uppercase">Pendientes</div>
         </div>
         <div style="background:#f59e0b22;border-radius:8px;padding:8px 12px;flex:1;text-align:center">
-          <div style="font-size:1.2rem;font-weight:800;color:#f59e0b;font-family:'Space Mono',monospace">${tp.enProceso}</div>
+          <div style="font-size:1.2rem;font-weight:800;color:#f59e0b;font-family:'Space Mono',monospace">${enProcesoLedy}</div>
           <div style="font-size:.55rem;color:var(--text-dim);font-weight:700;text-transform:uppercase">En proceso</div>
         </div>
         <div style="background:#10b98122;border-radius:8px;padding:8px 12px;flex:1;text-align:center">
-          <div style="font-size:1.2rem;font-weight:800;color:#10b981;font-family:'Space Mono',monospace">${tp.realizadas}</div>
+          <div style="font-size:1.2rem;font-weight:800;color:#10b981;font-family:'Space Mono',monospace">${realizadasLedy}</div>
           <div style="font-size:.55rem;color:var(--text-dim);font-weight:700;text-transform:uppercase">Realizadas</div>
         </div>
       </div>`;
@@ -2780,7 +2802,7 @@ function renderVeroCard(){
           <div style="font-size:.5rem;color:var(--text-dim);font-weight:700;text-transform:uppercase">Pend.</div>
         </div>
         <div style="background:#f59e0b22;border-radius:6px;padding:6px 10px;flex:1;text-align:center">
-          <div style="font-size:1rem;font-weight:800;color:#f59e0b;font-family:'Space Mono',monospace">${rtpVero.enProceso}</div>
+          <div style="font-size:1rem;font-weight:800;color:#f59e0b;font-family:'Space Mono',monospace">${(rtpVero.tareas||[]).filter(t=>t.enProceso && !t.realizada).length}</div>
           <div style="font-size:.5rem;color:var(--text-dim);font-weight:700;text-transform:uppercase">Proceso</div>
         </div>
         <div style="background:#10b98122;border-radius:6px;padding:6px 10px;flex:1;text-align:center">
@@ -3042,7 +3064,7 @@ function renderMagaCard(){
         </div>
         <div style="flex:1;min-width:0;background:#f59e0b15;border-left:4px solid #f59e0b;border-radius:8px;padding:12px 10px">
           <div style="font-size:.7rem;color:var(--text-mid);font-weight:700;text-transform:uppercase">🟡 En proceso</div>
-          <div style="font-size:1.8rem;font-weight:800;color:#f59e0b;font-family:'Space Mono',monospace;line-height:1.1;margin-top:4px">${magaTP.enProceso}</div>
+          <div style="font-size:1.8rem;font-weight:800;color:#f59e0b;font-family:'Space Mono',monospace;line-height:1.1;margin-top:4px">${(magaTP.tareas||[]).filter(t=>t.enProceso && !t.realizada).length}</div>
         </div>
         <div style="flex:1;min-width:0;background:#10b98115;border-left:4px solid #10b981;border-radius:8px;padding:12px 10px">
           <div style="font-size:.7rem;color:var(--text-mid);font-weight:700;text-transform:uppercase">✅ Realizadas</div>
