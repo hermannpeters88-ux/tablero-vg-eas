@@ -1650,11 +1650,14 @@ async function fetchData(){
     const ts = Date.now();
     const bust = (url) => url + (url.includes('?') ? '&' : '?') + '_t=' + ts;
 
-    // Fetch con timeout corto: si la red está en un estado raro (ej: el router
+    // Fetch con timeout: si la red está en un estado raro (ej: el router
     // todavía no terminó de reconectarse a internet), no nos quedamos colgados
-    // esperando el fetch del navegador — fallamos rápido y dejamos que el
-    // reintento automático (cada 10s) se encargue.
-    const fetchTimeout = (url, ms=10000) => {
+    // esperando el fetch del navegador — fallamos y dejamos que el
+    // reintento automático (cada 10s) se encargue. El backend (Apps Script)
+    // puede tardar bastante en responder porque lee varias hojas de Google
+    // Sheets, así que el timeout tiene que ser generoso para no cortar
+    // respuestas válidas que simplemente son lentas.
+    const fetchTimeout = (url, ms=25000) => {
       const controller = new AbortController();
       const id = setTimeout(() => controller.abort(), ms);
       return fetch(url, {cache:'no-store', signal: controller.signal}).finally(() => clearTimeout(id));
@@ -1670,6 +1673,7 @@ async function fetchData(){
     ]);
 
     // API principal (obligatoria)
+    if(!resMain) throw new Error('No se pudo conectar con el tablero (tiempo de espera agotado)');
     const json = await resMain.json();
     if(json.error) throw new Error(json.error);
     appData = json;
