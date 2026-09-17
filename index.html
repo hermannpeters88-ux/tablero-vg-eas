@@ -4283,6 +4283,24 @@ if(DEMO_MODE){
 } else {
   fetchData();
   setInterval(fetchData, REFRESH);
+
+  // Recarga completa de la página cada 2 horas. El tablero queda prendido
+  // muchas horas seguidas en la tele y va renderizando todo de nuevo cada
+  // 3 minutos sin parar — con el tiempo eso satura la memoria/gráficos del
+  // navegador de la tele y aparecen manchas o bloques negros en pantalla.
+  // Recargar de cero cada tanto limpia ese estado antes de que se note.
+  setTimeout(() => location.reload(), 2 * 60 * 60 * 1000);
+
+  // Service worker: guarda una copia de esta página para que, si a la
+  // mañana la tele prende y todavía no hay internet, el navegador pueda
+  // mostrar esa copia al instante en vez de quedar en blanco — y una vez
+  // que la conexión vuelve, el reintento automático de fetchData() ya
+  // hace el resto (trae los datos en vivo).
+  if('serviceWorker' in navigator){
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(()=>{});
+    });
+  }
 }
 </script>
 </body>
