@@ -1677,6 +1677,8 @@ async function fetchData(){
     const json = await resMain.json();
     if(json.error) throw new Error(json.error);
     appData = json;
+    // Fix 28/09: imponer nombres/rol actuales (Gabriela/Nahobi/GIA) sobre lo que trae la API (que aún dice Alejandra/Gabriela).
+    try{ (appData.team||[]).forEach(function(m){ var cfg=MEMBERS_CONFIG[m.id]; if(cfg){ if(cfg.name) m.name=cfg.name; if(cfg.role) m.role=cfg.role; if(cfg.initials) m.initials=cfg.initials; } }); }catch(e){}
     if(json.month?.currentWeek) activeWeek = json.month.currentWeek;
 
     // APIs secundarias (opcionales, no bloquean)
