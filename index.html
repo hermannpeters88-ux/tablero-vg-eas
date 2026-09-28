@@ -632,8 +632,8 @@ function renderConfigPanel(){
   // Minutos config rows
   const personasConf = [
     {id:'randy', label:'GIA'},
-    {id:'rody',  label:'Ale'},
-    {id:'maga',  label:'Gabi'},
+    {id:'rody',  label:'Gabi'},
+    {id:'maga',  label:'Nahobi'},
     {id:'ledy',  label:'Ledy'},
     {id:'vero',  label:'Vero'},
     {id:'hermann',label:'Hermann'}
@@ -931,7 +931,7 @@ function getRecoveryPlan(personaId, scoreActual){
       // Tomamos los clientes urgentes de AMBOS
       const clientesRody = topClientesUrgentes(['rodi','rody','rodolfo','alejandra'], 5);
       const clientesMaga = topClientesUrgentes(['maga','magal','gabriela'], 5);
-      const todos = [...clientesRody.map(c=>({...c,_resp:'Ale',_est:getClienteEstado(c)})), ...clientesMaga.map(c=>({...c,_resp:'Gabi',_est:getClienteEstado(c)}))]
+      const todos = [...clientesRody.map(c=>({...c,_resp:'Gabi',_est:getClienteEstado(c)})), ...clientesMaga.map(c=>({...c,_resp:'Nahobi',_est:getClienteEstado(c)}))]
         .sort((a,b) => {
           if(a._est.key !== b._est.key) return a._est.key === 'atrasado' ? -1 : 1;
           return (a.vencimientoDia||99) - (b.vencimientoDia||99);
@@ -963,7 +963,7 @@ function getRecoveryPlan(personaId, scoreActual){
       // Mezcla clientes urgentes de TODO el equipo + flagging del cuello de botella
       const clientesRody = topClientesUrgentes(['rodi','rody','rodolfo','alejandra'], 3);
       const clientesMaga = topClientesUrgentes(['maga','magal','gabriela'], 3);
-      const todos = [...clientesRody.map(c=>({...c,_resp:'Ale',_est:getClienteEstado(c)})), ...clientesMaga.map(c=>({...c,_resp:'Gabi',_est:getClienteEstado(c)}))]
+      const todos = [...clientesRody.map(c=>({...c,_resp:'Gabi',_est:getClienteEstado(c)})), ...clientesMaga.map(c=>({...c,_resp:'Nahobi',_est:getClienteEstado(c)}))]
         .sort((a,b) => {
           if(a._est.key !== b._est.key) return a._est.key === 'atrasado' ? -1 : 1;
           return (a.vencimientoDia||99) - (b.vencimientoDia||99);
@@ -1278,8 +1278,8 @@ function renderPendientesBadge(personaId, isFirst){
 // Las realizadas se ocultan automáticamente (porque getPendientesPersona ya las filtra).
 function renderPendientesConsolidado(){
   const personas = [
-    { id:'rody', name:'Alejandra Orrego', role:'Ejecutivo Contable', color:'#10b981' },
-    { id:'maga', name:'Gabriela Ortigoza', role:'Contadora Junior', color:'#06b6d4' },
+    { id:'rody', name:'Gabriela Ortigoza', role:'Ejecutivo Contable', color:'#10b981' },
+    { id:'maga', name:'Nahobi Benítez', role:'Contadora Junior', color:'#06b6d4' },
     { id:'randy', name:'GIA - Atención al Cliente Grupo G', role:'Ejecutivo Administrativo', color:'#8b5cf6' }
   ];
   const todos = personas.map(p => ({...p, items: getPendientesPersona(p.id)}));
@@ -2053,8 +2053,8 @@ function renderLedyCard(){
 
   // Supervisión: muestra los SCORES REALES de cada uno (mismos del podio)
   const ledyTeamFresh = [
-    {name:"Alejandra Orrego", id:"rody", pct:rodyScoreReal},
-    {name:"Gabriela Ortigoza", id:"maga", pct:magaScoreReal}
+    {name:"Gabriela Ortigoza", id:"rody", pct:rodyScoreReal},
+    {name:"Nahobi Benítez", id:"maga", pct:magaScoreReal}
   ];
   ledyTeamFresh.forEach(m=>{
     const mc=MEMBERS_CONFIG[m.id]||{};
@@ -3354,7 +3354,7 @@ function render(){
   // Personas conocidas que deberían actualizar (Randy y Rody)
   const personasEsperadas = {
     'randy': 'GIA - Atención al Cliente Grupo G',
-    'rody': 'Alejandra Orrego'
+    'rody': 'Gabriela Ortigoza'
   };
   const noActualizaron = Object.entries(personasEsperadas)
     .filter(([id]) => personasTodayChecked[id] === false || personasTodayChecked[id] === undefined)
@@ -3365,7 +3365,7 @@ function render(){
   const _magaTPCheck = appData?.tareasPendMaga;
   const _ledyTPCheck = appData?.tareasPendLedy;
   let sinActualizar = [...noActualizaron];
-  if(_magaTPCheck && _magaTPCheck.total > 0 && _magaTPCheck.realizadas === 0) sinActualizar.push('Gabriela Ortigoza');
+  if(_magaTPCheck && _magaTPCheck.total > 0 && _magaTPCheck.realizadas === 0) sinActualizar.push('Nahobi Benítez');
   if(_ledyTPCheck && _ledyTPCheck.total > 0 && _ledyTPCheck.realizadas === 0) sinActualizar.push('Ledy Gómez');
   window._noActualizaron = sinActualizar;
 
@@ -3569,7 +3569,7 @@ function render(){
   const rodyPcts = calc3Pcts(rodyM.dailyPct, rodyM.weekAvg);
   const rodyClientes = calcClientesStats(["rodi","rody","rodolfo","alejandra"]);
   competitors.push({
-    id:"rody", name:"Alejandra Orrego", role:"Ejecutivo Contable",
+    id:"rody", name:"Gabriela Ortigoza", role:"Ejecutivo Contable",
     monthPct: rodyPcts.monthPct,
     weeklyPct: rodyPcts.weeklyPct,
     dailyPct: rodyPcts.dailyPct,
@@ -3592,7 +3592,7 @@ function render(){
       : magaTareasPct
   );
   competitors.push({
-    id:"maga", name:"Gabriela Ortigoza", role:"Contadora Junior",
+    id:"maga", name:"Nahobi Benítez", role:"Contadora Junior",
     monthPct: magaPcts.monthPct,
     weeklyPct: magaPcts.weeklyPct,
     dailyPct: magaPcts.dailyPct,
@@ -3836,7 +3836,7 @@ function render(){
         ${personHead('Ledy Gomez','Directora Contable',lScore,'ledy')}
         ${bar(lScore,'#f59e0b')}
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;margin-bottom:3px">
-          ${[['Ale',rodyScore,'#f97316'],['Gabi',magaScore,'#22c55e'],['GIA',randyScore,'#a855f7']].map(([n,s,c])=>
+          ${[['Gabi',rodyScore,'#f97316'],['Nahobi',magaScore,'#22c55e'],['GIA',randyScore,'#a855f7']].map(([n,s,c])=>
             `<div style="background:#f8f9fa;border-radius:2px;padding:2px;text-align:center"><div style="font-size:.5em;color:#888">${n}</div><div style="font-size:.7em;font-weight:700;color:${c}">${s}%</div></div>`
           ).join('')}
         </div>
@@ -3881,7 +3881,7 @@ function render(){
       card(`
         <div style="font-size:.72em;font-weight:700;color:#1a1a2e;margin-bottom:3px">📋 Pendientes del equipo</div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px;margin-bottom:3px">
-          ${[['Ale',rodyPend.length,'#f97316'],['Gabi',magaPend.length,'#22c55e'],['GIA',randyPend.length,'#a855f7']].map(([n,v,c])=>
+          ${[['Gabi',rodyPend.length,'#f97316'],['Nahobi',magaPend.length,'#22c55e'],['GIA',randyPend.length,'#a855f7']].map(([n,v,c])=>
             `<div style="background:${c}18;border-radius:3px;padding:3px;text-align:center"><div style="font-size:.52em;color:#666">${n}</div><div style="font-size:1.3em;font-weight:700;color:${c};line-height:1.1">${v}</div></div>`
           ).join('')}
         </div>
@@ -3895,8 +3895,8 @@ function render(){
 
     // ── COL 2 ──
     const sorted = [
-      {id:'rody', n:'Ale',s:rodyScore,p:100,t:'25/28'},
-      {id:'maga', n:'Gabi',s:magaScore,p:100,t:'34/35'},
+      {id:'rody', n:'Gabi',s:rodyScore,p:100,t:'25/28'},
+      {id:'maga', n:'Nahobi',s:magaScore,p:100,t:'34/35'},
       {id:'randy',n:'GIA',s:randyScore,p:17,t:'4/22'},
     ].sort((a,b)=>b.s-a.s);
     const medals=['🥇','🥈','🥉'];
@@ -4006,9 +4006,9 @@ function render(){
     `, '0.85', color);
 
     const col3 = [
-      opCard('Alejandra Orrego','rody','Ejecutivo Contable',rodyScore,100,'25/28','8h',
+      opCard('Gabriela Ortigoza','rody','Ejecutivo Contable',rodyScore,100,'25/28','8h',
         rodyPend.map(t=>t.tarea), urgByEjec('rodi').concat(urgByEjec('rody')).concat(urgByEjec('rodolfo')).concat(urgByEjec('alejandra')), '#f97316'),
-      opCard('Gabriela Ortigoza','maga','Contadora Junior',magaScore,100,'34/35','8h',
+      opCard('Nahobi Benítez','maga','Contadora Junior',magaScore,100,'34/35','8h',
         magaPend.map(t=>t.tarea), urgByEjec('magal'), '#22c55e'),
       opCard('GIA - Atención al Cliente Grupo G','randy','Ejecutivo Administrativo',randyScore,17,'4/22','1.3h',
         randyPend.map(t=>t.tarea),
@@ -4196,7 +4196,7 @@ function loadDemoData(){
     team: [
       { id:"randy", name:"GIA - Atención al Cliente Grupo G", role:"Ejecutivo", unit:"Operaciones",
         weeks:[{weekNumber:1, avgPct:72, tasks: demoTasks(["Carga de facturas","Libro de ventas","Conciliación bancaria","Reportes mensuales"])}]},
-      { id:"rody", name:"Alejandra Orrego", role:"Ejecutivo", unit:"Operaciones",
+      { id:"rody", name:"Gabriela Ortigoza", role:"Ejecutivo", unit:"Operaciones",
         weeks:[{weekNumber:1, avgPct:85, tasks: demoTasks(["Seguimiento clientes","Cobranzas","Presupuestos","Facturación Starsoft"])}]},
     ],
     detalle: {
@@ -4211,8 +4211,8 @@ function loadDemoData(){
       id:"ledy", name:"Ledy Gómez", role:"Directora Contable", unit:"Supervisión & Comercial",
       supervisionPct: 76,
       teamBreakdown: [
-        {name:"Alejandra Orrego", id:"rody", pct:85},
-        {name:"Gabriela Ortigoza", id:"maga", pct:70},
+        {name:"Gabriela Ortigoza", id:"rody", pct:85},
+        {name:"Nahobi Benítez", id:"maga", pct:70},
       ],
       tareasVariasHoy: demoTV("Ledy"), tareasVariasCount: 2,
       asamblea: {
@@ -4226,7 +4226,7 @@ function loadDemoData(){
       }
     },
     maga: {
-      id:"maga", name:"Gabriela Ortigoza", role:"Contadora Junior", unit:"Operaciones",
+      id:"maga", name:"Nahobi Benítez", role:"Contadora Junior", unit:"Operaciones",
       avgPct: 70,
       clientesCount: 5,
       clientes: [
