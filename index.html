@@ -386,12 +386,13 @@ const REFRESH=3 * 60 * 1000;
 // Para cambiar: modificar el número de cada persona o el panel ⚙️ del tablero
 const PRODUCTIVITY_CONFIG = {
   minutesPorTarea: {
-    randy:    20,  // Randy: tareas administrativas rápidas
-    rody:     30,  // Rody: tareas contables, más tiempo por unidad
-    maga:     30,  // Maga: similar a Rody
-    ledy:     25,  // Ledy: mix supervisión + tareas
-    vero:     25,  // Vero: tareas administrativas
-    hermann:  20   // Hermann: gestión ejecutiva
+    // Auditoría 03/10: valor único para todos (antes 20–30 según persona, favorecía a algunos puestos)
+    randy:    20,
+    rody:     20,
+    maga:     20,
+    ledy:     20,
+    vero:     20,
+    hermann:  20
   },
   // Horas laborales del día (para el gauge de tiempo)
   horasLaboralesLV: 8,   // Lunes-Viernes: 8hs
@@ -441,103 +442,18 @@ function computeProductividadPersona(personaId){
   const horasTotales = isSab ? PRODUCTIVITY_CONFIG.horasLaboralesSab : PRODUCTIVITY_CONFIG.horasLaboralesLV;
   const minsPorTarea = PRODUCTIVITY_CONFIG.minutesPorTarea[personaId] || 20;
 
-  // ── Detectar si el backend tiene todayChecked funcionando ──
-  // Si todos los todayChecked vienen en false, usamos weekPct como proxy
-  const allDet = (appData.detalle?.tasks||[]);
-  const backendOk = !window._dailyDataBroken && allDet.some(t=>t.todayChecked===true);
-
-  let tareasHechas = 0;  // tareas completadas (hoy o semana según disponibilidad)
-  let tareasTotal  = 0;  // total de tareas del período
-  let usandoSemana = false; // flag para saber si usamos semana
-
-  if(personaId === 'randy'){
-    // Randy: usar score real directamente (68% etc) — más representativo que contar tareas
-    const randyScore = (window._realScores && window._realScores.randy) || 0;
-    // Convertir score a tareas equivalentes sobre 100 para que el gauge lo muestre bien
-    tareasHechas = randyScore;
-    tareasTotal  = 100;
-    usandoSemana = true;
-
-  } else if(personaId === 'rody'){
-    // Fuente preferida: rodyTareasPend {tareas:[{realizada,...}]} — no depende de todayChecked
-    const tpRody = appData.rodyTareasPend;
-    if(tpRody && tpRody.tareas && tpRody.tareas.length > 0){
-      tareasHechas = tpRody.tareas.filter(t=>t.realizada).length;
-      tareasTotal  = tpRody.tareas.length;
-      usandoSemana = true;
-    } else {
-      // Fallback: detalle con todayChecked o weekPct
-      const det = getDetalleForMember("Rody").map(t=>({...t,_name:getTaskName(t)})).filter(t=>t._name && !t.sinDiasEnMes);
-      tareasTotal = det.length;
-      if(backendOk){
-        tareasHechas = det.filter(t=>t.todayChecked).length;
-      } else {
-        tareasHechas = det.filter(t=>(t.weekPct||0)>=60).length;
-        usandoSemana = true;
-      }
-    }
-
-  } else if(personaId === 'maga'){
-    // Maga usa tareas pendientes realizadas (siempre disponible, no depende de todayChecked)
-    const tp = appData.tareasPendMaga;
-    if(tp){
-      tareasHechas = (tp.total - tp.pendientes) || tp.realizadas || 0;
-      tareasTotal  = tp.total || 0;
-    }
-
-  } else if(personaId === 'ledy'){
-    // Ledy supervisa equipo contable (Rody + Maga)
-    // Fuente directa: tareasPendMaga {realizadas,total} + rodyTareasPend {tareas:[{realizada}]}
-    const tpMaga = appData.tareasPendMaga;
-    const tpRody = appData.rodyTareasPend;
-    const magaH = (tpMaga && tpMaga.total > 0) ? (tpMaga.realizadas || 0) : 0;
-    const magaT = (tpMaga && tpMaga.total > 0) ? tpMaga.total : 0;
-    const rodyH = (tpRody && tpRody.tareas) ? tpRody.tareas.filter(t=>t.realizada).length : 0;
-    const rodyT = (tpRody && tpRody.tareas) ? tpRody.tareas.length : 0;
-    if(magaT > 0 || rodyT > 0){
-      tareasHechas = magaH + rodyH;
-      tareasTotal  = magaT + rodyT;
-      usandoSemana = true;
-    } else {
-      // Fallback: weekPct del detalle
-      const det = getDetalleForMember("Ledy").map(t=>({...t,_name:getTaskName(t)})).filter(t=>t._name);
-      tareasTotal = det.length;
-      tareasHechas = det.filter(t=>(t.weekPct||0)>=50).length;
-      usandoSemana = true;
-    }
-
-  } else if(personaId === 'vero'){
-    // Vero supervisa Randy — refleja el rendimiento de Randy
-    // Fuente preferida: randyTareasPend (no depende de todayChecked)
-    const rtp = appData.randyTareasPend;
-    if(rtp && rtp.tareas && rtp.tareas.length > 0){
-      const realizadas = rtp.tareas.filter(t=>t.realizada).length;
-      tareasHechas = realizadas;
-      tareasTotal  = rtp.tareas.length;
-      usandoSemana = true;
-    } else {
-      // Fallback: detalle de Randy con todayChecked o weekPct
-      const det = getDetalleForMember("Randy").map(t=>({...t,_name:getTaskName(t)})).filter(t=>t._name);
-      tareasTotal = det.length;
-      if(backendOk){
-        tareasHechas = det.filter(t=>t.todayChecked).length;
-      } else {
-        tareasHechas = det.filter(t=>(t.weekPct||0)>=60).length;
-        usandoSemana = true;
-      }
-    }
-
-  } else if(personaId === 'hermann'){
-    // Hermann: suma de TODO el equipo
-    const allDetalle = allDet.map(t=>({...t,_name:getTaskName(t)})).filter(t=>t._name);
-    tareasTotal = allDetalle.length;
-    if(backendOk){
-      tareasHechas = allDetalle.filter(t=>t.todayChecked).length;
-    } else {
-      tareasHechas = allDetalle.filter(t=>(t.weekPct||0)>=60).length;
-      usandoSemana = true;
-    }
-  }
+  // Auditoría 03/10: misma fuente que el % de Cumplimiento (tareas realizadas ÷ total). Sin planes B.
+  const fuentes = {
+    rody:  [appData.rodyTareasPend],
+    maga:  [appData.tareasPendMaga],
+    randy: [appData.randyTareasPend],
+    vero:  [appData.randyTareasPend],
+    ledy:  [appData.rodyTareasPend, appData.tareasPendMaga],
+    hermann: [appData.rodyTareasPend, appData.tareasPendMaga, appData.randyTareasPend]
+  }[personaId] || [];
+  let tareasHechas = 0, tareasTotal = 0;
+  fuentes.forEach(tp => { const c = cumplimientoDe(tp); if(c){ tareasHechas += c.hechas; tareasTotal += c.total; } });
+  const usandoSemana = false;
 
   const horasEstimadas = Math.min((tareasHechas * minsPorTarea) / 60, horasTotales);
   const pctHoras = horasTotales > 0 ? Math.min(Math.round((horasEstimadas / horasTotales) * 100), 100) : 0;
@@ -585,7 +501,7 @@ function renderDualGauges(personaId, compact){
         </div>
       </div>
       <div style="text-align:center">
-        <div style="font-size:.52rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.4px">Productividad</div>
+        <div style="font-size:.52rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.4px">Productividad (horas est.)</div>
         <div style="font-size:.58rem;font-weight:700;color:${color}">${horasStr}</div>
       </div>
     </div>
@@ -1371,121 +1287,34 @@ function renderPendientesConsolidado(){
 }
 
 // ══════════════════════════════════════════════════
-// HELPER GLOBAL: SCORES REALES (no proporcionales al mes)
+// HELPER GLOBAL: CUMPLIMIENTO (auditoría 03/10)
 // ══════════════════════════════════════════════════
-// Calcula los scores REALES de productividad de cada persona, idénticos
-// a los que se muestran en el podio del ranking. Se cachea en window._realScores
-// para que todas las cards (Hermann, Ledy, Vero) muestren los mismos números.
-//
-// Fórmulas:
-//   randy = 100% promedio weekPct de tareas diarias del detalle
-//   rody  = 30% promedio weekPct + 70% okPct clientes contabilidad
-//   maga  = 30% % tareas pendientes realizadas + 70% okPct clientes contabilidad
-//   ledy  = promedio (rody, maga)
-//   vero  = randy
-//   hermann = promedio (rody, maga, randy)
+// UNA sola métrica, igual para todas las cards operativas:
+//   Cumplimiento = tareas realizadas ÷ tareas totales de su planilla
+//     Gabriela (rody) → rodyTareasPend · Nahobi (maga) → tareasPendMaga · GIA (randy) → randyTareasPend
+// Sin planes B (weekPct / todayChecked / backendOk): si no hay datos → null y se muestra "—".
+// Directores = SUPERVISIÓN del equipo a cargo (no trabajo propio, no compiten en el podio):
+//   ledy = promedio (Gabriela, Nahobi) · vero = GIA · hermann = promedio (Gabriela, Nahobi, GIA)
+function cumplimientoDe(tp){
+  if(!tp) return null;
+  const tareas = Array.isArray(tp.tareas) ? tp.tareas : [];
+  const total = tareas.length || tp.total || 0;
+  if(!total) return null;
+  const hechas = tareas.length ? tareas.filter(t=>t.realizada).length : Math.max(0, total - (tp.pendientes||0));
+  return { hechas, total, pct: Math.round(hechas / total * 100) };
+}
 function computeRealScores(){
   if(!appData) return null;
-
-  // Helper interno: estado de cliente (mismo cálculo que el ranking)
-  const estadoCli = (c) => {
-    const today = new Date().getDate();
-    const venc = c.vencimientoDia;
-    const pct = c.avancePct || 0;
-    if(pct >= 100) return 'completado';
-    if(venc != null && venc < today) return 'atrasado';
-    const diasParaVenc = venc != null ? venc - today : 99;
-    if(diasParaVenc <= 3 && pct < 70) return 'enriesgo';
-    if(diasParaVenc <= 3 && pct >= 70) return 'aldia';
-    return 'futuro';
-  };
-  // Helper interno: okPct de un set de clientes
-  // Usa promedio de avancePct de TODOS los clientes del ejecutivo
-  // avancePct viene de hoja Proceso: Pagado=100, Pendiente=50
-  const okPctClientes = (matchKeys) => {
-    const cl = (appData?.clientesContabilidad||[]).filter(c=>{
-      const e = (c.ejecutivo||"").toLowerCase();
-      return matchKeys.some(m => e.includes(m));
-    });
-    if(cl.length === 0) return { okPct: 0, total: 0 };
-    // Promedio de avancePct de todos los clientes
-    const sumAvance = cl.reduce((s,c) => s + (c.avancePct||0), 0);
-    const okPct = Math.round(sumAvance / cl.length);
-    return { okPct, total: cl.length };
-  };
-  // Helper interno: weekAvg de tareas del detalle de una persona
-  // FIX: excluir tareas sin días asignados en el mes (sinDiasEnMes=true)
-  const weekAvgDetalle = (name) => {
-    const dt = getDetalleForMember(name).filter(t=>!t.sinDiasEnMes);
-    if(dt.length === 0) return 0;
-    const avg = Math.round(dt.reduce((s,t)=>s+(t.weekPct||0),0)/dt.length);
-    if(avg > 0) return avg;
-    // fallback: todayChecked
-    const checked = dt.filter(t=>t.todayChecked).length;
-    return checked > 0 ? Math.round((checked/dt.length)*100) : 0;
-  };
-
-  // RANDY: 100% tareas diarias
-  // Fuente 1: weekPct (semana). Si todos vienen en 0, usar todayChecked como fallback.
-  let randyScore = weekAvgDetalle("Randy");
-  if(randyScore === 0){
-    const dtRandy = getDetalleForMember("Randy").map(t=>({...t,_name:getTaskName(t)})).filter(t=>t._name && !t.sinDiasEnMes);
-    if(dtRandy.length > 0){
-      const donePct = Math.round((dtRandy.filter(t=>t.todayChecked).length / dtRandy.length) * 100);
-      if(donePct > 0) randyScore = donePct;
-    }
-    // Fuente 3: randyTareasPend (API cobros) — pctRealizado
-    if(randyScore === 0 && appData?.randyTareasPend?.pctRealizado > 0){
-      randyScore = appData.randyTareasPend.pctRealizado;
-    }
-  }
-
-  // RODY: score semanal — fuente primaria: rodyTareasPend (25/28 en la card)
-  let rodyTareas = 0;
-  const tpRody = appData.rodyTareasPend;
-  if(tpRody && tpRody.tareas && tpRody.tareas.length > 0){
-    const realizadas = tpRody.tareas.filter(t=>t.realizada).length;
-    rodyTareas = Math.round((realizadas / tpRody.tareas.length) * 100);
-  }
-  // Fallback: weekPct del detalle
-  if(rodyTareas === 0){
-    rodyTareas = weekAvgDetalle("Rody");
-  }
-  // Fallback 2: detalle crudo
-  if(rodyTareas === 0){
-    const dtRody = getDetalleForMember("Rody").filter(t=>!t.sinDiasEnMes);
-    if(dtRody.length > 0){
-      const weekAvg = Math.round(dtRody.reduce((s,t)=>s+(t.weekPct||0),0)/dtRody.length);
-      const checked = dtRody.filter(t=>t.todayChecked).length;
-      rodyTareas = weekAvg > 0 ? weekAvg : (checked > 0 ? Math.round((checked/dtRody.length)*100) : 0);
-    }
-  }
-  const rodyScore = rodyTareas;
-
-  // MAGA: score semanal = 100% tareas pendientes realizadas en la semana
-  const magaTP = appData.tareasPendMaga;
-  let magaTareas = 0;
-  if(magaTP && magaTP.total > 0){
-    const realizadas = magaTP.tareas ? magaTP.tareas.filter(t=>t.realizada).length : (magaTP.total - magaTP.pendientes);
-    magaTareas = Math.round((realizadas / magaTP.total) * 100);
-  }
-  if(magaTareas === 0 && magaTP && magaTP.pendientes === 0 && magaTP.total > 0) magaTareas = 100;
-  const magaScore = magaTareas;
-
-  // LEDY: promedio Rody + Maga
-  const ledyScore = Math.round((rodyScore + magaScore) / 2);
-  // VERO: igual a Randy
-  const veroScore = randyScore;
-  // HERMANN: promedio del equipo completo (Rody, Maga, Randy)
-  const hermannScore = Math.round((rodyScore + magaScore + randyScore) / 3);
-
+  const pctOf = tp => { const c = cumplimientoDe(tp); return c ? c.pct : null; };
+  const avg = arr => { const v = arr.filter(x=>x!=null); return v.length ? Math.round(v.reduce((a,b)=>a+b,0)/v.length) : null; };
+  const rody  = pctOf(appData.rodyTareasPend);
+  const maga  = pctOf(appData.tareasPendMaga);
+  const randy = pctOf(appData.randyTareasPend);
   return {
-    randy: randyScore,
-    rody: rodyScore,
-    maga: magaScore,
-    ledy: ledyScore,
-    vero: veroScore,
-    hermann: hermannScore
+    randy, rody, maga,
+    ledy: avg([rody, maga]),
+    vero: randy,
+    hermann: avg([rody, maga, randy])
   };
 }
 
@@ -1677,8 +1506,6 @@ async function fetchData(){
     const json = await resMain.json();
     if(json.error) throw new Error(json.error);
     appData = json;
-    // Fix 28/09: imponer nombres/rol actuales (Gabriela/Nahobi/GIA) sobre lo que trae la API (que aún dice Alejandra/Gabriela).
-    try{ (appData.team||[]).forEach(function(m){ var cfg=MEMBERS_CONFIG[m.id]; if(cfg){ if(cfg.name) m.name=cfg.name; if(cfg.role) m.role=cfg.role; if(cfg.initials) m.initials=cfg.initials; } }); }catch(e){}
     if(json.month?.currentWeek) activeWeek = json.month.currentWeek;
 
     // APIs secundarias (opcionales, no bloquean)
@@ -1725,6 +1552,21 @@ async function fetchData(){
         }
       }
     }catch(e){ console.log("Cobros no disponible:",e); }
+
+    // Auditoría 03/10: si un Apps Script secundario no respondió a tiempo, usar el ÚLTIMO dato real
+    // recibido (máx. 24 h) en vez de dejar la card en "—" y hacer saltar los promedios entre recargas.
+    ['rodyTareasPend','tareasPendMaga','randyTareasPend'].forEach(function(k){
+      var clave = 'vg_ultimo_' + k;
+      try{
+        var v = appData[k];
+        if(v && ((v.tareas && v.tareas.length) || v.total)){
+          localStorage.setItem(clave, JSON.stringify({t: Date.now(), v: v}));
+        } else {
+          var g = JSON.parse(localStorage.getItem(clave) || 'null');
+          if(g && g.v && (Date.now() - g.t) < 24*3600*1000) appData[k] = g.v;
+        }
+      }catch(e){}
+    });
 
     // Un solo render con todos los datos
     window._retryAttempts = 0;
@@ -2861,7 +2703,7 @@ function renderRodyCard(member){
     : 0;
   // Score REAL (idéntico al podio del ranking y demás cards)
   const realScores = window._realScores || computeRealScores() || {};
-  const displayPct = realScores.rody != null ? realScores.rody : Math.max(stats.avgPct, rodyDetalleAvg);
+  const displayPct = realScores.rody ?? 0;
   const status = getStatus(displayPct);
   const todayDone = rodyValidDet.filter(t=>t.todayChecked).length;
 
@@ -2988,7 +2830,7 @@ function renderMagaCard(){
   const color=MEMBERS_CONFIG.maga.color;
   // Score REAL (igual al podio del ranking y la supervisión de Ledy)
   const realScores = window._realScores || computeRealScores() || {};
-  const magaDisplayPct = realScores.maga != null ? realScores.maga : (maga.avgPct||0);
+  const magaDisplayPct = realScores.maga ?? 0;
   const status=getStatus(magaDisplayPct);
 
   let html=`<div class="person-card" style="animation-delay:200ms">
@@ -3561,7 +3403,7 @@ function render(){
     tareasTotal: randyM.tasks.length,
     tareasVarias: getTareasVariasHoy("Randy").length,
     clientesStats: randyClientes,
-    score: (window._realScores?.randy > 0 ? window._realScores.randy : null) ?? calcScore(randyPcts.weekAvg || randyPcts.dailyPct, randyClientes)
+    score: window._realScores?.randy ?? 0
   });
 
   // Rody (con clientes contabilidad)
@@ -3579,7 +3421,7 @@ const rodyClientes = calcClientesStats(["rodi","rody","rodolfo","alejandra","gab
     tareasTotal: rodyM.tasks.length,
     tareasVarias: getTareasVariasHoy("Rody").length,
     clientesStats: rodyClientes,
-    score: (window._realScores?.rody > 0 ? window._realScores.rody : null) ?? calcScore(rodyPcts.weekAvg || rodyPcts.dailyPct, rodyClientes)
+    score: window._realScores?.rody ?? 0
   });
 
   // Magalí: 30% tareas pendientes (planilla nueva) + 70% clientes contabilidad
@@ -3588,11 +3430,7 @@ const rodyClientes = calcClientesStats(["rodi","rody","rodolfo","alejandra","gab
   const magaRealizadas = magaTP?.tareas ? magaTP.tareas.filter(t=>t.realizada).length : (magaTP ? magaTP.total - magaTP.pendientes : 0);
   const magaTareasPct = (magaTP && magaTP.total > 0) ? Math.round((magaRealizadas / magaTP.total) * 100) : 0;
   const magaPcts = calc3Pcts(magaTareasPct, magaTareasPct);
-  const magaScoreReal = (window._realScores?.maga > 0 ? window._realScores.maga : null) ?? (
-    magaClientes.total > 0
-      ? Math.round(magaTareasPct * 0.3 + magaClientes.okPct * 0.7)
-      : magaTareasPct
-  );
+  const magaScoreReal = window._realScores?.maga ?? 0;
   competitors.push({
     id:"maga", name:"Nahobi Benítez", role:"Contadora Junior",
     monthPct: magaPcts.monthPct,
@@ -3716,6 +3554,7 @@ const rodyClientes = calcClientesStats(["rodi","rody","rodolfo","alejandra","gab
   html+=`<div class="person-card tv-flex-13">${rankingHtml}</div>`;
   html+=`<div class="person-card tv-flex-08">${renderVencimientosCard()}</div>`;
   html+=`<div class="person-card tv-flex-12">${renderCobrosCartera()}</div>`;
+  html+=`<div class="person-card tv-flex-08"><div style="padding:16px 20px;height:100%;display:flex;flex-direction:column;justify-content:center"><div style="font-size:.85rem;font-weight:800;color:var(--text-mid,#64748b);margin-bottom:10px">&#128172; Kommo &middot; Atenci&oacute;n a clientes</div><div style="display:flex;gap:26px;flex-wrap:wrap"><div><div style="font-family:'Space Mono',monospace;font-size:2.4rem;font-weight:800;color:#e11d48" data-kommo="sinresp">&mdash;</div><div style="font-size:.62rem;color:var(--text-mid,#64748b)">Conversaciones sin responder</div></div><div><div style="font-family:'Space Mono',monospace;font-size:2.4rem;font-weight:800;color:#e11d48" data-kommo="estanc">&mdash;</div><div style="font-size:.62rem;color:var(--text-mid,#64748b)">Leads estancados (3+ d&iacute;as)</div></div><div><div style="font-family:'Space Mono',monospace;font-size:2.4rem;font-weight:800;color:var(--text,#e2e8f0)" data-kommo="abiertos">&mdash;</div><div style="font-size:.62rem;color:var(--text-mid,#64748b)">Leads abiertos</div></div></div><div style="font-size:.55rem;color:var(--text-mid,#64748b);margin-top:8px" data-kommo="upd"></div></div></div>`;
   html+=`</div>`; // cierra tv-col-2
 
   // ── COL 3: Equipo operativo (Rody + Maga + Randy) ──
@@ -3747,18 +3586,24 @@ const rodyClientes = calcClientesStats(["rodi","rody","rodolfo","alejandra","gab
 
     // Helpers
     const fmtG = v => v ? '₲'+Math.round(v).toLocaleString('es-PY') : '—';
-    const pctColor = p => p>=80?'#22c55e':p>=60?'#f59e0b':'#ef4444';
-    const bar = (v,c) => `<div style="height:3px;background:#e5e7eb;border-radius:2px;margin:3px 0 2px"><div style="height:3px;background:${c};width:${Math.min(v,100)}%;border-radius:2px"></div></div>`;
+    const pctColor = p => p==null?'#9ca3af':p>=80?'#22c55e':p>=60?'#f59e0b':'#ef4444';
+    const bar = (v,c) => `<div style="height:3px;background:#e5e7eb;border-radius:2px;margin:3px 0 2px"><div style="height:3px;background:${c};width:${Math.min(v||0,100)}%;border-radius:2px"></div></div>`;
     const miniCard = (title,items,bg,bl) => `<div style="background:${bg};border-left:2px solid ${bl};border-radius:3px;padding:3px 5px;flex:1;overflow:hidden"><div style="font-size:.58em;font-weight:700;color:${bl};margin-bottom:1px">${title}</div>${items.map(i=>`<div style="font-size:.55em;color:${i[1]||'#666'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${i[0]}</div>`).join('')}</div>`;
 
     // Scores
     const sc = window._realScores || {};
-    const hScore = Math.round(sc.hermann||sc.overallAvg||overallAvg||0);
-    const lScore = Math.round(sc.ledy||appData.ledy?.supervisionPct||0);
-    const vScore = Math.round(sc.vero||0);
-    const rodyScore = Math.round(sc.rody||0);
-    const magaScore = Math.round(sc.maga||0);
-    const randyScore = Math.round(sc.randy||0);
+    const hScore = sc.hermann ?? null;
+    const lScore = sc.ledy ?? null;
+    const vScore = sc.vero ?? null;
+    const rodyScore = sc.rody ?? null;
+    const magaScore = sc.maga ?? null;
+    const randyScore = sc.randy ?? null;
+    // Cumplimiento: tareas realizadas ÷ total (auditoría 03/10) — "—" si no hay datos
+    const fmtP = v => v==null ? '—' : v+'%';
+    const cRody = cumplimientoDe(appData.rodyTareasPend);
+    const cMaga = cumplimientoDe(appData.tareasPendMaga);
+    const cRandy = cumplimientoDe(appData.randyTareasPend);
+    const txtT = c => c ? c.hechas+'/'+c.total : '—';
 
     const month = appData.month||{};
     const icho = COBROS_DATA?.clientes?.find?.(c=>c.nombre==='ICHO')||{};
@@ -3799,24 +3644,24 @@ const rodyClientes = calcClientesStats(["rodi","rody","rodolfo","alejandra","gab
         <div class="tv-sc" style="will-change:transform">${content}</div>
       </div>`;
 
-    const personHead = (name, role, score, photoId) => {
+    const personHead = (name, role, score, photoId, etiqueta) => {
       const photo = photoId && MEMBER_PHOTOS && MEMBER_PHOTOS[photoId] ? MEMBER_PHOTOS[photoId] : null;
       return `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">
         <div style="display:flex;align-items:center;gap:6px">
           ${photo ? `<img src="${photo}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid ${pctColor(score)}">` : ''}
           <div><div style="font-size:.85em;font-weight:700;color:#1a1a2e">${name}</div><div style="font-size:.55em;color:#888">${role}</div></div>
         </div>
-        <div style="font-size:1.3em;font-weight:800;color:${pctColor(score)};line-height:1">${score}%</div>
+        <div style="text-align:right;line-height:1"><div style="font-size:1.3em;font-weight:800;color:${pctColor(score)}">${score==null?'—':score+'%'}</div>${etiqueta?`<div style="font-size:.42em;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:.3px;margin-top:1px">${etiqueta}</div>`:''}</div>
       </div>`;
     };
 
     // ── COL 1 ──
     const col1 = [
       card(`
-        ${personHead('Hermann Peters','Director Ejecutivo · GRUPO G',hScore,'hermann')}
+        ${personHead('Hermann Peters','Director Ejecutivo · GRUPO G',hScore,'hermann','Supervisión equipo')}
         ${bar(hScore,'#f97316')}
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:2px;margin-bottom:3px">
-          ${[['Ledy',lScore],['Vero',vScore],['Cartera',(appData.clientesContabilidad?.length||appData.clientes?.clientes?.length||0)+'c'],['Cobrar',fmtG(appData.ledy?.asamblea?.totalCobrar)]].map(([k,v])=>
+          ${[['Sup. Ledy',fmtP(lScore)],['Sup. Vero',fmtP(vScore)],['Cartera',(appData.clientesContabilidad?.length||appData.clientes?.clientes?.length||0)+'c'],['Cobrar',fmtG(appData.ledy?.asamblea?.totalCobrar)]].map(([k,v])=>
             `<div style="background:#f8f9fa;border-radius:2px;padding:2px;text-align:center"><div style="font-size:.5em;color:#888">${k}</div><div style="font-size:.62em;font-weight:700;color:#1a1a2e">${v}</div></div>`
           ).join('')}
         </div>
@@ -3835,17 +3680,17 @@ const rodyClientes = calcClientesStats(["rodi","rody","rodolfo","alejandra","gab
       `,'0.95','#f97316'),
 
       card(`
-        ${personHead('Ledy Gomez','Directora Contable',lScore,'ledy')}
+        ${personHead('Ledy Gomez','Directora Contable',lScore,'ledy','Supervisión equipo')}
         ${bar(lScore,'#f59e0b')}
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;margin-bottom:3px">
           ${[['Gabi',rodyScore,'#f97316'],['Nahobi',magaScore,'#22c55e'],['GIA',randyScore,'#a855f7']].map(([n,s,c])=>
-            `<div style="background:#f8f9fa;border-radius:2px;padding:2px;text-align:center"><div style="font-size:.5em;color:#888">${n}</div><div style="font-size:.7em;font-weight:700;color:${c}">${s}%</div></div>`
+            `<div style="background:#f8f9fa;border-radius:2px;padding:2px;text-align:center"><div style="font-size:.5em;color:#888">${n}</div><div style="font-size:.7em;font-weight:700;color:${c}">${fmtP(s)}</div></div>`
           ).join('')}
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;flex:1">
           ${miniCard('⚠ Urgentes',
             (()=>{
-const urgs = urgByEjec('rodi').concat(urgByEjec('rodolfo')).concat(urgByEjec('alejandra')).concat(urgByEjec('gabriela')).concat(urgByEjec('magal')).slice(0,4).map(u=>['⚠ '+u,'#dc2626']);
+const urgs = urgByEjec('gabriela').concat(urgByEjec('nahobi')).slice(0,4).map(u=>['⚠ '+u,'#dc2626']);
               return urgs.length > 0 ? urgs : [['Sin mora','#22c55e']];
             })(),
           '#fef2f2','#ef4444')}
@@ -3864,13 +3709,13 @@ const urgs = urgByEjec('rodi').concat(urgByEjec('rodolfo')).concat(urgByEjec('al
       `,'0.9','#f59e0b'),
 
       card(`
-        ${personHead('Verónica González','Dir. Administrativa',vScore,'vero')}
+        ${personHead('Verónica González','Dir. Administrativa',vScore,'vero','Supervisión equipo')}
         ${bar(vScore,'#ec4899')}
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;flex:1">
-          ${miniCard('Para 80%',[
-            ['1. GIA: 22 tareas hoy','#666'],
-            ['2. AIMA: 11%','#666'],
-            ['3. Reportes: 46%','#666'],
+          ${miniCard('Equipo a cargo · GIA',[
+            ['Cumplimiento: '+fmtP(randyScore),'#666'],
+            ['Tareas: '+txtT(cRandy)+' realizadas','#666'],
+            ['Pendientes: '+randyPend.length,randyPend.length?'#f97316':'#22c55e'],
           ],'#fff7ed','#f97316')}
           ${miniCard('⚠ Mora GIA',[
             ['ICHO: '+fmtG(icho.pendiente)+' pend.','#dc2626'],
@@ -3888,8 +3733,8 @@ const urgs = urgByEjec('rodi').concat(urgByEjec('rodolfo')).concat(urgByEjec('al
           ).join('')}
         </div>
         <div style="font-size:.55em;display:flex;flex-direction:column;gap:1px;overflow:hidden">
-          ${rodyPend.slice(0,2).map(t=>`<div style="color:#dc2626;background:#fef2f2;padding:1px 4px;border-radius:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">⚠ ${t.tarea} · Ale</div>`).join('')}
-          ${magaPend.slice(0,1).map(t=>`<div style="color:#dc2626;background:#fef2f2;padding:1px 4px;border-radius:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">⚠ ${t.tarea} · Gabi</div>`).join('')}
+          ${rodyPend.slice(0,2).map(t=>`<div style="color:#dc2626;background:#fef2f2;padding:1px 4px;border-radius:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">⚠ ${t.tarea} · Gabi</div>`).join('')}
+          ${magaPend.slice(0,1).map(t=>`<div style="color:#dc2626;background:#fef2f2;padding:1px 4px;border-radius:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">⚠ ${t.tarea} · Nahobi</div>`).join('')}
           ${randyPend.slice(0,1).map(t=>`<div style="color:#f97316;background:#fff7ed;padding:1px 4px;border-radius:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">⏳ ${t.tarea} · GIA</div>`).join('')}
         </div>
       `,'0.85','#f59e0b'),
@@ -3897,10 +3742,12 @@ const urgs = urgByEjec('rodi').concat(urgByEjec('rodolfo')).concat(urgByEjec('al
 
     // ── COL 2 ──
     const sorted = [
-      {id:'rody', n:'Gabi',s:rodyScore,p:100,t:'25/28'},
-      {id:'maga', n:'Nahobi',s:magaScore,p:100,t:'34/35'},
-      {id:'randy',n:'GIA',s:randyScore,p:17,t:'4/22'},
-    ].sort((a,b)=>b.s-a.s);
+      {id:'rody', n:'Gabi',s:rodyScore,t:txtT(cRody)},
+      {id:'maga', n:'Nahobi',s:magaScore,t:txtT(cMaga)},
+      {id:'randy',n:'GIA',s:randyScore,t:txtT(cRandy)},
+    ].sort((a,b)=>(b.s??-1)-(a.s??-1));
+    const vOps = [rodyScore,magaScore,randyScore].filter(x=>x!=null);
+    const promOps = vOps.length ? Math.round(vOps.reduce((a,b)=>a+b,0)/vOps.length) : null;
     const medals=['🥇','🥈','🥉'];
     const podC=['#f59e0b','#94a3b8','#cd7f32'];
     const podH=[80,60,45];
@@ -3908,8 +3755,8 @@ const urgs = urgByEjec('rodi').concat(urgByEjec('rodolfo')).concat(urgByEjec('al
     const col2 = [
       card(`
         <div style="font-size:.72em;font-weight:700;margin-bottom:1px">🏆 Ranking — ${month.name||'Abril'} 2026</div>
-        <div style="height:3px;background:#e5e7eb;border-radius:2px;margin-bottom:1px"><div style="height:3px;background:linear-gradient(90deg,#f59e0b,#ef4444);width:82%;border-radius:2px"></div></div>
-        <div style="font-size:.5em;color:#999;text-align:center;margin-bottom:3px">Ledy y Verónica fuera · Equipo competitivo: 82%</div>
+        <div style="height:3px;background:#e5e7eb;border-radius:2px;margin-bottom:1px"><div style="height:3px;background:linear-gradient(90deg,#f59e0b,#ef4444);width:${promOps||0}%;border-radius:2px"></div></div>
+        <div style="font-size:.5em;color:#999;text-align:center;margin-bottom:3px">Solo equipo operativo · Cumplimiento promedio: ${fmtP(promOps)}</div>
         <div style="display:flex;justify-content:space-around;align-items:flex-end;flex:1;gap:4px">
           ${sorted.map((p,i)=>{
             const sz = i===0?46:36;
@@ -3922,10 +3769,10 @@ const urgs = urgByEjec('rodi').concat(urgByEjec('rodolfo')).concat(urgByEjec('al
               ${photoHtml}
               <div style="font-size:.6em;font-weight:700;margin-bottom:2px">${p.n}</div>
               <div style="background:${podC[i]};border-radius:3px 3px 0 0;width:100%;height:${podH[i]}px;display:flex;flex-direction:column;align-items:center;justify-content:center">
-                <div style="font-size:${i===0?1.05:0.9}em;font-weight:700;color:white">${p.s}%</div>
-                <div style="font-size:.45em;color:rgba(255,255,255,0.8)">${p.p}% · ${p.t}</div>
+                <div style="font-size:${i===0?1.05:0.9}em;font-weight:700;color:white">${fmtP(p.s)}</div>
+                <div style="font-size:.45em;color:rgba(255,255,255,0.8)">${p.t} tareas</div>
               </div>
-              <div style="background:#f8f9fa;border-radius:0 0 3px 3px;width:100%;padding:1px;font-size:.48em;color:#666;text-align:center">Score real</div>
+              <div style="background:#f8f9fa;border-radius:0 0 3px 3px;width:100%;padding:1px;font-size:.48em;color:#666;text-align:center">Cumplimiento</div>
             </div>`;
           }).join('')}
         </div>
@@ -3991,10 +3838,10 @@ const urgs = urgByEjec('rodi').concat(urgByEjec('rodolfo')).concat(urgByEjec('al
     ].join('');
 
     // ── COL 3 ──
-    const opCard = (name, photoId, role, score, prod, tareas, horasStr, pendList, urgList, color) => card(`
-      ${personHead(name, role+' · '+prod+'% prod', score, photoId)}
+    const opCard = (name, photoId, role, score, tareas, pendList, urgList, color) => card(`
+      ${personHead(name, role, score, photoId, 'Cumplimiento')}
       ${bar(score, color)}
-      <div style="font-size:.52em;color:#999;margin-bottom:2px">${tareas} tareas · ${horasStr}</div>
+      <div style="font-size:.52em;color:#999;margin-bottom:2px">${tareas} tareas realizadas</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;flex:1">
         <div style="background:#fef2f2;border-radius:3px;padding:3px 4px;border-left:2px solid #ef4444;font-size:.55em;overflow:hidden">
           <div style="font-weight:700;color:#991b1b;margin-bottom:1px">⚠ Mora/Urgentes</div>
@@ -4008,11 +3855,11 @@ const urgs = urgByEjec('rodi').concat(urgByEjec('rodolfo')).concat(urgByEjec('al
     `, '0.85', color);
 
     const col3 = [
-      opCard('Gabriela Ortigoza','rody','Ejecutiva de Cuentas',rodyScore,100,'25/28','8h',
-rodyPend.map(t=>t.tarea), urgByEjec('rodi').concat(urgByEjec('rody')).concat(urgByEjec('rodolfo')).concat(urgByEjec('alejandra')).concat(urgByEjec('gabriela')), '#f97316'),
-      opCard('Nahobi Benítez','maga','Contadora Junior',magaScore,100,'34/35','8h',
-        magaPend.map(t=>t.tarea), urgByEjec('magal'), '#22c55e'),
-      opCard('GIA - Atención al Cliente Grupo G','randy','Ejecutivo Administrativo',randyScore,17,'4/22','1.3h',
+      opCard('Gabriela Ortigoza','rody','Ejecutiva de Cuentas',rodyScore,txtT(cRody),
+        rodyPend.map(t=>t.tarea), urgByEjec('gabriela'), '#f97316'),
+      opCard('Nahobi Benítez','maga','Contadora Junior',magaScore,txtT(cMaga),
+        magaPend.map(t=>t.tarea), urgByEjec('nahobi'), '#22c55e'),
+      opCard('GIA - Atención al Cliente Grupo G','randy','Ejecutivo Administrativo',randyScore,txtT(cRandy),
         randyPend.map(t=>t.tarea),
         (icho.facturas||[]).filter(f=>f.estado!=='aldia').slice(0,5).map(f=>(f.label||f.razonSocial||'Factura')+' '+fmtG(f.monto)),
         '#a855f7'),
@@ -4124,7 +3971,8 @@ rodyPend.map(t=>t.tarea), urgByEjec('rodi').concat(urgByEjec('rody')).concat(urg
   // ── Auto-scroll: inner altura natural vs outer altura visible ──
   setTimeout(()=>{
     const items = [];
-    root.querySelectorAll('.tv-sc').forEach(inner => {
+    const tvRootEl = document.getElementById('tv-root'); if(!tvRootEl) return;
+    tvRootEl.querySelectorAll('.tv-sc').forEach(inner => {
       const outer = inner.parentElement;
       if(!outer) return;
       const contentH = inner.clientHeight;   // altura real del contenido
@@ -4304,6 +4152,39 @@ if(DEMO_MODE){
     });
   }
 }
+</script>
+<script>
+/* Kommo · backlog de conversaciones y leads (lee la planilla por gviz JSONP, cada 5 min).
+   Aislado: si falla, no afecta al resto del tablero. */
+(function kommoCard(){
+  var SID='1-bZXTD0F928Hi75dRvfrTUXGfntfwN5MA5dp5S6xZOU';
+  function set(id,val){ var e=document.getElementById(id); if(e && val!=null && val!=='') e.textContent=val; }
+  window.__kommoCB=function(j){
+    try{
+      var map={};
+      (j.table && j.table.rows || []).forEach(function(row){
+        var k=row.c && row.c[0] && row.c[0].v;
+        var v=row.c && row.c[1] && (row.c[1].v!=null?row.c[1].v:row.c[1].f);
+        if(k!=null) map[String(k).trim()]=v;
+      });
+      set('kommo-sinresp', map['Conversaciones sin responder']);
+      set('kommo-estanc',  map['Leads estancados (3+ días)']);
+      set('kommo-abiertos',map['Leads abiertos']);
+      if(map['Actualizado']) set('kommo-upd','Actualizado '+map['Actualizado']);
+    }catch(e){}
+  };
+  function actualizar(){
+    var s=document.createElement('script');
+    s.src='https://docs.google.com/spreadsheets/d/'+SID+'/gviz/tq?tqx=out:json;responseHandler:__kommoCB&range=A1:B14&_='+Date.now();
+    s.onerror=s.onload=function(){ if(s.parentNode) s.parentNode.removeChild(s); };
+    document.body.appendChild(s);
+  }
+  var tries=0, iv=setInterval(function(){
+    tries++;
+    if(document.getElementById('kommo-sinresp')||tries>60){ clearInterval(iv); actualizar(); }
+  },1000);
+  setInterval(actualizar, 300000);
+})();
 </script>
 </body>
 </html>
