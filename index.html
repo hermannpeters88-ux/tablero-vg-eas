@@ -1289,27 +1289,54 @@ function renderPendientesConsolidado(){
 // ══════════════════════════════════════════════════
 // HELPER GLOBAL: CUMPLIMIENTO (auditoría 03/10)
 // ══════════════════════════════════════════════════
-// UNA sola métrica, igual para todas las cards operativas:
-//   Cumplimiento = tareas realizadas ÷ tareas totales de su planilla
+// UNA sola métrica, igual para todas las cards operativas: CUMPLIMIENTO DEL MES (03/10)
+//   Cuentan: (a) tareas con fecha de ESTE mes + (b) tareas pendientes de meses anteriores (arrastradas).
+//   Cumplimiento = realizadas ÷ (a + b). Las tareas ya hechas de meses anteriores NO cuentan (no inflan el %).
+//   Si no hay ninguna tarea que cuente → "Sin tareas este mes" (nunca 100% por defecto).
 //     Gabriela (rody) → rodyTareasPend · Nahobi (maga) → tareasPendMaga · GIA (randy) → randyTareasPend
-// Sin planes B (weekPct / todayChecked / backendOk): si no hay datos → null y se muestra "—".
+//   GIA (Atención al Cliente) además suma Kommo: atención = 1 − conversaciones sin responder ÷ conversaciones totales.
+// Sin planes B: si una fuente no tiene datos → null y se muestra "—".
 // Directores = SUPERVISIÓN del equipo a cargo (no trabajo propio, no compiten en el podio):
 //   ledy = promedio (Gabriela, Nahobi) · vero = GIA · hermann = promedio (Gabriela, Nahobi, GIA)
+function fechaTareaISO(t){
+  const f = String((t && t.fecha) || '');
+  return /^\d{4}-\d{2}-\d{2}/.test(f) ? f.slice(0,10) : '';
+}
+function mesActualISO(){
+  const n = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Asuncion' }));
+  return n.getFullYear() + '-' + String(n.getMonth()+1).padStart(2,'0');
+}
 function cumplimientoDe(tp){
   if(!tp) return null;
   const tareas = Array.isArray(tp.tareas) ? tp.tareas : [];
-  const total = tareas.length || tp.total || 0;
-  if(!total) return null;
-  const hechas = tareas.length ? tareas.filter(t=>t.realizada).length : Math.max(0, total - (tp.pendientes||0));
-  return { hechas, total, pct: Math.round(hechas / total * 100) };
+  if(!tareas.length) return null;
+  const mes = mesActualISO();
+  const delMes = tareas.filter(t => fechaTareaISO(t).slice(0,7) === mes);
+  const arrastradas = tareas.filter(t => !t.realizada && fechaTareaISO(t).slice(0,7) !== mes);
+  const cuenta = delMes.concat(arrastradas);
+  const hechas = cuenta.filter(t => t.realizada).length;
+  return {
+    hechas, total: cuenta.length,
+    pct: cuenta.length ? Math.round(hechas / cuenta.length * 100) : null,
+    delMes: delMes.length, arrastradas: arrastradas.length,
+    sinTareas: cuenta.length === 0
+  };
+}
+// Kommo (planilla del poller): % de conversaciones atendidas. null si falta el total.
+function kommoAtencion(){
+  const k = window.__kommoLast; if(!k) return null;
+  const sin = Number(k.sinresp), tot = Number(k.totalConv);
+  if(!isFinite(sin) || !isFinite(tot) || tot <= 0) return { sin: isFinite(sin) ? sin : null, tot: null, pct: null };
+  return { sin, tot, pct: Math.max(0, Math.round((1 - sin / tot) * 100)) };
 }
 function computeRealScores(){
   if(!appData) return null;
-  const pctOf = tp => { const c = cumplimientoDe(tp); return c ? c.pct : null; };
   const avg = arr => { const v = arr.filter(x=>x!=null); return v.length ? Math.round(v.reduce((a,b)=>a+b,0)/v.length) : null; };
+  const pctOf = tp => { const c = cumplimientoDe(tp); return c ? c.pct : null; };
   const rody  = pctOf(appData.rodyTareasPend);
   const maga  = pctOf(appData.tareasPendMaga);
-  const randy = pctOf(appData.randyTareasPend);
+  const kA = kommoAtencion();
+  const randy = avg([pctOf(appData.randyTareasPend), kA ? kA.pct : null]);
   return {
     randy, rody, maga,
     ledy: avg([rody, maga]),
@@ -1517,7 +1544,7 @@ async function fetchData(){
       if(resVenc){ const v=await resVenc.json(); if(v.vencimientos) appData.vencimientos=v.vencimientos; }
     }catch(e){ console.log("Vencimientos no disponible:",e); }
     try{
-      if(resRody){ const rd=await resRody.json(); if(rd.rodyTareasPend) appData.rodyTareasPend=rd.rodyTareasPend; if(rd.tareasPendMaga) appData.tareasPendMaga=rd.tareasPendMaga; if(rd.tareasPendLedy) appData.tareasPendLedy=rd.tareasPendLedy; }
+      if(resRody){ const rd=await resRody.json(); if(rd.rodyTareasPend && !(appData.rodyTareasPend && appData.rodyTareasPend.tareas && appData.rodyTareasPend.tareas.length)) appData.rodyTareasPend=rd.rodyTareasPend; if(rd.tareasPendMaga) appData.tareasPendMaga=rd.tareasPendMaga; if(rd.tareasPendLedy) appData.tareasPendLedy=rd.tareasPendLedy; }
     }catch(e){ console.log("Tareas Rody no disponible:",e); }
     try{
       if(resCobros){
@@ -3603,7 +3630,14 @@ const rodyClientes = calcClientesStats(["rodi","rody","rodolfo","alejandra","gab
     const cRody = cumplimientoDe(appData.rodyTareasPend);
     const cMaga = cumplimientoDe(appData.tareasPendMaga);
     const cRandy = cumplimientoDe(appData.randyTareasPend);
-    const txtT = c => c ? c.hechas+'/'+c.total : '—';
+    const txtT = c => !c ? '—' : c.sinTareas ? 'sin tareas' : c.hechas+'/'+c.total;
+    const mesNom = (appData.month && appData.month.name || '').toLowerCase();
+    const kA = kommoAtencion();
+    const detT = c => !c ? 'Sin datos de tareas'
+      : c.sinTareas ? '⚠ Sin tareas cargadas en '+mesNom
+      : c.hechas+'/'+c.total+' tareas del mes realizadas'+(c.arrastradas ? ' · incluye '+c.arrastradas+' pendiente'+(c.arrastradas>1?'s':'')+' de meses anteriores' : '');
+    const etqC = (score, c) => score==null && c && c.sinTareas ? '⚠ Sin tareas este mes' : 'Cumplimiento del mes';
+    const detGIA = () => detT(cRandy) + (kA && kA.sin!=null ? ' · Kommo: '+kA.sin+' sin responder'+(kA.tot ? ' de '+kA.tot : '') : '');
 
     const month = appData.month||{};
     const icho = COBROS_DATA?.clientes?.find?.(c=>c.nombre==='ICHO')||{};
@@ -3651,7 +3685,7 @@ const rodyClientes = calcClientesStats(["rodi","rody","rodolfo","alejandra","gab
           ${photo ? `<img src="${photo}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid ${pctColor(score)}">` : ''}
           <div><div style="font-size:.85em;font-weight:700;color:#1a1a2e">${name}</div><div style="font-size:.55em;color:#888">${role}</div></div>
         </div>
-        <div style="text-align:right;line-height:1"><div style="font-size:1.3em;font-weight:800;color:${pctColor(score)}">${score==null?'—':score+'%'}</div>${etiqueta?`<div style="font-size:.42em;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:.3px;margin-top:1px">${etiqueta}</div>`:''}</div>
+        <div style="text-align:right;line-height:1"><div style="font-size:1.3em;font-weight:800;color:${pctColor(score)}">${score==null?'—':score+'%'}</div>${etiqueta?`<div style="font-size:.42em;color:${String(etiqueta).charAt(0)==='⚠'?'#d97706':'#888'};font-weight:700;text-transform:uppercase;letter-spacing:.3px;margin-top:1px">${etiqueta}</div>`:''}</div>
       </div>`;
     };
 
@@ -3714,7 +3748,8 @@ const urgs = urgByEjec('gabriela').concat(urgByEjec('nahobi')).slice(0,4).map(u=
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;flex:1">
           ${miniCard('Equipo a cargo · GIA',[
             ['Cumplimiento: '+fmtP(randyScore),'#666'],
-            ['Tareas: '+txtT(cRandy)+' realizadas','#666'],
+            ['Tareas del mes: '+txtT(cRandy),cRandy&&cRandy.sinTareas?'#d97706':'#666'],
+            ['Kommo sin responder: '+(kA&&kA.sin!=null?kA.sin:'—'),kA&&kA.sin>0?'#dc2626':'#666'],
             ['Pendientes: '+randyPend.length,randyPend.length?'#f97316':'#22c55e'],
           ],'#fff7ed','#f97316')}
           ${miniCard('⚠ Mora GIA',[
@@ -3744,7 +3779,7 @@ const urgs = urgByEjec('gabriela').concat(urgByEjec('nahobi')).slice(0,4).map(u=
     const sorted = [
       {id:'rody', n:'Gabi',s:rodyScore,t:txtT(cRody)},
       {id:'maga', n:'Nahobi',s:magaScore,t:txtT(cMaga)},
-      {id:'randy',n:'GIA',s:randyScore,t:txtT(cRandy)},
+      {id:'randy',n:'GIA',s:randyScore,t:(kA && kA.pct!=null) ? (cRandy && !cRandy.sinTareas ? txtT(cRandy)+' tareas · ' : '')+(kA.tot-kA.sin)+'/'+kA.tot+' conv. atendidas' : txtT(cRandy)},
     ].sort((a,b)=>(b.s??-1)-(a.s??-1));
     const vOps = [rodyScore,magaScore,randyScore].filter(x=>x!=null);
     const promOps = vOps.length ? Math.round(vOps.reduce((a,b)=>a+b,0)/vOps.length) : null;
@@ -3760,17 +3795,20 @@ const urgs = urgByEjec('gabriela').concat(urgByEjec('nahobi')).slice(0,4).map(u=
         <div style="display:flex;justify-content:space-around;align-items:flex-end;flex:1;gap:4px">
           ${sorted.map((p,i)=>{
             const sz = i===0?46:36;
+            // Medalla solo con cumplimiento > 0 (no premiar 0% ni "sin tareas"): si no, lugar en gris
+            const conMedalla = p.s!=null && p.s>0;
+            const pc = conMedalla ? podC[i] : '#cbd5e1';
             const photoSrc = (MEMBER_PHOTOS&&MEMBER_PHOTOS[p.id])||'';
             const photoHtml = photoSrc
-              ? `<img src="${photoSrc}" style="width:${sz}px;height:${sz}px;border-radius:50%;object-fit:cover;border:2px solid ${podC[i]};margin:2px;">`
-              : `<div style="width:${sz}px;height:${sz}px;border-radius:50%;background:${podC[i]}33;border:2px solid ${podC[i]};margin:2px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:${podC[i]}">${p.n.split(' ')[0]}</div>`;
+              ? `<img src="${photoSrc}" style="width:${sz}px;height:${sz}px;border-radius:50%;object-fit:cover;border:2px solid ${pc};margin:2px;">`
+              : `<div style="width:${sz}px;height:${sz}px;border-radius:50%;background:${pc}33;border:2px solid ${pc};margin:2px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:${pc}">${p.n.split(' ')[0]}</div>`;
             return `<div style="text-align:center;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end">
-              <div style="font-size:${i===0?'1.1':'0.85'}em">${medals[i]}</div>
+              <div style="font-size:${i===0?'1.1':'0.85'}em">${conMedalla?medals[i]:'&nbsp;'}</div>
               ${photoHtml}
               <div style="font-size:.6em;font-weight:700;margin-bottom:2px">${p.n}</div>
-              <div style="background:${podC[i]};border-radius:3px 3px 0 0;width:100%;height:${podH[i]}px;display:flex;flex-direction:column;align-items:center;justify-content:center">
+              <div style="background:${pc};border-radius:3px 3px 0 0;width:100%;height:${podH[i]}px;display:flex;flex-direction:column;align-items:center;justify-content:center">
                 <div style="font-size:${i===0?1.05:0.9}em;font-weight:700;color:white">${fmtP(p.s)}</div>
-                <div style="font-size:.45em;color:rgba(255,255,255,0.8)">${p.t} tareas</div>
+                <div style="font-size:.45em;color:rgba(255,255,255,0.8)">${p.t==='sin tareas'?'sin tareas del mes':(p.t.indexOf('conv.')>=0?p.t:p.t+' tareas')}</div>
               </div>
               <div style="background:#f8f9fa;border-radius:0 0 3px 3px;width:100%;padding:1px;font-size:.48em;color:#666;text-align:center">Cumplimiento</div>
             </div>`;
@@ -3837,21 +3875,21 @@ const urgs = urgByEjec('gabriela').concat(urgByEjec('nahobi')).slice(0,4).map(u=
 
       card(`
         <div style="font-size:.72em;font-weight:700;margin-bottom:3px">💬 Kommo · Atención a clientes</div>
-        <div style="display:flex;gap:16px;flex-wrap:wrap">
+        <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:space-around;text-align:center">
           <div><div style="font-size:1.6em;font-weight:800;color:#e11d48" data-kommo="sinresp">—</div><div style="font-size:.5em;color:#888">Sin responder</div></div>
           <div><div style="font-size:1.6em;font-weight:800;color:#e11d48" data-kommo="estanc">—</div><div style="font-size:.5em;color:#888">Leads estancados</div></div>
           <div><div style="font-size:1.6em;font-weight:800;color:#1a1a2e" data-kommo="abiertos">—</div><div style="font-size:.5em;color:#888">Leads abiertos</div></div>
         </div>
-        <div style="font-size:.45em;color:#aaa;margin-top:3px" data-kommo="upd"></div>
+        <div style="font-size:.45em;color:#aaa;margin-top:3px;text-align:center" data-kommo="upd"></div>
       `,'0.55','#06b6d4'),
 
     ].join('');
 
     // ── COL 3 ──
-    const opCard = (name, photoId, role, score, tareas, pendList, urgList, color) => card(`
-      ${personHead(name, role, score, photoId, 'Cumplimiento')}
+    const opCard = (name, photoId, role, score, detalle, etiqueta, pendList, urgList, color) => card(`
+      ${personHead(name, role, score, photoId, etiqueta)}
       ${bar(score, color)}
-      <div style="font-size:.52em;color:#999;margin-bottom:2px">${tareas} tareas realizadas</div>
+      <div style="font-size:.52em;color:${detalle.charAt(0)==='⚠'?'#d97706':'#999'};font-weight:${detalle.charAt(0)==='⚠'?'700':'400'};margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${detalle}</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;flex:1">
         <div style="background:#fef2f2;border-radius:3px;padding:3px 4px;border-left:2px solid #ef4444;font-size:.55em;overflow:hidden">
           <div style="font-weight:700;color:#991b1b;margin-bottom:1px">⚠ Mora/Urgentes</div>
@@ -3865,11 +3903,11 @@ const urgs = urgByEjec('gabriela').concat(urgByEjec('nahobi')).slice(0,4).map(u=
     `, '0.85', color);
 
     const col3 = [
-      opCard('Gabriela Ortigoza','rody','Ejecutiva de Cuentas',rodyScore,txtT(cRody),
+      opCard('Gabriela Ortigoza','rody','Ejecutiva de Cuentas',rodyScore,detT(cRody),etqC(rodyScore,cRody),
         rodyPend.map(t=>t.tarea), urgByEjec('gabriela'), '#f97316'),
-      opCard('Nahobi Benítez','maga','Contadora Junior',magaScore,txtT(cMaga),
+      opCard('Nahobi Benítez','maga','Contadora Junior',magaScore,detT(cMaga),etqC(magaScore,cMaga),
         magaPend.map(t=>t.tarea), urgByEjec('nahobi'), '#22c55e'),
-      opCard('GIA - Atención al Cliente Grupo G','randy','Ejecutivo Administrativo',randyScore,txtT(cRandy),
+      opCard('GIA - Atención al Cliente Grupo G','randy','Ejecutivo Administrativo',randyScore,detGIA(),(randyScore==null && cRandy && cRandy.sinTareas && !(kA && kA.pct!=null)) ? '⚠ Sin tareas este mes' : 'Cumplimiento del mes',
         randyPend.map(t=>t.tarea),
         (icho.facturas||[]).filter(f=>f.estado!=='aldia').slice(0,5).map(f=>(f.label||f.razonSocial||'Factura')+' '+fmtG(f.monto)),
         '#a855f7'),
@@ -4186,11 +4224,18 @@ if(DEMO_MODE){
       });
       window.__kommoLast={
         sinresp:  map['Conversaciones sin responder'],
+        totalConv: map['Conversaciones totales'],
         estanc:   map['Leads estancados (3+ días)'],
         abiertos: map['Leads abiertos'],
         upd:      map['Actualizado']?('Actualizado '+map['Actualizado']):''
       };
       aplicar();
+      // Kommo entra en el % de GIA: si cambió, recalcular y redibujar (solo si el tablero ya cargó)
+      var firma = String(window.__kommoLast.sinresp)+'|'+String(window.__kommoLast.totalConv);
+      if(firma !== window.__kommoFirma){
+        window.__kommoFirma = firma;
+        try{ if(typeof appData!=='undefined' && appData && typeof render==='function') render(); }catch(e){}
+      }
     }catch(e){}
   };
   function traer(){
