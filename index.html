@@ -895,7 +895,7 @@ function getRecoveryPlan(personaId, scoreActual){
       break;
     }
     case 'rody': {
-      const clientesUrg = topClientesUrgentes(['rodi','rody','rodolfo','alejandra'], 3);
+const clientesUrg = topClientesUrgentes(['rodi','rody','rodolfo','alejandra','gabriela'], 3);
       clientesUrg.forEach(c=>{
         const dias = (c.vencimientoDia||0) - new Date().getDate();
         const venceTxt = dias < 0 ? `Día ${c.vencimientoDia} · vencido` : (dias === 0 ? 'Vence HOY' : `Día ${c.vencimientoDia}`);
@@ -911,7 +911,7 @@ function getRecoveryPlan(personaId, scoreActual){
       break;
     }
     case 'maga': {
-      const clientesUrg = topClientesUrgentes(['maga','magal','gabriela'], 3);
+const clientesUrg = topClientesUrgentes(['maga','magal','nahobi'], 3);
       clientesUrg.forEach(c=>{
         const dias = (c.vencimientoDia||0) - new Date().getDate();
         const venceTxt = dias < 0 ? `Día ${c.vencimientoDia} · vencido` : (dias === 0 ? 'Vence HOY' : `Día ${c.vencimientoDia}`);
@@ -929,8 +929,8 @@ function getRecoveryPlan(personaId, scoreActual){
     case 'ledy': {
       // Directora: cuello de botella de su equipo (Rody+Maga)
       // Tomamos los clientes urgentes de AMBOS
-      const clientesRody = topClientesUrgentes(['rodi','rody','rodolfo','alejandra'], 5);
-      const clientesMaga = topClientesUrgentes(['maga','magal','gabriela'], 5);
+const clientesRody = topClientesUrgentes(['rodi','rody','rodolfo','alejandra','gabriela'], 5);
+const clientesMaga = topClientesUrgentes(['maga','magal','nahobi'], 5);
       const todos = [...clientesRody.map(c=>({...c,_resp:'Gabi',_est:getClienteEstado(c)})), ...clientesMaga.map(c=>({...c,_resp:'Nahobi',_est:getClienteEstado(c)}))]
         .sort((a,b) => {
           if(a._est.key !== b._est.key) return a._est.key === 'atrasado' ? -1 : 1;
@@ -961,8 +961,8 @@ function getRecoveryPlan(personaId, scoreActual){
     case 'hermann': {
       // Director Ejecutivo: prioridades globales del Grupo G
       // Mezcla clientes urgentes de TODO el equipo + flagging del cuello de botella
-      const clientesRody = topClientesUrgentes(['rodi','rody','rodolfo','alejandra'], 3);
-      const clientesMaga = topClientesUrgentes(['maga','magal','gabriela'], 3);
+const clientesRody = topClientesUrgentes(['rodi','rody','rodolfo','alejandra','gabriela'], 3);
+const clientesMaga = topClientesUrgentes(['maga','magal','nahobi'], 3);
       const todos = [...clientesRody.map(c=>({...c,_resp:'Gabi',_est:getClienteEstado(c)})), ...clientesMaga.map(c=>({...c,_resp:'Nahobi',_est:getClienteEstado(c)}))]
         .sort((a,b) => {
           if(a._est.key !== b._est.key) return a._est.key === 'atrasado' ? -1 : 1;
@@ -1195,7 +1195,7 @@ function getPendientesPersona(personaId){
       });
     }
     // Fuente 2: todos los clientes no cobrados
-    const cli = getClientesContabilidad(['rodi','rody','rodolfo','alejandra']);
+const cli = getClientesContabilidad(['rodi','rody','rodolfo','alejandra','gabriela']);
     cli.forEach(c => {
       const est = getClienteEstado(c);
       if(est.key === 'completado') return;
@@ -2848,7 +2848,7 @@ function renderRodyCard(member){
 
   // Get Rody's clients from clientes data
   const rodyClientes = (appData.clientes?.clientes||[]).filter(c=>
-    (c.ejecutivo||'').toLowerCase().includes("rodi")||(c.ejecutivo||'').toLowerCase().includes("rody")||(c.ejecutivo||'').toLowerCase().includes("rodolfo")||(c.ejecutivo||'').toLowerCase().includes("alejandra")
+(c.ejecutivo||'').toLowerCase().includes("rodi")||(c.ejecutivo||'').toLowerCase().includes("rody")||(c.ejecutivo||'').toLowerCase().includes("rodolfo")||(c.ejecutivo||'').toLowerCase().includes("alejandra")||(c.ejecutivo||'').toLowerCase().includes("gabriela")
   );
   const clienteAvg = rodyClientes.length>0
     ? Math.round(rodyClientes.reduce((s,c)=>s+c.avancePct,0)/rodyClientes.length) : 0;
@@ -2909,7 +2909,7 @@ function renderRodyCard(member){
   }
 
   // Clientes contabilidad - ordenados por urgencia con 5 mini-cards
-  const rodyContab = getClientesContabilidad(["rodi","rody","rodolfo","alejandra"]);
+const rodyContab = getClientesContabilidad(["rodi","rody","rodolfo","alejandra","gabriela"]);
   if(rodyContab.length > 0){
     html+=`<div class="task-section">
       <div class="section-title"><span class="icon">🏢</span> Clientes Contabilidad — por vencimiento <span class="src-tag">Clientes · Vencimiento N</span></div>`;
@@ -3569,7 +3569,7 @@ function render(){
   const rodyMemRef = appData.team.find(m=>m.id==="rody");
   const rodyAllWeeks = rodyMemRef?.weeks||[];
   const rodyPcts = calc3Pcts(rodyM.dailyPct, rodyM.weekAvg);
-  const rodyClientes = calcClientesStats(["rodi","rody","rodolfo","alejandra"]);
+const rodyClientes = calcClientesStats(["rodi","rody","rodolfo","alejandra","gabriela"]);
   competitors.push({
     id:"rody", name:"Gabriela Ortigoza", role:"Ejecutivo Contable",
     monthPct: rodyPcts.monthPct,
@@ -3624,7 +3624,7 @@ function render(){
         const teamAvg = competitors.length > 0
           ? Math.round(competitors.reduce((s,c)=>s+(c.monthlyPct||0),0) / competitors.length)
           : 0;
-        return renderMonthProgressBar(teamAvg, { label:"📆 Avance del Equipo Competitivo (GIA + Ale + Gabi)" });
+        return renderMonthProgressBar(teamAvg, { label:"📆 Avance del Equipo Competitivo (GIA + Gabi + Nahobi)" });
       })()}
       ${(function(){
         // Plan de recuperación INDIVIDUAL para cada competidor cuyo SCORE esté bajo
@@ -3845,7 +3845,7 @@ function render(){
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;flex:1">
           ${miniCard('⚠ Urgentes',
             (()=>{
-              const urgs = urgByEjec('rodi').concat(urgByEjec('rodolfo')).concat(urgByEjec('alejandra')).concat(urgByEjec('magal')).slice(0,4).map(u=>['⚠ '+u,'#dc2626']);
+const urgs = urgByEjec('rodi').concat(urgByEjec('rodolfo')).concat(urgByEjec('alejandra')).concat(urgByEjec('gabriela')).concat(urgByEjec('magal')).slice(0,4).map(u=>['⚠ '+u,'#dc2626']);
               return urgs.length > 0 ? urgs : [['Sin mora','#22c55e']];
             })(),
           '#fef2f2','#ef4444')}
@@ -4009,7 +4009,7 @@ function render(){
 
     const col3 = [
       opCard('Gabriela Ortigoza','rody','Ejecutivo Contable',rodyScore,100,'25/28','8h',
-        rodyPend.map(t=>t.tarea), urgByEjec('rodi').concat(urgByEjec('rody')).concat(urgByEjec('rodolfo')).concat(urgByEjec('alejandra')), '#f97316'),
+rodyPend.map(t=>t.tarea), urgByEjec('rodi').concat(urgByEjec('rody')).concat(urgByEjec('rodolfo')).concat(urgByEjec('alejandra')).concat(urgByEjec('gabriela')), '#f97316'),
       opCard('Nahobi Benítez','maga','Contadora Junior',magaScore,100,'34/35','8h',
         magaPend.map(t=>t.tarea), urgByEjec('magal'), '#22c55e'),
       opCard('GIA - Atención al Cliente Grupo G','randy','Ejecutivo Administrativo',randyScore,17,'4/22','1.3h',
