@@ -1278,7 +1278,7 @@ function renderPendientesBadge(personaId, isFirst){
 // Las realizadas se ocultan automáticamente (porque getPendientesPersona ya las filtra).
 function renderPendientesConsolidado(){
   const personas = [
-    { id:'rody', name:'Gabriela Ortigoza', role:'Ejecutivo Contable', color:'#10b981' },
+    { id:'rody', name:'Gabriela Ortigoza', role:'Ejecutiva de Cuentas', color:'#10b981' },
     { id:'maga', name:'Nahobi Benítez', role:'Contadora Junior', color:'#06b6d4' },
     { id:'randy', name:'GIA - Atención al Cliente Grupo G', role:'Ejecutivo Administrativo', color:'#8b5cf6' }
   ];
@@ -2880,7 +2880,7 @@ function renderRodyCard(member){
       ${photoRing(member.id, displayPct, 90, 6)}
       <div class="info">
         <div class="name">${cfg.name||member.name}</div>
-        <div class="role">Ejecutivo Contable</div>
+        <div class="role">Ejecutiva de Cuentas</div>
         <span class="unit-tag" style="background:${color}22;color:${color}">CONTABILIDAD</span>
         ${rodyNoUpdBadge}
       </div>
@@ -3571,7 +3571,7 @@ function render(){
   const rodyPcts = calc3Pcts(rodyM.dailyPct, rodyM.weekAvg);
 const rodyClientes = calcClientesStats(["rodi","rody","rodolfo","alejandra","gabriela"]);
   competitors.push({
-    id:"rody", name:"Gabriela Ortigoza", role:"Ejecutivo Contable",
+    id:"rody", name:"Gabriela Ortigoza", role:"Ejecutiva de Cuentas",
     monthPct: rodyPcts.monthPct,
     weeklyPct: rodyPcts.weeklyPct,
     dailyPct: rodyPcts.dailyPct,
@@ -4008,7 +4008,7 @@ const urgs = urgByEjec('rodi').concat(urgByEjec('rodolfo')).concat(urgByEjec('al
     `, '0.85', color);
 
     const col3 = [
-      opCard('Gabriela Ortigoza','rody','Ejecutivo Contable',rodyScore,100,'25/28','8h',
+      opCard('Gabriela Ortigoza','rody','Ejecutiva de Cuentas',rodyScore,100,'25/28','8h',
 rodyPend.map(t=>t.tarea), urgByEjec('rodi').concat(urgByEjec('rody')).concat(urgByEjec('rodolfo')).concat(urgByEjec('alejandra')).concat(urgByEjec('gabriela')), '#f97316'),
       opCard('Nahobi Benítez','maga','Contadora Junior',magaScore,100,'34/35','8h',
         magaPend.map(t=>t.tarea), urgByEjec('magal'), '#22c55e'),
