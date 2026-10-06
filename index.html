@@ -3816,7 +3816,7 @@ const urgs = urgByEjec('gabriela').concat(urgByEjec('nahobi')).slice(0,4).map(u=
         </div>
       `,'1.22','#f59e0b'),
 
-      card(`
+      card((window.__cierreHtml&&window.__cierreHtml(month,hoyD))||`
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">
           <div style="font-size:.72em;font-weight:700">📅 Vencimientos — ${month.name||'Abril'}</div>
           <div style="display:flex;gap:2px">
@@ -4256,6 +4256,76 @@ if(DEMO_MODE){
   setInterval(aplicar, 2000);    // re-aplica tras cada re-render de renderTV (cada ~3 min)
   setInterval(traer, 300000);    // refresca datos de Kommo cada 5 min
   setInterval(vigilar, 60000);   // chequea cada 1 min si Kommo quedó trabado
+  traer();
+})();
+</script>
+<script>
+/* Cierre del mes (Hermann 06/10/2026): planilla "Cierre del mes — VG" (pestaña Cierre), una fila por cliente con
+   su día de vencimiento y la etapa 0-5 (0 Sin iniciar · 1 Documentos · 2 Carga · 3 Revisión · 4 OK cliente · 5 Presentado).
+   Se muestra DENTRO de la card de Vencimientos de la TV (mismo lugar, sin espacio nuevo). Lee por gviz JSONP cada 5 min.
+   Aislado: si la planilla no responde, la card vuelve a la vista de siempre. */
+(function cierreCard(){
+  var SID='1W-B0Sc16DQK2bEVk0TeyVzUatbRaajmw-eMmudiD7Wo';
+  var ETAPAS=['Sin iniciar','Documentos','Carga','Revisión','OK cliente','Presentado'];
+  var COL=['#e5e7eb','#93c5fd','#60a5fa','#a78bfa','#f59e0b','#22c55e'];
+  function esc(t){ return String(t==null?'':t).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+  window.__cierreHtml=function(month,hoyD){
+    var L=window.__cierre; if(!L||!L.length) return null;
+    var dias={}; L.forEach(function(c){ (dias[c.dia]=dias[c.dia]||[]).push(c); });
+    var orden=Object.keys(dias).map(Number).sort(function(a,b){return a-b;});
+    var pres=L.filter(function(c){return c.etapa>=5;}).length;
+    var hoyN=(dias[hoyD]||[]).filter(function(c){return c.etapa<5;}).length;
+    var semN=L.filter(function(c){return c.dia>=hoyD&&c.dia<=hoyD+6&&c.etapa<5;}).length;
+    var atrN=L.filter(function(c){return c.dia<hoyD&&c.etapa<5;}).length;
+    var chip=function(bg,fg,t){return '<span style="font-size:.55em;background:'+bg+';color:'+fg+';padding:1px 4px;border-radius:2px;font-weight:700;white-space:nowrap">'+t+'</span>';};
+    var filas=orden.map(function(d){
+      var cs=dias[d], n=cs.length, ok=cs.filter(function(c){return c.etapa>=5;}).length;
+      var prom=cs.reduce(function(s,c){return s+c.etapa;},0)/n;
+      var todos=ok===n, atras=d<hoyD&&!todos, cerca=!todos&&d>=hoyD&&d-hoyD<=1;
+      var bg=todos?'#f0fdf4':atras?'#fef2f2':cerca?'#fef3c7':'#fff7ed';
+      var tc=todos?'#166534':atras?'#dc2626':'#92400e';
+      var icon=todos?'✓':atras?'⚠':'→';
+      var pagados=cs.filter(function(c){return c.pago;}).length;
+      var barra=''; for(var i=1;i<=5;i++){ barra+='<span title="'+ETAPAS[i]+'" style="display:inline-block;width:9px;height:7px;margin-left:1px;border-radius:1px;background:'+(prom>=i-0.001?COL[i]:'#e5e7eb')+'"></span>'; }
+      var nombres=cs.map(function(c){return esc(c.cliente)+(c.etapa>=5?' ✓':'');}).join(' · ');
+      return '<div style="display:flex;align-items:center;justify-content:space-between;font-size:.57em;background:'+bg+';padding:2px 4px;border-radius:2px;color:'+tc+';overflow:hidden">'
+        +'<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">'+icon+' Día '+d+' · '+nombres+'</span>'
+        +'<span style="flex-shrink:0;margin-left:4px;display:flex;align-items:center">'+barra+'</span>'
+        +'<span style="font-weight:700;margin-left:4px;flex-shrink:0;min-width:34px;text-align:right">'+ok+'/'+n+(pagados===n&&n?' $':'')+'</span>'
+        +'</div>';
+    }).join('');
+    var ley=''; for(var i=1;i<=5;i++){ ley+='<span style="white-space:nowrap"><span style="display:inline-block;width:7px;height:6px;border-radius:1px;background:'+COL[i]+';margin-right:2px"></span>'+ETAPAS[i]+'</span> '; }
+    return '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">'
+      +'<div style="font-size:.72em;font-weight:700">📅 Cierre del mes — '+esc((month&&month.name)||'')+'</div>'
+      +'<div style="display:flex;gap:2px">'+chip('#fef3c7','#92400e','Hoy '+hoyN)+chip('#e0e7ff','#3730a3','Semana '+semN)
+      +(atrN?chip('#fef2f2','#dc2626',atrN+' ⚠'):'')+chip('#dcfce7','#166534',pres+'/'+L.length+' ✓')+'</div></div>'
+      +'<div style="font-size:.45em;color:#6b7280;margin-bottom:2px;display:flex;gap:6px;flex-wrap:wrap">'+ley+'</div>'
+      +'<div id="tv-venc-scroll" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:1px">'+filas+'</div>';
+  };
+  window.__cierreCB=function(j){
+    try{
+      var L=[];
+      (j.table&&j.table.rows||[]).forEach(function(row){
+        var c=row.c||[]; var v=function(i){ return c[i]?(c[i].v!=null?c[i].v:c[i].f):null; };
+        var cli=v(0), dia=parseInt(v(2),10);
+        if(!cli||isNaN(dia)) return;
+        var et=parseInt(v(4),10); if(isNaN(et)) et=0; et=Math.max(0,Math.min(5,et));
+        L.push({cliente:String(cli).trim(), ruc:v(1), dia:dia, imp:v(3), etapa:et, pago:v(6)!=null&&String(v(6)).trim()!==''});
+      });
+      var firma=JSON.stringify(L);
+      if(firma!==window.__cierreFirma){
+        window.__cierreFirma=firma; window.__cierre=L;
+        try{ if(typeof appData!=='undefined'&&appData&&typeof render==='function') render(); }catch(e){}
+      }
+    }catch(e){}
+  };
+  function traer(){
+    var s=document.createElement('script');
+    s.src='https://docs.google.com/spreadsheets/d/'+SID+'/gviz/tq?tqx=out:json;responseHandler:__cierreCB&headers=1&sheet=Cierre&range=A1:I200&_='+Date.now();
+    s.onerror=s.onload=function(){ if(s.parentNode) s.parentNode.removeChild(s); };
+    document.body.appendChild(s);
+  }
+  setInterval(traer, 300000);
   traer();
 })();
 </script>
