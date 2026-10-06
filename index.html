@@ -4206,6 +4206,7 @@ if(DEMO_MODE){
    Aislado: si falla, no afecta al resto del tablero. */
 (function kommoCard(){
   var SID='1-bZXTD0F928Hi75dRvfrTUXGfntfwN5MA5dp5S6xZOU';
+  window.__kommoLastSuccessAt = Date.now();
   function aplicar(){
     var m=window.__kommoLast; if(!m) return;
     ['sinresp','estanc','abiertos','upd'].forEach(function(k){
@@ -4215,6 +4216,7 @@ if(DEMO_MODE){
     });
   }
   window.__kommoCB=function(j){
+    window.__kommoLastSuccessAt = Date.now();
     try{
       var map={};
       (j.table && j.table.rows || []).forEach(function(row){
@@ -4244,8 +4246,16 @@ if(DEMO_MODE){
     s.onerror=s.onload=function(){ if(s.parentNode) s.parentNode.removeChild(s); };
     document.body.appendChild(s);
   }
+  // Vigía: si hace más de 15 minutos que no llega una respuesta nueva de Kommo
+  // (el poll es cada 5 min, 15 min = 3 intentos seguidos sin respuesta), algo se
+  // trabó del lado del navegador de la tele — recargar la página entera lo
+  // soluciona, igual que con el arreglo de la pantalla en blanco.
+  function vigilar(){
+    if(Date.now() - window.__kommoLastSuccessAt > 15*60*1000) location.reload();
+  }
   setInterval(aplicar, 2000);    // re-aplica tras cada re-render de renderTV (cada ~3 min)
   setInterval(traer, 300000);    // refresca datos de Kommo cada 5 min
+  setInterval(vigilar, 60000);   // chequea cada 1 min si Kommo quedó trabado
   traer();
 })();
 </script>
