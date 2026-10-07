@@ -3645,12 +3645,13 @@ const rodyClientes = calcClientesStats(["rodi","rody","rodolfo","alejandra","gab
   html+=`</div>`; // cierra tv-ranking-section
   document.getElementById("app").innerHTML=html;
 
-  // ── TV: renderizar versión compacta para pantalla grande ──
-  if(window.innerWidth >= 1280){ renderTV(); }
+  // ── Tablero compacto: TV (grilla 3 col) y celular (apilado, 1 col). Siempre lo usamos. ──
+  renderTV();
 
   function renderTV(){
     const vw = window.innerWidth;   // 1920 en TV
     const vh = window.innerHeight;  // 936 en TV
+    const isMobile = vw < 1280;     // celular / tablet angosto → vista apilada
     const BASE_W = 1920;
     const scale = vw / BASE_W;
     const BASE_H = Math.ceil(vh / scale);
@@ -3746,7 +3747,7 @@ const rodyClientes = calcClientesStats(["rodi","rody","rodolfo","alejandra","gab
 
     // ── Card builder ──
     const card = (content, flex, color) =>
-      `<div style="flex:${flex};min-height:0;overflow:hidden;background:white;border-radius:5px;border-left:3px solid ${color};padding:5px 7px;box-sizing:border-box">
+      `<div style="${isMobile?'overflow:visible;':'flex:'+flex+';min-height:0;overflow:hidden;'}background:white;border-radius:5px;border-left:3px solid ${color};padding:${isMobile?'8px 10px':'5px 7px'};box-sizing:border-box">
         <div class="tv-sc" style="will-change:transform">${content}</div>
       </div>`;
 
@@ -4038,16 +4039,16 @@ const rodyClientes = calcClientesStats(["rodi","rody","rodolfo","alejandra","gab
           <span style="font-size:.65em;background:#1a3a5e;color:#60a5fa;padding:2px 7px;border-radius:3px">● Al día</span>
         </div>
       </div>
-      <div style="flex:1;display:grid;grid-template-columns:1fr 1fr 1fr;min-height:0;overflow:hidden">
-        <div style="padding:2px 3px;display:flex;flex-direction:column;gap:3px;overflow:hidden;border-right:1px solid rgba(255,255,255,0.1)">
+      <div style="flex:1;display:grid;grid-template-columns:${isMobile?'1fr':'1fr 1fr 1fr'};min-height:0;overflow:${isMobile?'visible':'hidden'};gap:${isMobile?'8px':'0'}">
+        <div style="padding:2px 3px;display:flex;flex-direction:column;gap:${isMobile?'8px':'3px'};overflow:${isMobile?'visible':'hidden'};border-right:${isMobile?'none':'1px solid rgba(255,255,255,0.1)'}">
           <div style="font-size:.58em;color:#a89fd4;font-weight:700;text-transform:uppercase;text-align:center;padding:2px;background:#2a1a50;border-radius:3px;flex-shrink:0">● Directivos</div>
           ${col1}
         </div>
-        <div style="padding:2px 3px;display:flex;flex-direction:column;gap:3px;overflow:hidden;border-right:1px solid rgba(255,255,255,0.1)">
+        <div style="padding:2px 3px;display:flex;flex-direction:column;gap:${isMobile?'8px':'3px'};overflow:${isMobile?'visible':'hidden'};border-right:${isMobile?'none':'1px solid rgba(255,255,255,0.1)'}">
           <div style="font-size:.58em;color:#a89fd4;font-weight:700;text-transform:uppercase;text-align:center;padding:2px;background:#2a1a50;border-radius:3px;flex-shrink:0">● Podio & Gestión</div>
           ${col2}
         </div>
-        <div style="padding:2px 3px;display:flex;flex-direction:column;gap:3px;overflow:hidden">
+        <div style="padding:2px 3px;display:flex;flex-direction:column;gap:${isMobile?'8px':'3px'};overflow:${isMobile?'visible':'hidden'}">
           <div style="font-size:.58em;color:#a89fd4;font-weight:700;text-transform:uppercase;text-align:center;padding:2px;background:#2a1a50;border-radius:3px;flex-shrink:0">● Equipo Operativo</div>
           ${col3}
         </div>
@@ -4059,8 +4060,12 @@ const rodyClientes = calcClientesStats(["rodi","rody","rodolfo","alejandra","gab
       root.id = 'tv-root';
       document.body.appendChild(root);
     }
-    root.style.cssText = `position:fixed;top:0;left:0;width:${BASE_W}px;height:${BASE_H}px;transform:scale(${scale});transform-origin:top left;overflow:hidden;display:flex;flex-direction:column;font-size:26px;background:#150929;`;
+    root.style.cssText = isMobile
+      ? `position:static;width:100%;min-height:100vh;overflow-x:hidden;display:flex;flex-direction:column;font-size:15px;background:#150929;`
+      : `position:fixed;top:0;left:0;width:${BASE_W}px;height:${BASE_H}px;transform:scale(${scale});transform-origin:top left;overflow:hidden;display:flex;flex-direction:column;font-size:26px;background:#150929;`;
     root.innerHTML = tvHtml;
+    // ocultar la vista vieja (#app): en TV ya quedaba tapada por el overlay fijo; en celular la reemplaza la apilada
+    var _appEl = document.getElementById('app'); if(_appEl) _appEl.style.display = 'none';
 
     // Scroll automático en vencimientos
     setTimeout(()=>{
@@ -4428,6 +4433,8 @@ if(DEMO_MODE){
     var dir=1, pausa=0;
     setInterval(function(){
       var el=document.getElementById('tv-venc-scroll'); if(!el) return;
+      // En celular (vista apilada) la lista se muestra entera, sin forzar altura ni auto-scroll.
+      if(window.innerWidth < 1280){ if(el.style.height){ el.style.height=''; el.style.flex=''; } return; }
       // La lista toma la altura que queda en la card: así la card no desborda (y el desplazador general del
       // tablero no la mueve entera); lo que no entra se recorre con el scroll interno.
       var sc=el.closest('.tv-sc'), outer=sc&&sc.parentElement;
