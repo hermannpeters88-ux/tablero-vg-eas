@@ -1322,6 +1322,38 @@ function cumplimientoDe(tp){
     sinTareas: cuenta.length === 0
   };
 }
+/* Cumplimiento VENCIMIENTO-AWARE (Hermann 07/10): una tarea de cliente solo "cuenta" cuando el cliente
+   ya venció (su día de IVA <= hoy). Las de clientes que aún no vencen son "programadas" y no restan;
+   las generales (sin cliente) van aparte. Empareja la tarea contra la planilla Cierre (window.__cierre),
+   que ya trae cada cliente con su día. Si Cierre no cargó aún, devuelve null y el llamador usa el cálculo normal. */
+function _compactNom(s){ s=(s||'').toString().normalize('NFKD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]/g,''); return s.replace(/(eas|sa)$/,''); }
+function _fragTarea(s){ s=(s||'').toString().normalize('NFKD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/^(cargas?|carga)(\s+de)?(\s+doc)?/,'').trim(); return s.replace(/[^a-z0-9]/g,''); }
+function _vencMapCierre(){ var L=window.__cierre; if(!L||!L.length) return null; return L.map(function(c){return {c:_compactNom(c.cliente), dia:c.dia};}); }
+function _matchVenc(tareaTxt, map){ var f=_fragTarea(tareaTxt); if(f.length<4) return null; var best=null;
+  for(var i=0;i<map.length;i++){ var m=map[i]; if(!m.c) continue; if(f.indexOf(m.c)>=0||m.c.indexOf(f)>=0){ var diff=Math.abs(m.c.length-f.length); if(best===null||diff<best.diff) best={dia:m.dia,diff:diff}; } }
+  return best?best.dia:null; }
+function cumplimientoVenc(tp, hoyD){
+  if(!tp) return null;
+  var map=_vencMapCierre(); if(!map) return null;
+  var tareas=Array.isArray(tp.tareas)?tp.tareas:[]; if(!tareas.length) return null;
+  var exig=0,exigH=0,prog=0,progH=0,gen=0;
+  tareas.forEach(function(t){ var dia=_matchVenc(t.tarea,map); var h=!!t.realizada;
+    if(dia===null){ gen++; return; }
+    if(dia<=hoyD){ exig++; if(h) exigH++; } else { prog++; if(h) progH++; } });
+  var cuenta=exig+progH, hechas=exigH+progH;
+  return { pct: cuenta? Math.round(hechas/cuenta*100): null, hechas:hechas, cuenta:cuenta, exig:exig, exigPend:exig-exigH, prog:prog, progH:progH, gen:gen };
+}
+/* Cumplimiento de BACKLOG (Gabriela 07/10): sus tareas son operativas con fecha propia, no "carga por vencimiento".
+   Se mide completadas ÷ tareas ya exigibles (fecha <= hoy, o sin fecha). Las de fecha futura no cuentan todavía. */
+function cumplBacklog(tp){
+  if(!tp) return null;
+  var ts=Array.isArray(tp.tareas)?tp.tareas:[]; if(!ts.length) return null;
+  var hoyISO=new Date().toISOString().slice(0,10);
+  var due=ts.filter(function(t){ var f=(t.fecha||'').slice(0,10); return !f || f<=hoyISO; });
+  if(!due.length) return null;
+  var hechas=due.filter(function(t){return t.realizada;}).length;
+  return { hechas:hechas, total:due.length, pend:due.length-hechas, pct: Math.round(hechas/due.length*100) };
+}
 // Kommo (planilla del poller): % de conversaciones atendidas. null si falta el total.
 function kommoAtencion(){
   const k = window.__kommoLast; if(!k) return null;
@@ -1333,8 +1365,10 @@ function computeRealScores(){
   if(!appData) return null;
   const avg = arr => { const v = arr.filter(x=>x!=null); return v.length ? Math.round(v.reduce((a,b)=>a+b,0)/v.length) : null; };
   const pctOf = tp => { const c = cumplimientoDe(tp); return c ? c.pct : null; };
-  const rody  = pctOf(appData.rodyTareasPend);
-  const maga  = pctOf(appData.tareasPendMaga);
+  const cRodyB0 = cumplBacklog(appData.rodyTareasPend);
+  const rody  = cRodyB0 ? cRodyB0.pct : pctOf(appData.rodyTareasPend);
+  const cMagaV0 = cumplimientoVenc(appData.tareasPendMaga, new Date().getDate());
+  const maga  = cMagaV0 ? cMagaV0.pct : pctOf(appData.tareasPendMaga);
   const kA = kommoAtencion();
   const randy = avg([pctOf(appData.randyTareasPend), kA ? kA.pct : null]);
   return {
@@ -3651,6 +3685,22 @@ const rodyClientes = calcClientesStats(["rodi","rody","rodolfo","alejandra","gab
 
     // Clientes urgentes
     const hoyD = new Date().getDate();
+    // Nahobi: cumplimiento al vencimiento (lo que ya venció), con "programadas" aparte
+    const cMagaV = cumplimientoVenc(appData.tareasPendMaga, hoyD);
+    const magaScoreV = cMagaV ? cMagaV.pct : magaScore;
+    const detMagaV = cMagaV
+      ? (cMagaV.cuenta
+          ? cMagaV.hechas+'/'+cMagaV.cuenta+' al día con lo que venció'+(cMagaV.prog? ' · '+cMagaV.prog+' programadas (aún no vencen)':'')
+          : 'Sin vencimientos aún este mes'+(cMagaV.prog? ' · '+cMagaV.prog+' programadas':''))
+      : detT(cMaga);
+    const etqMagaV = cMagaV ? 'Cumplimiento del mes · al vencimiento' : etqC(magaScore,cMaga);
+    // Gabriela: cumplimiento de backlog (completadas ÷ exigibles)
+    const cRodyB = cumplBacklog(appData.rodyTareasPend);
+    const rodyScoreB = cRodyB ? cRodyB.pct : rodyScore;
+    const detRody = cRodyB
+      ? (cRodyB.hechas+'/'+cRodyB.total+' tareas realizadas'+(cRodyB.pend? ' · '+cRodyB.pend+' pendiente'+(cRodyB.pend>1?'s':''):''))
+      : detT(cRody);
+    const etqRodyB = cRodyB ? 'Cumplimiento de tareas' : etqC(rodyScore,cRody);
     const urgByEjec = id => (appData.clientesContabilidad||[])
       .filter(c => {
         const est = (c.estadoCobro||'').toLowerCase();
@@ -3722,9 +3772,14 @@ const rodyClientes = calcClientesStats(["rodi","rody","rodolfo","alejandra","gab
           ).join('')}
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;flex:1">
-          ${miniCard('⚠ Urgentes',
+          ${miniCard((window.__moraAcum&&window.__moraAcum['ledy']&&window.__moraAcum['ledy'].total>0)?'⚠ Mora acumulada (jun–sep)':'⚠ Urgentes',
             (()=>{
-const urgs = urgByEjec('gabriela').concat(urgByEjec('nahobi')).slice(0,4).map(u=>['⚠ '+u,'#dc2626']);
+              const ma = window.__moraAcum && window.__moraAcum['ledy'];
+              if(ma && ma.total>0){
+                const items=Object.keys(ma.items).map(k=>ma.items[k]).sort((a,b)=>b.monto-a.monto);
+                return [[items.length+' clientes · '+fmtG(ma.total),'#dc2626']].concat(items.slice(0,3).map(it=>['⚠ '+it.cliente+' '+fmtG(it.monto),'#dc2626']));
+              }
+              const urgs = urgByEjec('ledy').slice(0,4).map(u=>['⚠ '+u,'#dc2626']);
               return urgs.length > 0 ? urgs : [['Sin mora','#22c55e']];
             })(),
           '#fef2f2','#ef4444')}
@@ -3886,26 +3941,36 @@ const urgs = urgByEjec('gabriela').concat(urgByEjec('nahobi')).slice(0,4).map(u=
     ].join('');
 
     // ── COL 3 ──
-    const opCard = (name, photoId, role, score, detalle, etiqueta, pendList, urgList, color) => card(`
+    const opCard = (name, photoId, role, score, detalle, etiqueta, pendList, urgList, color) => {
+      // Mora ACUMULADA (jun–sep) por responsable, si el lector aislado ya la cargó
+      const maKey = {maga:'nahobi', rody:'gabriela'}[photoId];
+      const maObj = (maKey && window.__moraAcum) ? window.__moraAcum[maKey] : null;
+      const maItems = maObj ? Object.keys(maObj.items).map(k=>maObj.items[k]).sort((a,b)=>b.monto-a.monto) : [];
+      const usaAcum = !!(maObj && maObj.total>0);
+      const moraTit = usaAcum ? '⚠ Mora acumulada (jun–sep)' : '⚠ Mora/Urgentes';
+      const moraHtml = usaAcum
+        ? `<div style="color:#dc2626;font-weight:700;font-size:.9em;margin-bottom:1px">${maItems.length} cliente${maItems.length>1?'s':''} · ${fmtG(maObj.total)}</div>`+maItems.slice(0,4).map(it=>`<div style="color:#dc2626;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">⚠ ${it.cliente} ${fmtG(it.monto)}${it.meses>1?' ('+it.meses+'m)':''}</div>`).join('')
+        : (urgList.length ? `<div style="color:#dc2626;font-weight:600;font-size:.9em;margin-bottom:1px">${urgList.length} cliente${urgList.length>1?'s':''} en mora</div>`+urgList.slice(0,4).map(u=>`<div style="color:#dc2626;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">⚠ ${u}</div>`).join('') : '<div style="color:#22c55e">Sin mora</div>');
+      return card(`
       ${personHead(name, role, score, photoId, etiqueta)}
       ${bar(score, color)}
       <div style="font-size:.52em;color:${detalle.charAt(0)==='⚠'?'#d97706':'#999'};font-weight:${detalle.charAt(0)==='⚠'?'700':'400'};margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${detalle}</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;flex:1">
         <div style="background:#fef2f2;border-radius:3px;padding:3px 4px;border-left:2px solid #ef4444;font-size:.55em;overflow:hidden">
-          <div style="font-weight:700;color:#991b1b;margin-bottom:1px">⚠ Mora/Urgentes</div>
-          ${urgList.length ? `<div style="color:#dc2626;font-weight:600;font-size:.9em;margin-bottom:1px">${urgList.length} cliente${urgList.length>1?'s':''} en mora</div>`+urgList.slice(0,4).map(u=>`<div style="color:#dc2626;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">⚠ ${u}</div>`).join('') : '<div style="color:#22c55e">Sin mora</div>'}
+          <div style="font-weight:700;color:#991b1b;margin-bottom:1px">${moraTit}</div>
+          ${moraHtml}
         </div>
         <div style="background:#fff7ed;border-radius:3px;padding:3px 4px;border-left:2px solid ${color};font-size:.55em;overflow:hidden">
           <div style="font-weight:700;color:#92400e;margin-bottom:1px">Pendientes (${pendList.length})</div>
           ${pendList.slice(0,5).map(p=>`<div style="color:#666;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p}</div>`).join('')}
         </div>
       </div>
-    `, '0.85', color);
+    `, '0.85', color); };
 
     const col3 = [
-      opCard('Gabriela Ortigoza','rody','Ejecutiva de Cuentas',rodyScore,detT(cRody),etqC(rodyScore,cRody),
+      opCard('Gabriela Ortigoza','rody','Ejecutiva de Cuentas',rodyScoreB,detRody,etqRodyB,
         rodyPend.map(t=>t.tarea), urgByEjec('gabriela'), '#f97316'),
-      opCard('Nahobi Benítez','maga','Contadora Junior',magaScore,detT(cMaga),etqC(magaScore,cMaga),
+      opCard('Nahobi Benítez','maga','Contadora Junior',magaScoreV,detMagaV,etqMagaV,
         magaPend.map(t=>t.tarea), urgByEjec('nahobi'), '#22c55e'),
       opCard('GIA - Atención al Cliente Grupo G','randy','Ejecutivo Administrativo',randyScore,detGIA(),(randyScore==null && cRandy && cRandy.sinTareas && !(kA && kA.pct!=null)) ? '⚠ Sin tareas este mes' : 'Cumplimiento del mes',
         randyPend.map(t=>t.tarea),
@@ -4285,6 +4350,24 @@ if(DEMO_MODE){
       if(x>0) return ['en '+x+' días','#e3f4fb','#0892c0'];
       return ['pasó','#eef2f7',MUTED]; }
     var chip=function(bg,fg,t){return '<span style="font-size:.55em;background:'+bg+';color:'+fg+';padding:1px 5px;border-radius:8px;font-weight:700;white-space:nowrap">'+t+'</span>';};
+    /* Sábado libre (acuerdo Hermann 07/10): por contadora (col Ejecutiva) y por vencimiento, se gana si TODOS sus
+       clientes de ese día están presentados + reporte entregado y la mora (fee de los entregados sin pagar) no supera
+       el 20% del fee total del día. Tira compacta arriba de la lista; si no hay datos de ejecutiva, no se muestra. */
+    var byE={};
+    L.forEach(function(c){
+      if(!c.ejec) return;
+      var g=byE[c.ejec]||(byE[c.ejec]={dias:{}});
+      var dd=g.dias[c.dia]||(g.dias[c.dia]={cli:0,pres:0,rep:0,fee:0,mora:0});
+      dd.cli++; if(c.etapa>=5) dd.pres++; if(c.reporte) dd.rep++; dd.fee+=(c.fee||0); if(c.reporte&&!c.pago) dd.mora+=(c.fee||0);
+    });
+    var saboChips=Object.keys(byE).sort().map(function(e){
+      var g=byE[e], libre=0, tot=0;
+      Object.keys(g.dias).forEach(function(k){ var dd=g.dias[k]; tot++;
+        if(dd.pres===dd.cli&&dd.rep===dd.cli&&dd.mora<=0.2*dd.fee) libre++; });
+      var on=libre>0;
+      return '<span style="font-size:.52em;background:'+(on?VERDE_S:GRIS)+';color:'+(on?VERDE:MUTED)+';padding:1px 6px;border-radius:8px;font-weight:700;white-space:nowrap">'+esc(e)+' '+libre+'/'+tot+'</span>';
+    }).join('');
+    var sabo = saboChips ? '<div style="display:flex;gap:3px;flex-wrap:wrap;align-items:center;margin-bottom:2px"><span style="font-size:.52em;color:'+MUTED+';font-weight:700;white-space:nowrap">🏖️ Sáb. libre:</span>'+saboChips+'</div>' : '';
     var cuerpo=orden.map(function(d){
       var cs=dias[d], ok=cs.filter(function(c){return c.etapa>=5;}).length, r=rel(d);
       var hd='<div style="display:flex;align-items:center;gap:5px;margin:3px 0 1px;font-size:.6em">'
@@ -4307,7 +4390,7 @@ if(DEMO_MODE){
     return '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">'
       +'<div style="font-size:.72em;font-weight:700;white-space:nowrap">📅 Cierre — '+esc((month&&month.name)||'')+'</div>'
       +'<div style="display:flex;gap:3px">'+chip('#fbe6ea','#e2445c','Vencen hoy: '+hoyN)+chip('#fbf1dd','#c6870d','Próx. 3 días: '+proxN)
-      +chip('#e4f5ec','#15935b','Presentados: '+pres+'/'+L.length)+'</div></div>'+ley
+      +chip('#e4f5ec','#15935b','Presentados: '+pres+'/'+L.length)+'</div></div>'+sabo+ley
       +'<div id="tv-venc-scroll" style="flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column">'+cuerpo+'</div>';
   };
   // Auto-scroll lento de la lista (la TV no se toca): baja, pausa 4 s abajo, vuelve arriba, pausa 4 s.
@@ -4339,7 +4422,8 @@ if(DEMO_MODE){
         var cli=v(0), dia=parseInt(v(2),10);
         if(!cli||isNaN(dia)) return;
         var et=parseInt(v(4),10); if(isNaN(et)) et=0; et=Math.max(0,Math.min(5,et));
-        L.push({cliente:String(cli).trim(), ruc:v(1), dia:dia, imp:v(3), etapa:et, pago:v(6)!=null&&String(v(6)).trim()!==''});
+        var feeN=parseInt(String(v(10)==null?'':v(10)).replace(/[^0-9]/g,''),10); if(isNaN(feeN)) feeN=0;
+        L.push({cliente:String(cli).trim(), ruc:v(1), dia:dia, imp:v(3), etapa:et, pago:v(6)!=null&&String(v(6)).trim()!=='', ejec:String(v(9)==null?'':v(9)).trim(), fee:feeN, reporte:v(11)!=null&&String(v(11)).trim()!==''});
       });
       var firma=JSON.stringify(L);
       if(firma!==window.__cierreFirma){
@@ -4350,12 +4434,56 @@ if(DEMO_MODE){
   };
   function traer(){
     var s=document.createElement('script');
-    s.src='https://docs.google.com/spreadsheets/d/'+SID+'/gviz/tq?tqx=out:json;responseHandler:__cierreCB&headers=1&sheet=Cierre&range=A1:I200&_='+Date.now();
+    s.src='https://docs.google.com/spreadsheets/d/'+SID+'/gviz/tq?tqx=out:json;responseHandler:__cierreCB&headers=1&sheet=Cierre&range=A1:L200&_='+Date.now();
     s.onerror=s.onload=function(){ if(s.parentNode) s.parentNode.removeChild(s); };
     document.body.appendChild(s);
   }
   setInterval(traer, 300000);
   traer();
+})();
+</script>
+<script>
+/* Mora ACUMULADA por responsable (Hermann 07/10): lee las pestañas "Proceso junio..Septiembre" + "Mapa Responsables"
+   de la planilla "Seguimiento de estado de clientes VG" (gviz JSONP). Atribuye cada fila Pendiente al responsable
+   ACTUAL del cliente (Mapa Responsables), no al histórico congelado. Resultado en window.__moraAcum[responsable].
+   Aislado: si falla, las cards vuelven a mostrar la mora del mes corriente (urgByEjec). */
+(function moraAcumCard(){
+  var SID='1GAQW3wmTfsYHq87dowqdCfhKhx3iEycOkm8IBCAz2aA';
+  var MESES=['Proceso junio','Proceso Julio','Proceso Agosto','Proceso Septiembre'];
+  var mapa=null, proc={};
+  function compact(s){ s=(s||'').toString().normalize('NFKD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]/g,''); return s.replace(/(eas|sa)$/,''); }
+  function rows(j){ return (j && j.table && j.table.rows) || []; }
+  window.__moraMapaCB=function(j){ mapa={}; rows(j).forEach(function(r){ var c=r.c||[]; var cli=c[0]&&c[0].v, resp=c[1]&&c[1].v; if(cli&&resp) mapa[compact(cli)]=(''+resp).trim().toLowerCase(); }); listo(); };
+  MESES.forEach(function(mes,idx){ window['__moraCB'+idx]=function(j){ proc[idx]=rows(j); listo(); }; });
+  function listo(){
+    if(!mapa) return; for(var i=0;i<MESES.length;i++){ if(!proc[i]) return; }
+    var acum={};
+    for(var i=0;i<MESES.length;i++){
+      var filas=proc[i]||[];
+      for(var j=0;j<filas.length;j++){
+        var c=filas[j].c||[]; var val=function(k){ return c[k]&&c[k].v!=null?c[k].v:''; };
+        var cli=(''+val(1)).trim();
+        // Solo la sección FEE MENSUAL: cortar al llegar a la fila de totales / separador (cliente vacío) → excluye "UN IMPACTO"
+        if(!cli) break;
+        if(cli.toLowerCase()==='cliente') continue;
+        var est=(''+val(5)).toLowerCase(); if(est.indexOf('pend')<0) continue;
+        var m=parseInt((''+val(3)).replace(/[^0-9]/g,''),10)||0; if(!m) continue;
+        var resp=mapa[compact(cli)]||(''+val(2)).trim().toLowerCase(); if(!resp) continue;
+        var key=compact(cli);
+        var a=acum[resp]||(acum[resp]={total:0,items:{}});
+        a.total+=m; var it=a.items[key]||(a.items[key]={cliente:cli,monto:0,meses:0});
+        if(cli.length>it.cliente.length) it.cliente=cli; // nombre de display más completo
+        it.monto+=m; it.meses++;
+      }
+    }
+    window.__moraAcum=acum;
+    try{ if(typeof appData!=='undefined'&&appData&&typeof render==='function') render(); }catch(e){}
+  }
+  function traer(sheet,rng,cb){ var s=document.createElement('script');
+    s.src='https://docs.google.com/spreadsheets/d/'+SID+'/gviz/tq?tqx=out:json;responseHandler:'+cb+'&sheet='+encodeURIComponent(sheet)+'&range='+rng+'&_='+Date.now();
+    s.onerror=s.onload=function(){ if(s.parentNode) s.parentNode.removeChild(s); }; document.body.appendChild(s); }
+  function todo(){ mapa=null; proc={}; traer('Mapa Responsables','A1:B45','__moraMapaCB'); MESES.forEach(function(m,i){ traer(m,'A3:F44','__moraCB'+i); }); }
+  setInterval(todo, 600000); todo();
 })();
 </script>
 </body>

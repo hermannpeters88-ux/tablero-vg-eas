@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sábados libres — VG</title>
+<style>
+  :root{
+    --bg:#f4f6f9; --panel:#fff; --ink:#0f1b2d; --muted:#5b6b82; --line:#e3e8f0; --grid:#eef2f7;
+    --cyan:#0892c0; --cyan-soft:#e3f4fb;
+    --ok:#15935b; --ok-soft:#e4f5ec; --warn:#c6870d; --warn-soft:#fbf1dd; --todo:#c0392b; --todo-soft:#fbe6ea;
+    --shadow:0 1px 2px rgba(16,27,45,.06),0 8px 24px rgba(16,27,45,.06); color-scheme:light;
+  }
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+    --bg:#0b1220;--panel:#121c2e;--ink:#eaf2fb;--muted:#9fb0c7;--line:#223247;--grid:#1a2740;
+    --cyan:#38bdf8;--cyan-soft:#10283a;--ok:#3ad692;--ok-soft:#10301f;--warn:#f0b24a;--warn-soft:#2f2410;--todo:#ff6b5a;--todo-soft:#331117;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35);color-scheme:dark;}}
+  :root[data-theme="dark"]{--bg:#0b1220;--panel:#121c2e;--ink:#eaf2fb;--muted:#9fb0c7;--line:#223247;--grid:#1a2740;
+    --cyan:#38bdf8;--cyan-soft:#10283a;--ok:#3ad692;--ok-soft:#10301f;--warn:#f0b24a;--warn-soft:#2f2410;--todo:#ff6b5a;--todo-soft:#331117;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35);color-scheme:dark;}
+  *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.4;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1180px;margin:0 auto;padding:22px 16px 48px;}
+  .kick{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan);font-weight:700;}
+  h1{font-size:clamp(22px,4vw,30px);margin:.1em 0 .05em;letter-spacing:-.01em;}
+  .top{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;margin:4px 0 12px;}
+  .mes{font-size:13px;color:var(--muted)} .mes b{color:var(--ink)}
+  .mini{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
+  .pill{font-size:12px;font-weight:700;border-radius:999px;padding:4px 11px;border:1px solid var(--line)}
+  .pill.ok{background:var(--ok-soft);color:var(--ok)} .pill.todo{background:var(--todo-soft);color:var(--todo)}
+  #status{font-size:12px;color:var(--muted);margin-bottom:14px}
+  .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:16px;}
+  .exec{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden;}
+  .exhd{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line);}
+  .av{width:34px;height:34px;border-radius:50%;background:var(--cyan-soft);color:var(--cyan);display:grid;place-items:center;font-weight:800;font-size:15px}
+  .exhd .nm{font-size:16px;font-weight:700;flex:1} .exhd .tag{font-size:11.5px;color:var(--muted)}
+  .exhd .score{font-size:12px;font-weight:700;border-radius:999px;padding:3px 10px;background:var(--ok-soft);color:var(--ok)}
+  .exhd .score.z{background:var(--grid);color:var(--muted)}
+  .vto{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:10px 16px;border-top:1px solid var(--grid);}
+  .vto:first-child{border-top:none}
+  .dia{font-size:13px;font-weight:700;white-space:nowrap} .dia small{display:block;font-weight:500;color:var(--muted);font-size:10.5px}
+  .mx{display:flex;flex-wrap:wrap;gap:4px 8px;font-size:11px;color:var(--muted)}
+  .mx b{color:var(--ink);font-variant-numeric:tabular-nums} .mx .mora.bad b{color:var(--todo)}
+  .sem{font-size:12px;font-weight:700;border-radius:8px;padding:5px 9px;text-align:center;white-space:nowrap;min-width:96px}
+  .sem.si{background:var(--ok-soft);color:var(--ok)} .sem.no{background:var(--todo-soft);color:var(--todo)}
+  .sem small{display:block;font-weight:600;font-size:9.5px;opacity:.85;margin-top:1px}
+  footer{margin-top:20px;color:var(--muted);font-size:12px;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kick">Jarvis · Grupo G · VG</div>
+  <h1>Sábados libres — operativa de las contadoras</h1>
+  <div class="top">
+    <div class="mes">Ciclo: <b id="mesLbl">—</b></div>
+    <div class="mini" id="resumen"></div>
+  </div>
+  <div id="status">Cargando datos de la planilla…</div>
+  <div class="cols" id="cont"></div>
+  <footer>Sábado libre = todos presentados + reportes entregados + mora ≤ 20% del fee del vencimiento · se actualiza solo desde "Cierre del mes — VG"</footer>
+</div>
+
+<script>
+  var SHEET="1W-B0Sc16DQK2bEVk0TeyVzUatbRaajmw-eMmudiD7Wo";
+  var GID="746379636";
+  var MESES=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+
+  function cargar(){
+    var s=document.createElement("script");
+    s.src="https://docs.google.com/spreadsheets/d/"+SHEET+"/gviz/tq?tqx=out:json;responseHandler:__medCB&gid="+GID+"&headers=1&t="+Date.now();
+    s.onerror=function(){ document.getElementById("status").textContent="No pude leer la planilla ahora. Reintento en un momento…"; };
+    document.body.appendChild(s);
+    setTimeout(function(){ s.remove(); }, 8000);
+  }
+
+  function num(c){ return c&&c.v!=null&&c.v!==""?Number(c.v):0; }
+  function str(c){ return c&&c.v!=null?(""+c.v).trim():""; }
+  function miles(n){ try{return Number(n).toLocaleString("es-PY");}catch(e){return ""+n;} }
+
+  window.__medCB=function(resp){
+    try{
+      var rows=(resp.table&&resp.table.rows)||[];
+      var execs={}; var order=[];
+      rows.forEach(function(r){
+        var c=r.c||[];
+        var eje=str(c[0]); var vto=str(c[1]);
+        if(!eje) return;
+        if(c[2]==null||c[2].v==null||(""+c[2].v)==="") return; // fila sin #clientes = legenda/actualizado
+        if(!execs[eje]){ execs[eje]={vtos:[],si:0}; order.push(eje); }
+        var cli=num(c[2]),pres=num(c[3]),rep=num(c[4]),fee=num(c[5]),mora=num(c[6]);
+        var pct=str(c[7])||"0%"; var est=str(c[8]);
+        var si=est.indexOf("SÍ")===0||est.indexOf("SI")===0;
+        if(si) execs[eje].si++;
+        execs[eje].vtos.push({vto:vto,cli:cli,pres:pres,rep:rep,fee:fee,mora:mora,pct:pct,est:est,si:si});
+      });
+      render(order,execs);
+    }catch(e){ document.getElementById("status").textContent="Error leyendo los datos: "+e.message; }
+  };
+
+  function inic(nombre){ var p=nombre.trim().split(/\s+/); return ((p[0]||"")[0]||"").toUpperCase()+((p[1]||"")[0]||"").toUpperCase(); }
+
+  function render(order,execs){
+    var hoy=new Date();
+    document.getElementById("mesLbl").textContent=MESES[hoy.getMonth()]+" "+hoy.getFullYear();
+    var totV=0,totSi=0;
+    order.forEach(function(e){ totV+=execs[e].vtos.length; totSi+=execs[e].si; });
+    document.getElementById("status").textContent="Actualizado "+("0"+hoy.getHours()).slice(-2)+":"+("0"+hoy.getMinutes()).slice(-2)+" · "+order.length+" contadoras · "+totV+" vencimientos · se refresca cada 5 min.";
+    document.getElementById("resumen").innerHTML='<span class="pill ok">Sábados libres: '+totSi+'</span><span class="pill todo">Pendientes: '+(totV-totSi)+'</span>';
+    var cont=document.getElementById("cont"); cont.innerHTML="";
+    order.sort();
+    order.forEach(function(e){
+      var ex=execs[e];
+      var card=document.createElement("div"); card.className="exec";
+      var scoreCls=ex.si>0?"":"z";
+      var head='<div class="exhd"><div class="av">'+inic(e)+'</div>'+
+        '<div style="flex:1"><div class="nm">'+e+'</div><div class="tag">Operativa contable VG</div></div>'+
+        '<div class="score '+scoreCls+'">'+ex.si+'/'+ex.vtos.length+' libres</div></div>';
+      var body="";
+      ex.vtos.forEach(function(v){
+        var moraBad=v.mora>0.2*v.fee && v.fee>0;
+        var reason=v.est.replace(/^S[IÍ]\s*🎉?/,"").replace(/^NO\s*·\s*/,"").trim();
+        body+='<div class="vto">'+
+          '<div class="dia">Día '+v.vto+'<small>'+v.cli+' cliente'+(v.cli===1?"":"s")+'</small></div>'+
+          '<div class="mx">'+
+            '<span>Present. <b>'+v.pres+'/'+v.cli+'</b></span>'+
+            '<span>Reportes <b>'+v.rep+'/'+v.cli+'</b></span>'+
+            '<span>Fee <b>'+miles(v.fee)+'</b></span>'+
+            '<span class="mora'+(moraBad?" bad":"")+'">Mora <b>'+v.pct+'</b></span>'+
+          '</div>'+
+          '<div class="sem '+(v.si?"si":"no")+'">'+(v.si?"Sábado libre ✓":"Falta")+
+            (v.si?"":'<small>'+reason+'</small>')+'</div>'+
+        '</div>';
+      });
+      card.innerHTML=head+body;
+      cont.appendChild(card);
+    });
+  }
+
+  cargar();
+  setInterval(cargar, 5*60*1000);
+</script>
+</body>
+</html>
