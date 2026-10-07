@@ -1336,12 +1336,12 @@ function cumplimientoVenc(tp, hoyD){
   if(!tp) return null;
   var map=_vencMapCierre(); if(!map) return null;
   var tareas=Array.isArray(tp.tareas)?tp.tareas:[]; if(!tareas.length) return null;
-  var exig=0,exigH=0,prog=0,progH=0,gen=0;
+  var exig=0,exigH=0,prog=0,progH=0,gen=0,genPend=0,pend=[];
   tareas.forEach(function(t){ var dia=_matchVenc(t.tarea,map); var h=!!t.realizada;
-    if(dia===null){ gen++; return; }
-    if(dia<=hoyD){ exig++; if(h) exigH++; } else { prog++; if(h) progH++; } });
+    if(dia===null){ gen++; if(!h){ genPend++; pend.push(t); } return; }
+    if(dia<=hoyD){ exig++; if(h) exigH++; else pend.push(t); } else { prog++; if(h) progH++; } });
   var cuenta=exig+progH, hechas=exigH+progH;
-  return { pct: cuenta? Math.round(hechas/cuenta*100): null, hechas:hechas, cuenta:cuenta, exig:exig, exigPend:exig-exigH, prog:prog, progH:progH, gen:gen };
+  return { pct: cuenta? Math.round(hechas/cuenta*100): null, hechas:hechas, cuenta:cuenta, exig:exig, exigPend:exig-exigH, prog:prog, progH:progH, gen:gen, genPend:genPend, pend:pend };
 }
 /* Cumplimiento de BACKLOG (Gabriela 07/10): sus tareas son operativas con fecha propia, no "carga por vencimiento".
    Se mide completadas ÷ tareas ya exigibles (fecha <= hoy, o sin fecha). Las de fecha futura no cuentan todavía. */
@@ -3757,7 +3757,7 @@ const rodyClientes = calcClientesStats(["rodi","rody","rodolfo","alejandra","gab
         ${personHead('Hermann Peters','Director Ejecutivo · GRUPO G',hScore,'hermann','Supervisión equipo')}
         ${bar(hScore,'#f97316')}
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:2px;margin-bottom:3px">
-          ${[['Sup. Ledy',fmtP(lScore)],['Sup. Vero',fmtP(vScore)],['Cartera',(appData.clientesContabilidad?.length||appData.clientes?.clientes?.length||0)+'c'],['Cobrar',fmtG(appData.ledy?.asamblea?.totalCobrar)]].map(([k,v])=>
+          ${[['Sup. Ledy',fmtP(lScore)],['Sup. Vero',fmtP(vScore)],['Cartera',(appData.clientesContabilidad?.length||appData.clientes?.clientes?.length||0)+'c'],['Asamb. pend',fmtG((appData.ledy?.asamblea?.totalCobrar||0)-(appData.ledy?.asamblea?.totalCobrado||0))]].map(([k,v])=>
             `<div style="background:#f8f9fa;border-radius:2px;padding:2px;text-align:center"><div style="font-size:.5em;color:#888">${k}</div><div style="font-size:.62em;font-weight:700;color:#1a1a2e">${v}</div></div>`
           ).join('')}
         </div>
@@ -3820,8 +3820,8 @@ const rodyClientes = calcClientesStats(["rodi","rody","rodolfo","alejandra","gab
             ['Pendientes: '+randyPend.length,randyPend.length?'#f97316':'#22c55e'],
           ],'#fff7ed','#f97316')}
           ${miniCard('⚠ Mora GIA',[
-            ['ICHO: '+fmtG(icho.pendiente)+' pend.','#dc2626'],
-            [(icho.pendientesCount||0)+' fact. sin cobrar','#dc2626'],
+            ['ICHO pend: '+fmtG((window.__ichoMora&&window.__ichoMora.pendiente)||icho.pendiente||0),'#dc2626'],
+            ['ICHO vencido: '+fmtG((window.__ichoMora&&window.__ichoMora.vencido)||0),'#b91c1c'],
             ['VGC + AIMA en gestión','#666'],
           ],'#faf5ff','#a855f7')}
         </div>
@@ -3830,13 +3830,13 @@ const rodyClientes = calcClientesStats(["rodi","rody","rodolfo","alejandra","gab
       card(`
         <div style="font-size:.72em;font-weight:700;color:#1a1a2e;margin-bottom:3px">📋 Pendientes del equipo</div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px;margin-bottom:3px">
-          ${[['Gabi',rodyPend.length,'#f97316'],['Nahobi',magaPend.length,'#22c55e'],['GIA',randyPend.length,'#a855f7']].map(([n,v,c])=>
+          ${[['Gabi',(cRodyB&&cRodyB.pend!=null)?cRodyB.pend:rodyPend.length,'#f97316'],['Nahobi',(cMagaV&&cMagaV.pend)?cMagaV.pend.length:magaPend.length,'#22c55e'],['GIA',randyPend.length,'#a855f7']].map(([n,v,c])=>
             `<div style="background:${c}18;border-radius:3px;padding:3px;text-align:center"><div style="font-size:.52em;color:#666">${n}</div><div style="font-size:1.3em;font-weight:700;color:${c};line-height:1.1">${v}</div></div>`
           ).join('')}
         </div>
         <div style="font-size:.55em;display:flex;flex-direction:column;gap:1px;overflow:hidden">
           ${rodyPend.slice(0,2).map(t=>`<div style="color:#dc2626;background:#fef2f2;padding:1px 4px;border-radius:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">⚠ ${t.tarea} · Gabi</div>`).join('')}
-          ${magaPend.slice(0,1).map(t=>`<div style="color:#dc2626;background:#fef2f2;padding:1px 4px;border-radius:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">⚠ ${t.tarea} · Nahobi</div>`).join('')}
+          ${((cMagaV&&cMagaV.pend)?cMagaV.pend:magaPend).slice(0,1).map(t=>`<div style="color:#dc2626;background:#fef2f2;padding:1px 4px;border-radius:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">⚠ ${t.tarea} · Nahobi</div>`).join('')}
           ${randyPend.slice(0,1).map(t=>`<div style="color:#f97316;background:#fff7ed;padding:1px 4px;border-radius:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">⏳ ${t.tarea} · GIA</div>`).join('')}
         </div>
       `,'0.85','#f59e0b'),
@@ -3914,21 +3914,26 @@ const rodyClientes = calcClientesStats(["rodi","rody","rodolfo","alejandra","gab
         <div style="flex:1;display:flex;flex-direction:column;gap:3px">
           ${[{n:'ICHO',d:icho,c:'#7c3aed'},{n:'VG Contabilidad',d:vgc,c:'#22c55e'},{n:'AIMA',d:aima,c:'#f59e0b'}].map(({n,d,c})=>{
             const im = n==='ICHO' ? (window.__ichoMora || appData?.ichoMora || {}) : {};
-            const ar = n==='AIMA' ? (appData?.aimaResumen||{}) : {};
+            const ar = n==='AIMA' ? (window.__aimaMes || appData?.aimaResumen || {}) : {};
+            const _aFac = ar.facturadoMes!=null?ar.facturadoMes:ar.facturacion;
+            const _aMes = ar.mes || '';
             const hasIchoMora = n==='ICHO' && im && im.pagadoMes!=null;
             const _iPag  = im.pagadoMes!=null?im.pagadoMes:(im.totalCobrado||0);
             const _iMes  = im.mes || '';
-            const hasAima = n==='AIMA' && (ar.facturacion||ar.mora);
+            const _iPend = im.pendiente||0;
+            const _iVenc = im.vencido||0;
+            const hasAima = n==='AIMA' && (_aFac||ar.mora);
             return `<div style="background:${c}0e;border-left:2px solid ${c};border-radius:3px;padding:3px 5px;flex:${hasIchoMora?'1.6':'1'};display:flex;flex-direction:column;justify-content:space-between">
               <div style="font-size:.62em;font-weight:700;color:${c};margin-bottom:2px">${n} <span style="font-weight:400;color:#666;font-size:.85em">${d.pendientesCount?'· '+d.pendientesCount+' pend.':''}</span></div>
               ${hasIchoMora ? `
-              <div style="display:flex;align-items:center;justify-content:center;gap:8px;background:#d1fae522;border-radius:2px;padding:4px 6px">
-                <div style="font-size:.5em;color:#065f46;white-space:nowrap">Pagado ${_iMes||'mes'}</div>
-                <div style="font-size:.95em;font-weight:800;color:#10b981;white-space:nowrap">${fmtG(_iPag)}</div>
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2px">
+                <div style="background:#d1fae522;border-radius:2px;padding:2px 1px;text-align:center"><div style="font-size:.4em;color:#065f46;white-space:nowrap">Pagado ${_iMes||'mes'}</div><div style="font-size:.55em;font-weight:800;color:#10b981;white-space:nowrap">${fmtG(_iPag)}</div></div>
+                <div style="background:#ffedd522;border-radius:2px;padding:2px 1px;text-align:center"><div style="font-size:.4em;color:#9a3412;white-space:nowrap">Pendiente</div><div style="font-size:.55em;font-weight:800;color:#f97316;white-space:nowrap">${fmtG(_iPend)}</div></div>
+                <div style="background:#fee2e222;border-radius:2px;padding:2px 1px;text-align:center"><div style="font-size:.4em;color:#991b1b;white-space:nowrap">Pend/Venc.</div><div style="font-size:.55em;font-weight:800;color:#ef4444;white-space:nowrap">${fmtG(_iVenc)}</div></div>
               </div>` : hasAima ? `
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px">
-                <div style="background:#ede9fe22;border-radius:2px;padding:2px;text-align:center"><div style="font-size:.44em;color:#4c1d95">Facturado</div><div style="font-size:.62em;font-weight:800;color:#7c3aed">${fmtG(ar.facturacion)}</div></div>
-                <div style="background:#fee2e222;border-radius:2px;padding:2px;text-align:center"><div style="font-size:.44em;color:#991b1b">Mora</div><div style="font-size:.62em;font-weight:800;color:#ef4444">${fmtG(ar.mora)}</div></div>
+                <div style="background:#ede9fe22;border-radius:2px;padding:2px;text-align:center"><div style="font-size:.44em;color:#4c1d95">Facturado ${_aMes||'mes'}</div><div style="font-size:.62em;font-weight:800;color:#7c3aed">${fmtG(_aFac)}</div></div>
+                <div style="background:#fee2e222;border-radius:2px;padding:2px;text-align:center"><div style="font-size:.44em;color:#991b1b">Mora total</div><div style="font-size:.62em;font-weight:800;color:#ef4444">${fmtG(ar.mora)}</div></div>
               </div>` : `
               <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px">
                 <div style="background:white;border-radius:2px;padding:2px;text-align:center"><div style="font-size:.44em;color:#666">Total</div><div style="font-size:.62em;font-weight:700;color:${c}">${fmtG(d.totalACobrar||d.cobrado)}</div></div>
@@ -4507,12 +4512,31 @@ if(DEMO_MODE){
   window.__ichoCB=function(j){
     try{
       var rows=(j.table&&j.table.rows)||[]; var c=(rows[0]&&rows[0].c)||[];
-      window.__ichoMora={ pagadoMes:num(c[0]&&c[0].v), mes:(c[1]&&c[1].v!=null)?(''+c[1].v):'' };
+      window.__ichoMora={ pagadoMes:num(c[0]&&c[0].v), mes:(c[1]&&c[1].v!=null)?(''+c[1].v):'', pendiente:num(c[2]&&c[2].v), vencido:num(c[3]&&c[3].v) };
       try{ if(typeof appData!=='undefined'&&appData&&typeof render==='function') render(); }catch(e){}
     }catch(e){}
   };
   function traer(){ var s=document.createElement('script');
-    s.src='https://docs.google.com/spreadsheets/d/'+SID+'/gviz/tq?tqx=out:json;responseHandler:__ichoCB&sheet=ICHO&headers=0&range=A2:C2&_='+Date.now();
+    s.src='https://docs.google.com/spreadsheets/d/'+SID+'/gviz/tq?tqx=out:json;responseHandler:__ichoCB&sheet=ICHO&headers=0&range=A2:E2&_='+Date.now();
+    s.onerror=s.onload=function(){ if(s.parentNode) s.parentNode.removeChild(s); }; document.body.appendChild(s); }
+  setInterval(traer, 600000); traer();
+})();
+</script>
+<script>
+/* AIMA mes vigente (Hermann 07/10): lee la pestaña pública "AIMA" del Cierre (la Mini la refresca a diario desde
+   el REPORTES 2026): facturado del MES ACTUAL + mora = todo lo pendiente. Resultado en window.__aimaMes. */
+(function aimaCard(){
+  var SID='1W-B0Sc16DQK2bEVk0TeyVzUatbRaajmw-eMmudiD7Wo';
+  function num(x){ return parseInt(String(x==null?'':x).replace(/[^0-9]/g,''),10)||0; }
+  window.__aimaCB=function(j){
+    try{
+      var rows=(j.table&&j.table.rows)||[]; var c=(rows[0]&&rows[0].c)||[];
+      window.__aimaMes={ facturadoMes:num(c[0]&&c[0].v), mes:(c[1]&&c[1].v!=null)?(''+c[1].v):'', mora:num(c[2]&&c[2].v) };
+      try{ if(typeof appData!=='undefined'&&appData&&typeof render==='function') render(); }catch(e){}
+    }catch(e){}
+  };
+  function traer(){ var s=document.createElement('script');
+    s.src='https://docs.google.com/spreadsheets/d/'+SID+'/gviz/tq?tqx=out:json;responseHandler:__aimaCB&sheet=AIMA&headers=0&range=A2:D2&_='+Date.now();
     s.onerror=s.onload=function(){ if(s.parentNode) s.parentNode.removeChild(s); }; document.body.appendChild(s); }
   setInterval(traer, 600000); traer();
 })();
