@@ -4380,20 +4380,20 @@ if(DEMO_MODE){
       if(x>0) return ['en '+x+' días','#e3f4fb','#0892c0'];
       return ['pasó','#eef2f7',MUTED]; }
     var chip=function(bg,fg,t){return '<span style="font-size:.55em;background:'+bg+';color:'+fg+';padding:1px 5px;border-radius:8px;font-weight:700;white-space:nowrap">'+t+'</span>';};
-    /* Sábado libre (acuerdo Hermann 07/10): por contadora (col Ejecutiva) y por vencimiento, se gana si TODOS sus
-       clientes de ese día están presentados + reporte entregado y la mora (fee de los entregados sin pagar) no supera
-       el 20% del fee total del día. Tira compacta arriba de la lista; si no hay datos de ejecutiva, no se muestra. */
+    /* Sábado libre (acuerdo Hermann 07/10, simplificado): por contadora (col Ejecutiva) y por vencimiento, se gana si
+       TODOS sus clientes de ese día están presentados y la mora (fee de los presentados sin pagar) no supera el 20%
+       del fee total del día. Todo automático (presentado desde Marangatú, cobro desde cartera); sin marca manual. */
     var byE={};
     L.forEach(function(c){
       if(!c.ejec) return;
       var g=byE[c.ejec]||(byE[c.ejec]={dias:{}});
       var dd=g.dias[c.dia]||(g.dias[c.dia]={cli:0,pres:0,rep:0,fee:0,mora:0});
-      dd.cli++; if(c.etapa>=5) dd.pres++; if(c.reporte) dd.rep++; dd.fee+=(c.fee||0); if(c.reporte&&!c.pago) dd.mora+=(c.fee||0);
+      dd.cli++; if(c.etapa>=5) dd.pres++; dd.fee+=(c.fee||0); if(c.etapa>=5&&!c.pago) dd.mora+=(c.fee||0);
     });
     var saboChips=Object.keys(byE).sort().map(function(e){
       var g=byE[e], libre=0, tot=0;
       Object.keys(g.dias).forEach(function(k){ var dd=g.dias[k]; tot++;
-        if(dd.pres===dd.cli&&dd.rep===dd.cli&&dd.mora<=0.2*dd.fee) libre++; });
+        if(dd.pres===dd.cli&&dd.mora<=0.2*dd.fee) libre++; });
       var on=libre>0;
       return '<span style="font-size:.52em;background:'+(on?VERDE_S:GRIS)+';color:'+(on?VERDE:MUTED)+';padding:1px 6px;border-radius:8px;font-weight:700;white-space:nowrap">'+esc(e)+' '+libre+'/'+tot+'</span>';
     }).join('');
