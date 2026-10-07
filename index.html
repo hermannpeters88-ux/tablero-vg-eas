@@ -1345,11 +1345,21 @@ function cumplimientoVenc(tp, hoyD){
 }
 /* Cumplimiento de BACKLOG (Gabriela 07/10): sus tareas son operativas con fecha propia, no "carga por vencimiento".
    Se mide completadas ÷ tareas ya exigibles (fecha <= hoy, o sin fecha). Las de fecha futura no cuentan todavía. */
+// Fecha de tarea YA VENCIDA (<=hoy) o sin fecha. Acepta ISO (YYYY-MM-DD) y dd/mm[/aaaa] — las APIs mezclan formatos.
+function _tareaVencida(f, hoy){
+  f=(f||'').toString().trim(); if(!f) return true;
+  var y,m,d, iso=f.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if(iso){ y=+iso[1]; m=+iso[2]; d=+iso[3]; }
+  else{ var dm=f.match(/^(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?/); if(!dm) return true;
+        d=+dm[1]; m=+dm[2]; y=dm[3]?(+dm[3]<100?2000+(+dm[3]):+dm[3]):hoy.getFullYear(); }
+  if(m<1||m>12||d<1||d>31) return true;
+  return new Date(y,m-1,d).getTime() <= hoy.getTime();
+}
 function cumplBacklog(tp){
   if(!tp) return null;
   var ts=Array.isArray(tp.tareas)?tp.tareas:[]; if(!ts.length) return null;
-  var hoyISO=new Date().toISOString().slice(0,10);
-  var due=ts.filter(function(t){ var f=(t.fecha||'').slice(0,10); return !f || f<=hoyISO; });
+  var hoy=new Date(); hoy.setHours(23,59,59,999);
+  var due=ts.filter(function(t){ return _tareaVencida(t.fecha, hoy); });
   if(!due.length) return null;
   var hechas=due.filter(function(t){return t.realizada;}).length;
   return { hechas:hechas, total:due.length, pend:due.length-hechas, pct: Math.round(hechas/due.length*100) };
