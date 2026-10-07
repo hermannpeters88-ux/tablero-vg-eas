@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cierre del mes — VG</title>
+<style>
+  :root{
+    --bg:#f4f6f9; --panel:#fff; --ink:#0f1b2d; --muted:#5b6b82; --line:#e3e8f0; --grid:#eef2f7;
+    --cyan:#0892c0; --cyan-soft:#e3f4fb;
+    --ok:#15935b; --ok-soft:#e4f5ec; --warn:#c6870d; --warn-soft:#fbf1dd; --todo:#c0392b;
+    --today:#e2445c; --today-soft:#fbe6ea;
+    --shadow:0 1px 2px rgba(16,27,45,.06),0 8px 24px rgba(16,27,45,.06); color-scheme:light;
+  }
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+    --bg:#0b1220;--panel:#121c2e;--ink:#eaf2fb;--muted:#9fb0c7;--line:#223247;--grid:#1a2740;
+    --cyan:#38bdf8;--cyan-soft:#10283a;--ok:#3ad692;--ok-soft:#10301f;--warn:#f0b24a;--warn-soft:#2f2410;--todo:#ff6b5a;
+    --today:#ff6b7f;--today-soft:#331117;--shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35);color-scheme:dark;}}
+  :root[data-theme="dark"]{--bg:#0b1220;--panel:#121c2e;--ink:#eaf2fb;--muted:#9fb0c7;--line:#223247;--grid:#1a2740;
+    --cyan:#38bdf8;--cyan-soft:#10283a;--ok:#3ad692;--ok-soft:#10301f;--warn:#f0b24a;--warn-soft:#2f2410;--todo:#ff6b5a;
+    --today:#ff6b7f;--today-soft:#331117;--shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35);color-scheme:dark;}
+  *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.45;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1040px;margin:0 auto;padding:24px 16px 56px;}
+  .kick{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan);font-weight:700;}
+  h1{font-size:clamp(22px,4.5vw,30px);margin:.12em 0 .1em;letter-spacing:-.01em;}
+  .top{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;margin:4px 0 14px;}
+  .mes{font-size:13px;color:var(--muted)} .mes b{color:var(--ink)}
+  .mini{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
+  .pill{font-size:12px;font-weight:700;border-radius:999px;padding:4px 11px;border:1px solid var(--line)}
+  .pill.hoy{background:var(--today-soft);color:var(--today)} .pill.prox{background:var(--warn-soft);color:var(--warn)} .pill.ok{background:var(--ok-soft);color:var(--ok)}
+  #status{font-size:12px;color:var(--muted);margin-bottom:14px}
+  .daygrp{margin-bottom:16px}
+  .dayhd{display:flex;align-items:baseline;gap:10px;margin:0 0 7px}
+  .dayhd .d{font-size:16px;font-weight:700} .dayhd .rel{font-size:11px;font-weight:700;border-radius:999px;padding:2px 9px}
+  .rel.hoy{background:var(--today-soft);color:var(--today)} .rel.prox{background:var(--warn-soft);color:var(--warn)} .rel.pas{background:var(--grid);color:var(--muted)} .rel.fut{background:var(--cyan-soft);color:var(--cyan)}
+  .dayhd .cnt{font-size:12.5px;color:var(--muted)}
+  .crow{background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);
+    padding:11px 14px;margin-bottom:7px;display:grid;grid-template-columns:1.3fr 2.2fr auto;gap:12px;align-items:center;}
+  @media (max-width:680px){.crow{grid-template-columns:1fr;gap:8px}}
+  .who .nm{font-size:14.5px;font-weight:600} .who .tg{font-size:11.5px;color:var(--muted);margin-top:2px}
+  .pbar{display:flex;gap:3px} .seg{flex:1;height:10px;border-radius:3px;background:var(--grid)} .seg.on{background:var(--ok)}
+  .labs{display:flex;justify-content:space-between;margin-top:5px;gap:2px}
+  .labs span{font-size:9.5px;color:var(--muted);flex:1;text-align:center;line-height:1.15}
+  .labs span.cur{color:var(--ok);font-weight:700}
+  .stnow{font-size:12.5px;font-weight:600;text-align:right;white-space:nowrap}
+  .stnow .e{color:var(--muted);font-weight:500} .stnow .pg{color:var(--ok)}
+  footer{margin-top:22px;color:var(--muted);font-size:12px;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kick">Jarvis · Grupo G · VG</div>
+  <h1>Cierre del mes — clientes de VG</h1>
+  <div class="top">
+    <div class="mes">Ciclo: <b id="mesLbl">—</b></div>
+    <div class="mini" id="resumen"></div>
+  </div>
+  <div id="status">Cargando datos de la planilla…</div>
+  <div id="cont"></div>
+  <footer>Se actualiza solo desde la planilla "Cierre del mes — VG" · Jarvis — una mirada integral para tu empresa</footer>
+</div>
+
+<script>
+  var SHEET="1W-B0Sc16DQK2bEVk0TeyVzUatbRaajmw-eMmudiD7Wo";
+  var ETAPAS=["Documentos","Carga","Revisión","OK cliente","Presentado"];
+  var MESES=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+
+  function cargar(){
+    var s=document.createElement("script");
+    s.src="https://docs.google.com/spreadsheets/d/"+SHEET+"/gviz/tq?tqx=out:json;responseHandler:__cierreCB&sheet=Cierre&t="+Date.now();
+    s.onerror=function(){ document.getElementById("status").textContent="No pude leer la planilla ahora. Reintento en un momento…"; };
+    document.body.appendChild(s);
+    setTimeout(function(){ s.remove(); }, 8000);
+  }
+
+  window.__cierreCB=function(resp){
+    try{
+      var rows=(resp.table&&resp.table.rows)||[];
+      var cli=[];
+      rows.forEach(function(r){
+        var c=r.c||[];
+        function v(i){ return c[i]&&c[i].v!=null?c[i].v:""; }
+        var nombre=(""+v(0)).trim(); if(!nombre||nombre.toLowerCase()==="cliente") return;
+        var vto=parseInt(v(2),10); if(isNaN(vto)) vto=99;
+        var etapa=parseInt(v(4),10); if(isNaN(etapa)) etapa=0;
+        cli.push({n:nombre, imp:(""+v(3)).trim()||"—", vto:vto, etapa:Math.max(0,Math.min(5,etapa)), pago:(""+v(6)).trim()!==""});
+      });
+      render(cli);
+    }catch(e){ document.getElementById("status").textContent="Error leyendo los datos: "+e.message; }
+  };
+
+  function relDia(vto,hoy){
+    var d=vto-hoy;
+    if(d===0) return ["hoy","vence HOY"];
+    if(d>0&&d<=3) return ["prox","en "+d+(d===1?" día":" días")];
+    if(d>0) return ["fut","en "+d+" días"];
+    return ["pas","pasó (día "+vto+")"];
+  }
+
+  function render(cli){
+    var hoy=new Date(), hd=hoy.getDate();
+    document.getElementById("mesLbl").textContent=MESES[hoy.getMonth()]+" "+hoy.getFullYear();
+    document.getElementById("status").textContent="Actualizado "+("0"+hoy.getHours()).slice(-2)+":"+("0"+hoy.getMinutes()).slice(-2)+" · "+cli.length+" clientes · se refresca cada 5 min.";
+    cli.sort(function(a,b){return a.vto-b.vto;});
+    var grupos={}; cli.forEach(function(c){(grupos[c.vto]=grupos[c.vto]||[]).push(c);});
+    var hoyN=0,proxN=0,presN=0;
+    var cont=document.getElementById("cont"); cont.innerHTML="";
+    Object.keys(grupos).map(Number).sort(function(a,b){return a-b;}).forEach(function(vto){
+      var rel=relDia(vto,hd), lista=grupos[vto];
+      if(rel[0]==="hoy") hoyN+=lista.length; if(rel[0]==="prox") proxN+=lista.length;
+      var grp=document.createElement("div"); grp.className="daygrp";
+      var presD=lista.filter(function(c){return c.etapa>=5;}).length;
+      var hdr=document.createElement("div"); hdr.className="dayhd";
+      hdr.innerHTML='<span class="d">Día '+vto+'</span><span class="rel '+rel[0]+'">'+rel[1]+'</span><span class="cnt">'+presD+'/'+lista.length+' presentados</span>';
+      grp.appendChild(hdr);
+      lista.forEach(function(c){
+        if(c.etapa>=5) presN++;
+        var row=document.createElement("div"); row.className="crow";
+        var segs=""; for(var i=0;i<5;i++) segs+='<div class="seg'+(i<c.etapa?" on":"")+'"></div>';
+        var labs=ETAPAS.map(function(e,i){return '<span class="'+(i===c.etapa-1?"cur":"")+'">'+e+'</span>';}).join("");
+        var etq=c.etapa===0?'<span class="e">Sin iniciar</span>':(c.etapa>=5?'✅ Presentado':ETAPAS[c.etapa-1]);
+        var pg=c.pago?' <span class="pg">✓ pagado</span>':'';
+        row.innerHTML='<div class="who"><div class="nm">'+c.n+'</div><div class="tg">'+c.imp+'</div></div>'+
+          '<div><div class="pbar">'+segs+'</div><div class="labs">'+labs+'</div></div>'+
+          '<div class="stnow">'+etq+pg+'</div>';
+        grp.appendChild(row);
+      });
+      cont.appendChild(grp);
+    });
+    var r=document.getElementById("resumen");
+    r.innerHTML='<span class="pill hoy">Vencen hoy: '+hoyN+'</span><span class="pill prox">Próx. 3 días: '+proxN+'</span><span class="pill ok">Presentados: '+presN+'/'+cli.length+'</span>';
+  }
+
+  cargar();
+  setInterval(cargar, 5*60*1000);
+</script>
+</body>
+</html>
