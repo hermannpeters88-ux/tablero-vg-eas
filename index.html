@@ -3731,7 +3731,7 @@ const rodyClientes = calcClientesStats(["rodi","rody","rodolfo","alejandra","gab
     const pmMoraAnt = pm.moraAnterior || [];
     const pmMoraMes = pm.moraMes || [];
     const pmUI = pm.unImpactoPend || [];
-    // Mora ACUMULADA (jun–sep) por responsable, desde el lector aislado moraAcumCard
+    // Mora ACUMULADA (meses ant.) por responsable, desde el lector aislado moraAcumCard
     const NOMBRES_RESP = {nahobi:'Nahobi', gabriela:'Gabriela', ledy:'Ledy'};
     const COL_RESP = {nahobi:'#16a34a', gabriela:'#f97316', ledy:'#f59e0b'};
     const maAll = window.__moraAcum || null;
@@ -3794,7 +3794,7 @@ const rodyClientes = calcClientesStats(["rodi","rody","rodolfo","alejandra","gab
           ).join('')}
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;flex:1">
-          ${miniCard((window.__moraAcum&&window.__moraAcum['ledy']&&window.__moraAcum['ledy'].total>0)?'⚠ Mora acumulada (jun–sep)':'⚠ Urgentes',
+          ${miniCard((window.__moraAcum&&window.__moraAcum['ledy']&&window.__moraAcum['ledy'].total>0)?'⚠ Mora acumulada (meses ant.)':'⚠ Urgentes',
             (()=>{
               const ma = window.__moraAcum && window.__moraAcum['ledy'];
               if(ma && ma.total>0){
@@ -3969,12 +3969,12 @@ const rodyClientes = calcClientesStats(["rodi","rody","rodolfo","alejandra","gab
 
     // ── COL 3 ──
     const opCard = (name, photoId, role, score, detalle, etiqueta, pendList, urgList, color) => {
-      // Mora ACUMULADA (jun–sep) por responsable, si el lector aislado ya la cargó
+      // Mora ACUMULADA (meses ant.) por responsable, si el lector aislado ya la cargó
       const maKey = {maga:'nahobi', rody:'gabriela'}[photoId];
       const maObj = (maKey && window.__moraAcum) ? window.__moraAcum[maKey] : null;
       const maItems = maObj ? Object.keys(maObj.items).map(k=>maObj.items[k]).sort((a,b)=>b.monto-a.monto) : [];
       const usaAcum = !!(maObj && maObj.total>0);
-      const moraTit = usaAcum ? '⚠ Mora acumulada (jun–sep)' : '⚠ Mora/Urgentes';
+      const moraTit = usaAcum ? '⚠ Mora acumulada (meses ant.)' : '⚠ Mora/Urgentes';
       const moraHtml = usaAcum
         ? `<div style="color:#dc2626;font-weight:700;font-size:.9em;margin-bottom:1px">${maItems.length} cliente${maItems.length>1?'s':''} · ${fmtG(maObj.total)}</div>`+maItems.slice(0,4).map(it=>`<div style="color:#dc2626;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">⚠ ${it.cliente} ${fmtG(it.monto)}${it.meses>1?' ('+it.meses+'m)':''}</div>`).join('')
         : (urgList.length ? `<div style="color:#dc2626;font-weight:600;font-size:.9em;margin-bottom:1px">${urgList.length} cliente${urgList.length>1?'s':''} en mora</div>`+urgList.slice(0,4).map(u=>`<div style="color:#dc2626;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">⚠ ${u}</div>`).join('') : '<div style="color:#22c55e">Sin mora</div>');
@@ -4006,7 +4006,7 @@ const rodyClientes = calcClientesStats(["rodi","rody","rodolfo","alejandra","gab
             card(`
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;flex:1;min-height:0;overflow:hidden">
           <div style="display:flex;flex-direction:column;gap:2px;overflow:hidden">
-            <div style="font-size:.6em;font-weight:700;color:#dc2626;flex-shrink:0">🔴 Mora acumulada ${moraResps.length?'(jun–sep)':(pm.mesAnterior||'')} <span style="color:#888;font-weight:400">${moraResps.length? moraGranN+'c · '+fmtG(moraGranTotal) : (pmMoraAnt.length+'c · '+fmtG(pmRes.totalMoraAnterior||0))}</span></div>
+            <div style="font-size:.6em;font-weight:700;color:#dc2626;flex-shrink:0">🔴 Mora acumulada ${moraResps.length?'(meses ant.)':(pm.mesAnterior||'')} <span style="color:#888;font-weight:400">${moraResps.length? moraGranN+'c · '+fmtG(moraGranTotal) : (pmMoraAnt.length+'c · '+fmtG(pmRes.totalMoraAnterior||0))}</span></div>
             <div style="display:flex;flex-direction:column;gap:2px;overflow:hidden;flex:1">
               ${moraResps.length > 0
                 ? moraResps.map(r=>`<div style="display:flex;justify-content:space-between;font-size:.62em;background:#fef2f2;padding:3px 5px;border-radius:2px;overflow:hidden;margin-bottom:1px"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-weight:700;color:${r.col}">⚠ ${r.nom} <span style="color:#888;font-weight:500">· ${r.n}c</span></span><span style="font-weight:800;flex-shrink:0;margin-left:4px;color:#dc2626">${fmtG(r.total)}</span></div>`).join('')
@@ -4478,42 +4478,28 @@ if(DEMO_MODE){
    ACTUAL del cliente (Mapa Responsables), no al histórico congelado. Resultado en window.__moraAcum[responsable].
    Aislado: si falla, las cards vuelven a mostrar la mora del mes corriente (urgByEjec). */
 (function moraAcumCard(){
-  var SID='1GAQW3wmTfsYHq87dowqdCfhKhx3iEycOkm8IBCAz2aA';
-  var MESES=['Proceso junio','Proceso Julio','Proceso Agosto','Proceso Septiembre'];
-  var mapa=null, proc={};
+  // Lee la pestaña pública MoraAcum del Cierre (la Mini la arma a diario desde TODAS las pestañas "Proceso [mes]"
+  // anteriores al mes corriente, por responsable actual). Formato plano: responsable/cliente/monto/meses.
+  var SID='1W-B0Sc16DQK2bEVk0TeyVzUatbRaajmw-eMmudiD7Wo';
   function compact(s){ s=(s||'').toString().normalize('NFKD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]/g,''); return s.replace(/(eas|sa)$/,''); }
-  function rows(j){ return (j && j.table && j.table.rows) || []; }
-  window.__moraMapaCB=function(j){ mapa={}; rows(j).forEach(function(r){ var c=r.c||[]; var cli=c[0]&&c[0].v, resp=c[1]&&c[1].v; if(cli&&resp) mapa[compact(cli)]=(''+resp).trim().toLowerCase(); }); listo(); };
-  MESES.forEach(function(mes,idx){ window['__moraCB'+idx]=function(j){ proc[idx]=rows(j); listo(); }; });
-  function listo(){
-    if(!mapa) return; for(var i=0;i<MESES.length;i++){ if(!proc[i]) return; }
-    var acum={};
-    for(var i=0;i<MESES.length;i++){
-      var filas=proc[i]||[];
-      for(var j=0;j<filas.length;j++){
-        var c=filas[j].c||[]; var val=function(k){ return c[k]&&c[k].v!=null?c[k].v:''; };
-        var cli=(''+val(1)).trim();
-        // Solo la sección FEE MENSUAL: cortar al llegar a la fila de totales / separador (cliente vacío) → excluye "UN IMPACTO"
-        if(!cli) break;
-        if(cli.toLowerCase()==='cliente') continue;
-        var est=(''+val(5)).toLowerCase(); if(est.indexOf('pend')<0) continue;
-        var m=parseInt((''+val(3)).replace(/[^0-9]/g,''),10)||0; if(!m) continue;
-        var resp=mapa[compact(cli)]||(''+val(2)).trim().toLowerCase(); if(!resp) continue;
-        var key=compact(cli);
-        var a=acum[resp]||(acum[resp]={total:0,items:{}});
-        a.total+=m; var it=a.items[key]||(a.items[key]={cliente:cli,monto:0,meses:0});
-        if(cli.length>it.cliente.length) it.cliente=cli; // nombre de display más completo
-        it.monto+=m; it.meses++;
+  function num(x){ return parseInt(String(x==null?'':x).replace(/[^0-9]/g,''),10)||0; }
+  window.__moraAcumCB=function(j){
+    try{
+      var rows=(j.table&&j.table.rows)||[]; var acum={};
+      for(var i=1;i<rows.length;i++){ var c=rows[i].c||[];
+        var resp=(c[0]&&c[0].v!=null)?(''+c[0].v).trim().toLowerCase():''; if(!resp) continue;
+        var cli=(c[1]&&c[1].v!=null)?(''+c[1].v):''; var monto=num(c[2]&&c[2].v); var meses=num(c[3]&&c[3].v);
+        var a=acum[resp]||(acum[resp]={total:0,items:{}}); a.total+=monto;
+        a.items[compact(cli)]={cliente:cli,monto:monto,meses:meses};
       }
-    }
-    window.__moraAcum=acum;
-    try{ if(typeof appData!=='undefined'&&appData&&typeof render==='function') render(); }catch(e){}
-  }
-  function traer(sheet,rng,cb){ var s=document.createElement('script');
-    s.src='https://docs.google.com/spreadsheets/d/'+SID+'/gviz/tq?tqx=out:json;responseHandler:'+cb+'&sheet='+encodeURIComponent(sheet)+'&range='+rng+'&_='+Date.now();
+      window.__moraAcum=acum;
+      try{ if(typeof appData!=='undefined'&&appData&&typeof render==='function') render(); }catch(e){}
+    }catch(e){}
+  };
+  function traer(){ var s=document.createElement('script');
+    s.src='https://docs.google.com/spreadsheets/d/'+SID+'/gviz/tq?tqx=out:json;responseHandler:__moraAcumCB&sheet=MoraAcum&headers=0&range=A1:D500&_='+Date.now();
     s.onerror=s.onload=function(){ if(s.parentNode) s.parentNode.removeChild(s); }; document.body.appendChild(s); }
-  function todo(){ mapa=null; proc={}; traer('Mapa Responsables','A1:B45','__moraMapaCB'); MESES.forEach(function(m,i){ traer(m,'A3:F44','__moraCB'+i); }); }
-  setInterval(todo, 600000); todo();
+  setInterval(traer, 600000); traer();
 })();
 </script>
 <script>
