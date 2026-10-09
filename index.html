@@ -4378,8 +4378,12 @@ if(DEMO_MODE){
     var hoyCs=(dias[hoyD]||[]);
     var presHoy=hoyCs.filter(function(c){return c.etapa>=5;}).length;
     var vencidos=L.filter(function(c){return c.dia<hoyD&&c.etapa<5;}).sort(function(a,b){return a.dia-b.dia;});
-    function cliChip(c){ var done=c.etapa>=5;
-      return '<span style="font-size:.53em;background:'+(done?VERDE_S:'#fde8ea')+';color:'+(done?VERDE:'#c0283a')+';border:1px solid '+(done?'#bfe6cf':'#f3b9c0')+';padding:1px 7px;border-radius:7px;font-weight:700;white-space:nowrap">'+(done?'✅ ':'')+esc(c.cliente)+'</span>'; }
+    function cliChip(c){ var et=c.etapa||0, done=et>=5, bg,fg,bd;
+      if(done){ bg=VERDE_S; fg=VERDE; bd='#bfe6cf'; }
+      else if(et>=1){ bg='#fff4e0'; fg='#b7791f'; bd='#f0d9a8'; } /* en proceso */
+      else { bg='#fde8ea'; fg='#c0283a'; bd='#f3b9c0'; }         /* sin iniciar */
+      var lbl=done?('✅ '+esc(c.cliente)):(esc(c.cliente)+' · '+(ETAPAS[et]||'Sin iniciar'));
+      return '<span style="font-size:.53em;background:'+bg+';color:'+fg+';border:1px solid '+bd+';padding:1px 7px;border-radius:7px;font-weight:700;white-space:nowrap">'+lbl+'</span>'; }
     var pinHoy = hoyCs.length
       ? '<div style="background:#fff5f6;border:1.5px solid #f3b9c0;border-radius:6px;padding:3px 7px;margin-bottom:3px">'
         +'<div style="font-size:.6em;font-weight:800;color:#c0283a;margin-bottom:2px;white-space:nowrap">🔴 VENCE HOY · Día '+hoyD+' — '+presHoy+'/'+hoyCs.length+' presentados</div>'
