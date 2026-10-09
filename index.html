@@ -4374,6 +4374,22 @@ if(DEMO_MODE){
     var pres=L.filter(function(c){return c.etapa>=5;}).length;
     var hoyN=(dias[hoyD]||[]).length;
     var proxN=L.filter(function(c){var d=c.dia-hoyD; return d>0&&d<=3;}).length;
+    // VENCE HOY (fijo arriba, siempre visible, no depende del scroll de la TV) + vencidos sin presentar
+    var hoyCs=(dias[hoyD]||[]);
+    var presHoy=hoyCs.filter(function(c){return c.etapa>=5;}).length;
+    var vencidos=L.filter(function(c){return c.dia<hoyD&&c.etapa<5;}).sort(function(a,b){return a.dia-b.dia;});
+    function cliChip(c){ var done=c.etapa>=5;
+      return '<span style="font-size:.53em;background:'+(done?VERDE_S:'#fde8ea')+';color:'+(done?VERDE:'#c0283a')+';border:1px solid '+(done?'#bfe6cf':'#f3b9c0')+';padding:1px 7px;border-radius:7px;font-weight:700;white-space:nowrap">'+(done?'✅ ':'')+esc(c.cliente)+'</span>'; }
+    var pinHoy = hoyCs.length
+      ? '<div style="background:#fff5f6;border:1.5px solid #f3b9c0;border-radius:6px;padding:3px 7px;margin-bottom:3px">'
+        +'<div style="font-size:.6em;font-weight:800;color:#c0283a;margin-bottom:2px;white-space:nowrap">🔴 VENCE HOY · Día '+hoyD+' — '+presHoy+'/'+hoyCs.length+' presentados</div>'
+        +'<div style="display:flex;gap:3px;flex-wrap:wrap">'+hoyCs.map(cliChip).join('')+'</div></div>'
+      : '<div style="background:'+VERDE_S+';border:1px solid #bfe6cf;border-radius:6px;padding:3px 7px;margin-bottom:3px;font-size:.58em;font-weight:700;color:'+VERDE+';white-space:nowrap">✅ Nada vence hoy (día '+hoyD+')</div>';
+    var pinAtras = vencidos.length
+      ? '<div style="background:#fff1f0;border:1.5px solid #fbd3cf;border-radius:6px;padding:3px 7px;margin-bottom:3px">'
+        +'<div style="font-size:.6em;font-weight:800;color:#b91c1c;margin-bottom:2px;white-space:nowrap">⚠ ATRASADOS sin presentar ('+vencidos.length+')</div>'
+        +'<div style="display:flex;gap:3px;flex-wrap:wrap">'+vencidos.map(function(c){return '<span style="font-size:.53em;background:#fde8ea;color:#b91c1c;border:1px solid #fbd3cf;padding:1px 7px;border-radius:7px;font-weight:700;white-space:nowrap">'+esc(c.cliente)+' · d'+c.dia+'</span>';}).join('')+'</div></div>'
+      : '';
     function rel(d){ var x=d-hoyD;
       if(x===0) return ['vence HOY','#fbe6ea','#e2445c'];
       if(x>0&&x<=3) return ['en '+x+(x===1?' día':' días'),'#fbf1dd','#c6870d'];
@@ -4403,7 +4419,7 @@ if(DEMO_MODE){
     var arrStrip = (arr && arr.items && arr.items.length)
       ? '<div style="font-size:.52em;background:#fff1f0;border:1px solid #fbd3cf;border-radius:4px;padding:2px 6px;margin-bottom:2px;color:#b91c1c;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">⚠ '+esc(arr.label||"Arrastre mes anterior")+': '+arr.items.slice(0,6).map(function(x){return esc(x.cli);}).join(", ")+(arr.items.length>6?" +"+(arr.items.length-6):"")+'</div>'
       : '';
-    var cuerpo=orden.map(function(d){
+    var cuerpo=orden.filter(function(d){return d!==hoyD;}).map(function(d){
       var cs=dias[d], ok=cs.filter(function(c){return c.etapa>=5;}).length, r=rel(d);
       var hd='<div style="display:flex;align-items:center;gap:5px;margin:3px 0 1px;font-size:.6em">'
         +'<b>Día '+d+'</b><span style="font-size:.85em;font-weight:700;background:'+r[1]+';color:'+r[2]+';padding:0 6px;border-radius:8px">'+r[0]+'</span>'
@@ -4425,7 +4441,7 @@ if(DEMO_MODE){
     return '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">'
       +'<div style="font-size:.72em;font-weight:700;white-space:nowrap">📅 Cierre — '+esc((month&&month.name)||'')+'</div>'
       +'<div style="display:flex;gap:3px">'+chip('#fbe6ea','#e2445c','Vencen hoy: '+hoyN)+chip('#fbf1dd','#c6870d','Próx. 3 días: '+proxN)
-      +chip('#e4f5ec','#15935b','Presentados: '+pres+'/'+L.length)+'</div></div>'+arrStrip+sabo+ley
+      +chip('#e4f5ec','#15935b','Presentados: '+pres+'/'+L.length)+'</div></div>'+arrStrip+pinAtras+pinHoy+sabo+ley
       +'<div id="tv-venc-scroll" style="flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column">'+cuerpo+'</div>';
   };
   // Auto-scroll lento de la lista (la TV no se toca): baja, pausa 4 s abajo, vuelve arriba, pausa 4 s.
