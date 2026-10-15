@@ -3230,6 +3230,9 @@ function renderVencimientosCard(){
 
 function render(){
   if(!appData)return;
+  // Cierre del mes: la TV lo toma de la API (appData.cierre) porque el gviz JSONP
+  // a veces no carga en el navegador de la Samsung. El gviz sigue como refresco extra.
+  try{ if(appData.cierre && appData.cierre.length){ window.__cierre = appData.cierre; } }catch(e){}
   // Sync VG Contabilidad en COBROS_DATA desde procesoMes (fuente: Proceso Junio)
   const _pm = appData.procesoMes;
   if(_pm && _pm.resumen && !_pm.error){
@@ -4429,7 +4432,7 @@ if(DEMO_MODE){
         +'<b>Día '+d+'</b><span style="font-size:.85em;font-weight:700;background:'+r[1]+';color:'+r[2]+';padding:0 6px;border-radius:8px">'+r[0]+'</span>'
         +'<span style="color:'+MUTED+';font-size:.9em">'+ok+'/'+cs.length+' presentados</span></div>';
       var filas=cs.map(function(c){
-        var segs=''; for(var i=0;i<5;i++){ segs+='<span style="flex:1;height:6px;border-radius:2px;background:'+(i<c.etapa?VERDE:GRIS)+'"></span>'; }
+        var llen=(c.etapa>=5?4:Math.min(c.etapa,3)); var segs=''; for(var i=0;i<4;i++){ segs+='<span style="flex:1;height:6px;border-radius:2px;background:'+(i<llen?VERDE:GRIS)+'"></span>'; }
         var est=c.etapa>=5?'✅ Presentado':(c.etapa===0?'<span style="color:'+MUTED+';font-weight:500">Sin iniciar</span>':ETAPAS[c.etapa]);
         if(c.pago) est+=' <span style="color:'+VERDE+'">✓ pagado</span>';
         return '<div style="display:grid;grid-template-columns:1.5fr 1.6fr 1fr;gap:6px;align-items:center;font-size:.55em;'
@@ -4441,7 +4444,7 @@ if(DEMO_MODE){
       return hd+filas;
     }).join('');
     var ley='<div style="display:grid;grid-template-columns:1.5fr 1.6fr 1fr;gap:6px;font-size:.42em;color:'+MUTED+';margin-bottom:1px">'
-      +'<span></span><span style="display:flex;justify-content:space-between"><span>Docs</span><span>Carga</span><span>Revisión</span><span>OK cli.</span><span>Present.</span></span><span></span></div>';
+      +'<span></span><span style="display:flex;justify-content:space-between"><span>Docs</span><span>Carga</span><span>Revisión</span><span>Present.</span></span><span></span></div>';
     return '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">'
       +'<div style="font-size:.72em;font-weight:700;white-space:nowrap">📅 Cierre — '+esc((month&&month.name)||'')+'</div>'
       +'<div style="display:flex;gap:3px">'+chip('#fbe6ea','#e2445c','Vencen hoy: '+hoyN)+chip('#fbf1dd','#c6870d','Próx. 3 días: '+proxN)
