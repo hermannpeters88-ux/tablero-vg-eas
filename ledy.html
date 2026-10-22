@@ -60,6 +60,12 @@
   .chip{font-size:11px;font-weight:600;padding:3px 8px;border-radius:7px;background:rgba(255,255,255,.06);border:1px solid var(--line);color:#d6e2f6}
   .chip.more{color:var(--muted);background:transparent}
   .none{font-size:11.5px;color:var(--muted2);margin-top:8px;font-style:italic}
+  .chip .vb{margin-left:4px;font-size:9.5px;color:var(--wip);font-weight:800}
+  .chip .vb.due{color:var(--todo)}
+  .vrow{margin-top:10px;display:flex;flex-direction:column;gap:2px}
+  .vday{font-size:12px;font-weight:600;color:var(--ink)}
+  .vday b{color:var(--wip);font-size:16px;font-variant-numeric:tabular-nums}
+  .vday span{color:var(--muted);font-weight:500;font-size:11px}
   .stt{margin-top:auto;padding-top:10px}
   .stt .pill{font-size:9.5px;font-weight:700;letter-spacing:.4px;padding:3px 8px;border-radius:7px;text-transform:uppercase}
   .st-on{color:#06220f;background:var(--ok)} .st-wait{color:#271c05;background:var(--wip)} .st-off{color:#9fb0d6;background:rgba(68,82,122,.3)}
@@ -134,6 +140,7 @@
   "use strict";
   var SHEET="1W-B0Sc16DQK2bEVk0TeyVzUatbRaajmw-eMmudiD7Wo";
   var COBROS_API="https://script.google.com/macros/s/AKfycbzPa-w8t8w-atOvJjYR-S7KHksg5acgdnARlMAUF5uRvPJxMAOe4BvJBF2K058a16I/exec";
+  var VENC_API="https://script.google.com/macros/s/AKfycbwers-ywe28U2zsp0d3DaJKkU4_pN0zB5dNUp95F5b-_sJWPPbBi_RjHdXlT6m1fYz0/exec";
   var EJECUTIVA="Ledy";
   var G={
     ojo:'<path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6z"/><circle cx="12" cy="12" r="2.6"/>',
@@ -146,7 +153,8 @@
     recibo:'<path d="M6 3h12v18l-2-1.5L14 21l-2-1.5L10 21l-2-1.5L6 21z"/><path d="M9 8h6M9 12h6"/>',
     pct:'<path d="M5 19L19 5"/><circle cx="7.5" cy="7.5" r="2.2"/><circle cx="16.5" cy="16.5" r="2.2"/>',
     lupa:'<circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/>',
-    maletin:'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M3 12h18"/>'
+    maletin:'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M3 12h18"/>',
+    cal:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/>'
   };
   // etapas del cierre -> pasos del flujo (0 Sin iniciar,1 Documentos,2 Carga,3 Revisión,4 OK cliente,5 Presentado)
   var STAGES=[
@@ -164,13 +172,15 @@
     {step:"Auditoría",who:"Aldo",g:"lupa",c:"#d9c24b",a:"auditor"},
     {step:"Contador",who:"Bruno",g:"maletin",c:"#5b8def",a:"balanza"}
   ];
-  var AG={}, STCL={}; // estado agentes, clientes por etapa {etapa:[nombres]}
+  var AG={}, STCL={}, LEDYSET={}, VENC=[], DUE={}; // agentes, clientes x etapa, set clientes Ledy, prox. vencimientos, dia de venc x cliente
 
   function el(id){return document.getElementById(id);}
   function esc(s){return String(s==null?"":s).replace(/[&<>]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c];});}
   function num(v){var n=parseInt(String(v==null?"":v).replace(/\D/g,""),10);return isNaN(n)?0:n;}
   function fmtGs(n){try{return "Gs "+Number(n).toLocaleString("es-PY");}catch(e){return "Gs "+n;}}
   function short(nm){return String(nm).replace(/\s*(E\.?A\.?S\.?|S\.?A\.?|S\.?R\.?L\.?)\.?$/i,"").trim();}
+  function key(s){return short(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/\s+/g," ").trim();}
+  function hasLedy(){for(var k in LEDYSET)return true;return false;}
   function shade(hex,amt){var m=/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);if(!m)return hex;function c(x){x=Math.round(parseInt(x,16)*(100+amt)/100);return Math.max(0,Math.min(255,x));}return "#"+[c(m[1]),c(m[2]),c(m[3])].map(function(v){return ("0"+v.toString(16)).slice(-2);}).join("");}
 
   function orb(n,on){return '<div class="orb" style="background:radial-gradient(circle at 35% 28%, '+n.c+', '+shade(n.c,-38)+')"><span class="ring"></span><svg viewBox="0 0 24 24">'+G[n.g]+'</svg></div>';}
@@ -187,7 +197,12 @@
     var chips;
     if(cl.length===0){chips='<div class="none">'+(s.kind==="end"?"todavía ninguno":"sin clientes acá")+'</div>';}
     else{
-      var shown=cl.slice(0,7).map(function(c){return '<span class="chip">'+esc(short(c))+'</span>';}).join("");
+      var td=new Date().getDate();
+      var shown=cl.slice(0,7).map(function(c){
+        var dd=DUE[key(c)], b="";
+        if(s.kind!=="end"&&dd)b=' <span class="vb'+((dd-td)<0?" due":"")+'">'+dd+'</span>';
+        return '<span class="chip">'+esc(short(c))+b+'</span>';
+      }).join("");
       if(cl.length>7)shown+='<span class="chip more">+'+(cl.length-7)+' más</span>';
       chips='<div class="chips">'+shown+'</div>';
     }
@@ -197,11 +212,25 @@
       '<div class="cntbox"><b style="color:'+ccolor+'">'+cl.length+'</b><span>'+(cl.length===1?'cliente':'clientes')+'</span></div>'+
       chips+'<div class="stt">'+pill(st,s.kind)+'</div></div>';
   }
+  function vencHTML(){
+    var n={step:"Próximos vencimientos",who:"Lo que se viene",g:"cal",c:"#f3b74a"};
+    var rows="",any=false,flt=hasLedy();
+    VENC.forEach(function(v){
+      var cl=v.clientes.filter(function(c){return flt?LEDYSET[key(c)]:true;});
+      if(!cl.length)return;any=true;
+      var when=v.left<=0?"hoy":("en "+v.left+(v.left===1?" día":" días"));
+      var chips=cl.map(function(c){return '<span class="chip">'+esc(short(c))+'</span>';}).join("");
+      rows+='<div class="vday"><b>'+v.dia+'</b> <span>· '+when+'</span></div><div class="chips" style="margin-top:3px;margin-bottom:5px">'+chips+'</div>';
+    });
+    if(!any)rows='<div class="none">sin vencimientos cerca</div>';
+    return '<div class="node hot"><div class="nhead">'+orb(n,false)+'<div><div class="step">'+esc(n.step)+'</div><div class="who">'+esc(n.who)+'</div></div></div><div class="vrow">'+rows+'</div><div class="stt"><span class="pill st-wait">AGENDA</span></div></div>';
+  }
   function parHTML(n){var st=AG[n.a]||"libre",on=st==="trabajando";
     return '<div class="pnode'+(on?" on":"")+'">'+orb(n,on)+'<div class="step">'+esc(n.step)+'</div><div class="who">'+esc(n.who)+'</div>'+pill(st,"agent")+'</div>';}
 
   function render(){
-    var parts=[];
+    var vact=VENC.some(function(v){return v.clientes.some(function(c){return !hasLedy()||LEDYSET[key(c)];});});
+    var parts=[vencHTML(),'<div class="arrow'+(vact?" flow":"")+'"><span class="dot"></span></div>'];
     STAGES.forEach(function(s,i){
       parts.push(stageHTML(s));
       if(i<STAGES.length-1){var src=STAGES[i];var active=src.a&&AG[src.a]==="trabajando";parts.push('<div class="arrow'+(active?" flow":"")+'"><span class="dot"></span></div>');}
@@ -229,8 +258,8 @@
   function loadCierre(){gviz("Cierre",function(err,rows){
       if(err)return;
       var mine=rows.slice(1).filter(function(r){return r[0]&&String(r[9]||"").trim().toLowerCase()===EJECUTIVA.toLowerCase();});
-      var g={};mine.forEach(function(r){var e=num(r[4]);(g[e]=g[e]||[]).push(r[0]);});
-      STCL=g;render();
+      var g={},set={};mine.forEach(function(r){var e=num(r[4]);(g[e]=g[e]||[]).push(r[0]);set[key(r[0])]=1;});
+      STCL=g;LEDYSET=set;render();
     });}
   function loadCobros(){
     fetch(COBROS_API,{cache:"no-store"}).then(function(r){return r.json();}).then(function(d){
@@ -244,8 +273,18 @@
         out.map(function(x){return '<div class="row"><div><b>'+esc(x.nombre)+'</b><small>'+esc(x.detalle||x.mes)+'</small></div><span class="money">'+fmtGs(x.monto)+'</span></div>';}).join("");
     }).catch(function(){el("cobrar").innerHTML='<div class="loading">Cartera no disponible ahora (se reintenta).</div>';});
   }
+  function loadVenc(){
+    fetch(VENC_API,{cache:"no-store"}).then(function(r){return r.json();}).then(function(d){
+      var today=new Date().getDate(),up=[],due={};
+      (d.vencimientos||[]).forEach(function(v){
+        (v.clientes||[]).forEach(function(c){due[key(c.nombre)]=v.dia;});
+        if(String(v.estado||"")!=="pasado")up.push({dia:v.dia,left:v.dia-today,clientes:(v.clientes||[]).map(function(c){return c.nombre;})});
+      });
+      VENC=up;DUE=due;render();
+    }).catch(function(){});
+  }
   render();
-  function refreshAll(){loadAgentes();loadCierre();loadCobros();el("foot").textContent="Última actualización: "+new Date().toLocaleTimeString("es-PY")+" · se refresca solo cada 3 minutos";}
+  function refreshAll(){loadAgentes();loadCierre();loadCobros();loadVenc();el("foot").textContent="Última actualización: "+new Date().toLocaleTimeString("es-PY")+" · se refresca solo cada 3 minutos";}
   refreshAll();setInterval(refreshAll,180000);
 })();
 </script>
