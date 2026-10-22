@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Escritorio de Ledy · VG</title>
+<style>
+  :root{
+    --bg:#0c1016; --panel:#141b24; --panel2:#1b2430; --line:#263241;
+    --ink:#e8eef4; --muted:#8aa0b4;
+    --violet:#8b6fc4; --violet-deep:#623F98; --gold:#CD9834;
+    --ok:#36d07f; --okbg:#10301f; --wip:#f0b23a; --wipbg:#3a2c10; --todo:#ff6b5a; --todobg:#3a1a16;
+    --cyan:#49d6e0;
+    --f:"Segoe UI",-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{background:radial-gradient(1200px 600px at 80% -10%, #15202e 0%, var(--bg) 60%);color:var(--ink);font-family:var(--f);font-size:16px;padding:22px 26px;min-height:100%}
+  a{color:inherit;text-decoration:none}
+  .top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:14px}
+  .brand{display:flex;align-items:center;gap:14px;min-width:0}
+  .logo{width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,var(--violet-deep),#8b6fc4);display:grid;place-items:center;font-weight:800;font-size:20px;color:#fff;flex:none}
+  .brand h1{margin:0;font-size:22px;letter-spacing:.2px}
+  .brand .sub{color:var(--muted);font-size:13px;margin-top:2px}
+  .live{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+  .clock{font-variant-numeric:tabular-nums;font-size:26px;font-weight:700;letter-spacing:1px}
+  .clock .d{display:block;font-size:12px;color:var(--muted);font-weight:500;letter-spacing:.4px;text-align:right}
+  .dot{width:9px;height:9px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 0 rgba(54,208,127,.6);animation:p 2s infinite}
+  @keyframes p{0%{box-shadow:0 0 0 0 rgba(54,208,127,.5)}70%{box-shadow:0 0 0 10px rgba(54,208,127,0)}100%{box-shadow:0 0 0 0 rgba(54,208,127,0)}}
+  .pilled{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);background:var(--panel);border:1px solid var(--line);padding:5px 10px;border-radius:999px}
+  .grid{display:grid;grid-template-columns:1.15fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:900px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px 20px}
+  .card h2{margin:0 0 4px;font-size:13px;letter-spacing:1.4px;text-transform:uppercase;color:var(--gold)}
+  .card .cap{color:var(--muted);font-size:12.5px;margin:0 0 14px}
+  .kpis{display:flex;gap:10px;margin:0 0 14px;flex-wrap:wrap}
+  .kpi{flex:1;min-width:90px;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;text-align:center}
+  .kpi b{display:block;font-size:26px;line-height:1.1}
+  .kpi span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+  .row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 12px;border-radius:11px;background:var(--panel2);border:1px solid var(--line);margin-bottom:9px}
+  .row .who b{font-size:15px}
+  .row .who small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+  .badge{font-size:12px;font-weight:700;padding:5px 10px;border-radius:8px;white-space:nowrap}
+  .b-todo{color:var(--todo);background:var(--todobg)} .b-wip{color:var(--wip);background:var(--wipbg)} .b-ok{color:var(--ok);background:var(--okbg)}
+  .vto{font-variant-numeric:tabular-nums;font-size:12px;color:var(--muted)}
+  .empty{color:var(--ok);background:var(--okbg);border:1px solid #1d4d33;border-radius:12px;padding:16px;text-align:center;font-size:15px}
+  .money{font-variant-numeric:tabular-nums;font-weight:700;color:var(--gold)}
+  .agents{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  @media (max-width:560px){.agents{grid-template-columns:repeat(2,1fr)}}
+  .ag{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;gap:10px;align-items:center}
+  .ag .s{width:11px;height:11px;border-radius:50%;flex:none;margin-top:3px}
+  .s-trabajando{background:var(--ok);box-shadow:0 0 8px var(--ok)} .s-esperando{background:var(--wip)} .s-libre{background:#46566a}
+  .ag .n{min-width:0}
+  .ag .n b{font-size:13.5px;display:block;line-height:1.15}
+  .ag .n small{color:var(--muted);font-size:11px}
+  .foot{margin-top:18px;color:var(--muted);font-size:12px;text-align:center}
+  .loading{color:var(--muted);font-size:13px;padding:8px 0}
+</style>
+</head>
+<body>
+  <div class="top">
+    <div class="brand">
+      <div class="logo">vg</div>
+      <div>
+        <h1>Escritorio de Ledy</h1>
+        <div class="sub">VG Asociados · Directora Contable</div>
+      </div>
+    </div>
+    <div class="live">
+      <span class="pilled"><span class="dot"></span> EN VIVO · se actualiza solo</span>
+      <div class="clock" id="clock">--:--:--<span class="d" id="date">—</span></div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div style="display:grid;gap:18px">
+      <div class="card">
+        <h2>Para presentar</h2>
+        <p class="cap">Tus clientes del cierre que todavía no están presentados.</p>
+        <div class="kpis">
+          <div class="kpi"><b id="kpiPres" style="color:var(--ok)">—</b><span>Presentados</span></div>
+          <div class="kpi"><b id="kpiFalta" style="color:var(--todo)">—</b><span>Faltan</span></div>
+          <div class="kpi"><b id="kpiTot">—</b><span>Tus clientes</span></div>
+        </div>
+        <div id="presentar"><div class="loading">Cargando el cierre…</div></div>
+      </div>
+
+      <div class="card">
+        <h2>Para cobrar</h2>
+        <p class="cap">Lo que figura pendiente de cobro a tu cargo (cartera).</p>
+        <div id="cobrar"><div class="loading">Cargando la cartera…</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Tu equipo de agentes</h2>
+      <p class="cap">VG Contabilidad · estado real ahora mismo.</p>
+      <div class="kpis">
+        <div class="kpi"><b id="agTrab" style="color:var(--ok)">—</b><span>Trabajando</span></div>
+        <div class="kpi"><b id="agEsp" style="color:var(--wip)">—</b><span>Esperando</span></div>
+        <div class="kpi"><b id="agLib" style="color:var(--muted)">—</b><span>Libres</span></div>
+      </div>
+      <div class="agents" id="agents"><div class="loading">Cargando agentes…</div></div>
+    </div>
+  </div>
+
+  <div class="foot" id="foot">Actualizado al abrir · se refresca solo cada 3 minutos</div>
+
+<script>
+(function(){
+  "use strict";
+  var SHEET = "1W-B0Sc16DQK2bEVk0TeyVzUatbRaajmw-eMmudiD7Wo";
+  var COBROS_API = "https://script.google.com/macros/s/AKfycbzPa-w8t8w-atOvJjYR-S7KHksg5acgdnARlMAUF5uRvPJxMAOe4BvJBF2K058a16I/exec";
+  var EJECUTIVA = "Ledy";
+  var VGC = [["balanza","Bruno","Contador"],["cargador","Carla","Digitador"],["imputador","Iván","Imputador"],
+             ["presentador","Paula","Presentador"],["vigia","Vera","Vigía"],["talonario","Tomás","Facturador"],
+             ["retenciones","Renzo","Retenciones"],["lector","Lucía","Lectura"],["auditor","Aldo","Auditor"]];
+  var MESES = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+
+  function el(id){return document.getElementById(id);}
+  function esc(s){return String(s==null?"":s).replace(/[&<>]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c];});}
+  function num(v){var n=parseInt(String(v==null?"":v).replace(/\D/g,""),10);return isNaN(n)?0:n;}
+  function fmtGs(n){try{return "Gs " + Number(n).toLocaleString("es-PY");}catch(e){return "Gs "+n;}}
+
+  function tick(){
+    var d=new Date();
+    function p(n){return (n<10?"0":"")+n;}
+    el("clock").firstChild.nodeValue = p(d.getHours())+":"+p(d.getMinutes())+":"+p(d.getSeconds());
+    el("date").textContent = d.toLocaleDateString("es-PY",{weekday:"long",day:"numeric",month:"long"});
+  }
+  setInterval(tick,1000); tick();
+
+  // ---- gviz loader (JSONP) ----
+  function gviz(sheetName, cb){
+    var fn = "__cb_" + sheetName + "_" + Date.now();
+    window[fn] = function(resp){
+      try{
+        var rows = (resp.table.rows||[]).map(function(r){ return (r.c||[]).map(function(c){ return c? c.v : null; }); });
+        cb(null, rows);
+      }catch(e){ cb(e); }
+      try{ delete window[fn]; }catch(_){ window[fn]=undefined; }
+      if(s.parentNode) s.parentNode.removeChild(s);
+    };
+    var s=document.createElement("script");
+    s.src="https://docs.google.com/spreadsheets/d/"+SHEET+"/gviz/tq?tqx=out:json;responseHandler:"+fn+"&sheet="+encodeURIComponent(sheetName)+"&headers=0&_="+Date.now();
+    s.onerror=function(){ cb(new Error("no cargó "+sheetName)); };
+    document.body.appendChild(s);
+  }
+
+  // ---- CIERRE (para presentar) ----
+  function loadCierre(){
+    gviz("Cierre", function(err, rows){
+      if(err){ el("presentar").innerHTML='<div class="loading">No pude leer el cierre ahora. Reintento en un rato.</div>'; return; }
+      var mine = rows.slice(1).filter(function(r){ return r[0] && String(r[9]||"").trim().toLowerCase()===EJECUTIVA.toLowerCase(); });
+      var pres = mine.filter(function(r){ return num(r[4])>=5; });
+      var falta = mine.filter(function(r){ return num(r[4])<5; });
+      el("kpiPres").textContent = pres.length;
+      el("kpiFalta").textContent = falta.length;
+      el("kpiTot").textContent = mine.length;
+      var today = new Date().getDate();
+      falta.sort(function(a,b){ return num(a[2])-num(b[2]); });
+      if(falta.length===0){
+        el("presentar").innerHTML='<div class="empty">✓ Tenés todos tus clientes presentados. ¡Al día!</div>';
+        return;
+      }
+      el("presentar").innerHTML = falta.map(function(r){
+        var etapa=num(r[4]), nombre=esc(r[5]||"Sin iniciar"), vto=num(r[2]);
+        var cls = etapa>=3?"b-wip":"b-todo";
+        var venc = (vto && vto<today)?' · <span style="color:var(--todo)">vencido</span>':'';
+        return '<div class="row"><div class="who"><b>'+esc(r[0])+'</b>'+
+               '<small>'+esc(r[3]||"IVA")+' · vence el '+vto+venc+'</small></div>'+
+               '<span class="badge '+cls+'">'+nombre+'</span></div>';
+      }).join("");
+    });
+  }
+
+  // ---- AGENTES ----
+  function loadAgentes(){
+    gviz("Agentes", function(err, rows){
+      if(err){ el("agents").innerHTML='<div class="loading">No pude leer los agentes ahora.</div>'; return; }
+      var map={}; rows.forEach(function(r){ if(r[0]) map[String(r[0]).trim()]=String(r[1]||"").trim().toLowerCase(); });
+      var t=0,e=0,l=0;
+      var html = VGC.map(function(a){
+        var st = map[a[0]] || "libre";
+        if(st==="trabajando")t++; else if(st==="esperando")e++; else l++;
+        return '<div class="ag"><span class="s s-'+esc(st)+'"></span><div class="n"><b>'+esc(a[1])+'</b><small>'+esc(a[2])+'</small></div></div>';
+      }).join("");
+      el("agents").innerHTML = html;
+      el("agTrab").textContent=t; el("agEsp").textContent=e; el("agLib").textContent=l;
+    });
+  }
+
+  // ---- COBROS (cartera) ----
+  function loadCobros(){
+    fetch(COBROS_API, {cache:"no-store"}).then(function(r){ return r.json(); }).then(function(d){
+      var out=[];
+      (d.clientes||[]).forEach(function(c){
+        (c.facturas||[]).forEach(function(f){
+          var resp=String(f.responsable||"").trim().toLowerCase();
+          var est=String(f.estadoCobro||"").trim().toLowerCase();
+          if(resp===EJECUTIVA.toLowerCase() && est.indexOf("pend")===0){
+            out.push({ nombre:f.label||f.razonSocial||"(sin nombre)", monto:num(f.monto), mes:f.mes||"", detalle:f.detalle||"" });
+          }
+        });
+      });
+      if(out.length===0){ el("cobrar").innerHTML='<div class="empty">✓ No tenés cobros pendientes a tu cargo.</div>'; return; }
+      out.sort(function(a,b){ return b.monto-a.monto; });
+      var total=out.reduce(function(s,x){return s+x.monto;},0);
+      el("cobrar").innerHTML =
+        '<div class="kpis"><div class="kpi"><b style="color:var(--gold);font-size:20px">'+fmtGs(total)+'</b><span>Total a cobrar</span></div>'+
+        '<div class="kpi"><b>'+out.length+'</b><span>Facturas</span></div></div>' +
+        out.map(function(x){
+          return '<div class="row"><div class="who"><b>'+esc(x.nombre)+'</b><small>'+esc(x.detalle||x.mes)+(x.mes?' · '+esc(x.mes):'')+'</small></div>'+
+                 '<span class="money">'+fmtGs(x.monto)+'</span></div>';
+        }).join("");
+    }).catch(function(){
+      el("cobrar").innerHTML='<div class="loading">La cartera no está disponible en este momento (se reintenta solo).</div>';
+    });
+  }
+
+  function refreshAll(){
+    loadCierre(); loadAgentes(); loadCobros();
+    el("foot").textContent = "Última actualización: " + new Date().toLocaleTimeString("es-PY") + " · se refresca solo cada 3 minutos";
+  }
+  refreshAll();
+  setInterval(refreshAll, 180000); // 3 min
+})();
+</script>
+</body>
+</html>
