@@ -66,6 +66,21 @@
   .vday{font-size:12px;font-weight:600;color:var(--ink)}
   .vday b{color:var(--wip);font-size:16px;font-variant-numeric:tabular-nums}
   .vday span{color:var(--muted);font-weight:500;font-size:11px}
+  .eyebrow{font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:6px}
+  .cred{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:11px;background:rgba(10,15,30,.5);border:1px solid var(--line);border-left:3px solid var(--line)}
+  .av{width:40px;height:40px;border-radius:10px;flex:none;display:grid;place-items:center;
+    box-shadow:inset 0 2px 4px rgba(255,255,255,.35), inset 0 -5px 9px rgba(0,0,0,.35), 0 6px 12px -5px rgba(0,0,0,.6)}
+  .av svg{width:21px;height:21px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .cred-info{flex:1;min-width:0}
+  .cred-name{font-size:14px;font-weight:700;display:flex;align-items:center;gap:6px;line-height:1.1}
+  .cred-role{font-size:10.5px;color:var(--muted);font-weight:500;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cred-id{font-size:9.5px;font-weight:700;letter-spacing:.5px;color:var(--muted);background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:6px;padding:3px 5px;font-variant-numeric:tabular-nums;flex:none}
+  .cdot{width:7px;height:7px;border-radius:50%;background:var(--off);flex:none}
+  .cdot.on{background:var(--ok);box-shadow:0 0 8px var(--ok);animation:bl 1.5s infinite}
+  .node.on .av{animation:work 1.5s ease-in-out infinite}
+  .pcount{margin-top:9px;display:flex;align-items:baseline;gap:6px}
+  .pcount b{font-size:21px;font-weight:800;font-variant-numeric:tabular-nums}
+  .pcount span{font-size:11px;color:var(--muted)}
   .stt{margin-top:auto;padding-top:10px}
   .stt .pill{font-size:9.5px;font-weight:700;letter-spacing:.4px;padding:3px 8px;border-radius:7px;text-transform:uppercase}
   .st-on{color:#06220f;background:var(--ok)} .st-wait{color:#271c05;background:var(--wip)} .st-off{color:#9fb0d6;background:rgba(68,82,122,.3)}
@@ -89,11 +104,10 @@
   .parallel{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-top:4px}
   @media (max-width:980px){.parallel{grid-template-columns:repeat(3,1fr)}}
   @media (max-width:560px){.parallel{grid-template-columns:repeat(2,1fr)}}
-  .pnode{border-radius:14px;padding:12px 10px;text-align:center;background:linear-gradient(160deg,var(--card2),var(--card));border:1px solid var(--line);box-shadow:0 10px 22px -14px rgba(0,0,0,.7)}
-  .pnode .orb{width:40px;height:40px;margin:0 auto 7px} .pnode .orb svg{width:20px;height:20px}
-  .pnode .step{font-size:12.5px;font-weight:700} .pnode .who{font-size:10.5px;color:var(--muted);margin-top:1px}
-  .pnode .pill{display:inline-block;margin-top:7px;font-size:9px;font-weight:700;letter-spacing:.3px;padding:3px 7px;border-radius:6px;text-transform:uppercase}
-  .pnode.on{border-color:rgba(54,208,127,.5)} .pnode.on .orb{animation:work 1.5s ease-in-out infinite} .pnode.on .ring{border-color:rgba(54,208,127,.6);animation:spin 2.8s linear infinite}
+  .pnode{border-radius:14px;padding:11px 10px;background:linear-gradient(160deg,var(--card2),var(--card));border:1px solid var(--line);box-shadow:0 10px 22px -14px rgba(0,0,0,.7)}
+  .pnode .pill{display:inline-block;font-size:9px;font-weight:700;letter-spacing:.3px;padding:3px 7px;border-radius:6px;text-transform:uppercase}
+  .pnode .stt{margin-top:8px}
+  .pnode.on{border-color:rgba(54,208,127,.5)} .pnode.on .av{animation:work 1.5s ease-in-out infinite}
 
   .block{background:rgba(16,22,40,.5);border:1px solid var(--line);border-radius:18px;padding:16px 18px;backdrop-filter:blur(3px)}
   .panel h3{margin:0 0 2px;font-size:12px;letter-spacing:1px;text-transform:uppercase;color:var(--gold);font-weight:700}
@@ -124,7 +138,7 @@
   <div class="sect">El proceso del cierre <span class="mini">cada cliente, en qué paso está · en vivo</span>
     <span class="tot" id="tot">—</span></div>
   <div class="flow" id="flow"></div>
-  <div class="sect" style="margin-top:20px">Los agentes que lo hacen posible <span class="mini">estado real ahora</span></div>
+  <div class="sect" style="margin-top:20px">Los agentes que lo hacen posible <span class="mini">cada uno con su credencial · estado real ahora</span><span class="tot" id="agtot">—</span></div>
   <div class="parallel" id="parallel"></div>
 </div>
 
@@ -158,21 +172,21 @@
   };
   // etapas del cierre -> pasos del flujo (0 Sin iniciar,1 Documentos,2 Carga,3 Revisión,4 OK cliente,5 Presentado)
   var STAGES=[
-    {step:"Por iniciar",who:"Lucía",cargo:"Lectura",g:"ojo",c:"#7fb2ff",a:"lector",etapas:[0,1],kind:"agent"},
-    {step:"En carga",who:"Carla",cargo:"Carga a Marangatú",g:"upload",c:"#e86aa6",a:"cargador",etapas:[2],kind:"agent"},
-    {step:"En revisión",who:"Paula",cargo:"Borrador F120",g:"doc",c:"#c48bff",a:"presentador",etapas:[3],kind:"agent"},
-    {step:"Esperando tu OK",who:"Ledy",cargo:"Aprobás",g:"persona",c:"#CD9834",etapas:[4],kind:"human"},
-    {step:"Presentados",who:"Concluidos",cargo:"",g:"bandera",c:"#36d07f",etapas:[5],kind:"end"}
+    {step:"Por iniciar",who:"Lucía",cargo:"Lectura",id:"VG-01",g:"ojo",c:"#7fb2ff",a:"lector",etapas:[0,1],kind:"agent"},
+    {step:"En carga",who:"Carla",cargo:"Carga a Marangatú",id:"VG-02",g:"upload",c:"#e86aa6",a:"cargador",etapas:[2],kind:"agent"},
+    {step:"En revisión",who:"Paula",cargo:"Borrador F120",id:"VG-03",g:"doc",c:"#c48bff",a:"presentador",etapas:[3],kind:"agent"},
+    {step:"Esperando tu OK",who:"Ledy",cargo:"Directora Contable",id:"VG-00",g:"persona",c:"#CD9834",etapas:[4],kind:"human"},
+    {step:"Presentados",who:"Concluidos",cargo:"",id:"META",g:"bandera",c:"#36d07f",etapas:[5],kind:"end"}
   ];
   var PAR=[
-    {step:"Imputación",who:"Iván",g:"tag",c:"#3fb6a8",a:"imputador"},
-    {step:"Vigía",who:"Vera",g:"escudo",c:"#f0a84b",a:"vigia"},
-    {step:"Facturación",who:"Tomás",g:"recibo",c:"#6fd38b",a:"talonario"},
-    {step:"Retenciones",who:"Renzo",g:"pct",c:"#ff7a6b",a:"retenciones"},
-    {step:"Auditoría",who:"Aldo",g:"lupa",c:"#d9c24b",a:"auditor"},
-    {step:"Contador",who:"Bruno",g:"maletin",c:"#5b8def",a:"balanza"}
+    {step:"Imputación",who:"Iván",id:"VG-04",g:"tag",c:"#3fb6a8",a:"imputador"},
+    {step:"Vigía",who:"Vera",id:"VG-05",g:"escudo",c:"#f0a84b",a:"vigia"},
+    {step:"Facturación",who:"Tomás",id:"VG-06",g:"recibo",c:"#6fd38b",a:"talonario"},
+    {step:"Retenciones",who:"Renzo",id:"VG-07",g:"pct",c:"#ff7a6b",a:"retenciones"},
+    {step:"Auditoría",who:"Aldo",id:"VG-08",g:"lupa",c:"#d9c24b",a:"auditor"},
+    {step:"Contador",who:"Bruno",id:"VG-09",g:"maletin",c:"#5b8def",a:"balanza"}
   ];
-  var AG={}, STCL={}, LEDYSET={}, VENC=[], DUE={}; // agentes, clientes x etapa, set clientes Ledy, prox. vencimientos, dia de venc x cliente
+  var AG={}, STCL={}, LEDYSET={}, VENC=[], DUE={}, TOTAL=0; // agentes, clientes x etapa, set clientes Ledy, prox. vencimientos, dia de venc x cliente, total clientes
 
   function el(id){return document.getElementById(id);}
   function esc(s){return String(s==null?"":s).replace(/[&<>]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c];});}
@@ -184,6 +198,12 @@
   function shade(hex,amt){var m=/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);if(!m)return hex;function c(x){x=Math.round(parseInt(x,16)*(100+amt)/100);return Math.max(0,Math.min(255,x));}return "#"+[c(m[1]),c(m[2]),c(m[3])].map(function(v){return ("0"+v.toString(16)).slice(-2);}).join("");}
 
   function orb(n,on){return '<div class="orb" style="background:radial-gradient(circle at 35% 28%, '+n.c+', '+shade(n.c,-38)+')"><span class="ring"></span><svg viewBox="0 0 24 24">'+G[n.g]+'</svg></div>';}
+  function av(c,g){return '<div class="av" style="background:radial-gradient(circle at 35% 28%, '+c+', '+shade(c,-38)+')"><svg viewBox="0 0 24 24">'+g+'</svg></div>';}
+  function cred(name,role,id,color,glyph,on){
+    return '<div class="cred" style="border-left-color:'+color+'">'+av(color,glyph)+
+      '<div class="cred-info"><div class="cred-name">'+esc(name)+'<span class="cdot'+(on?" on":"")+'"></span></div><div class="cred-role">'+esc(role)+'</div></div>'+
+      '<div class="cred-id">'+esc(id)+'</div></div>';
+  }
   function pill(st,kind){
     if(kind==="human")return '<span class="pill st-wait">TU PASO</span>';
     if(kind==="end")return '<span class="pill st-on">META</span>';
@@ -207,28 +227,37 @@
       chips='<div class="chips">'+shown+'</div>';
     }
     var ccolor=s.kind==="end"?"var(--ok)":(cl.length?"var(--gold)":"var(--muted2)");
-    return '<div class="'+cls+'"><div class="nhead">'+orb(s,on)+
-      '<div><div class="step">'+esc(s.step)+'</div><div class="who">'+esc(s.who)+(s.cargo?' <i>· '+esc(s.cargo)+'</i>':'')+'</div></div></div>'+
-      '<div class="cntbox"><b style="color:'+ccolor+'">'+cl.length+'</b><span>'+(cl.length===1?'cliente':'clientes')+'</span></div>'+
-      chips+'<div class="stt">'+pill(st,s.kind)+'</div></div>';
+    var header;
+    if(s.kind==="end"){
+      header='<div class="eyebrow">Final del proceso</div>'+cred(s.step,"Concluidos",s.id,s.c,G[s.g],false);
+    }else{
+      header='<div class="eyebrow">'+esc(s.step)+'</div>'+cred(s.who,(s.cargo||"")+" · VG",s.id,s.c,G[s.g],on);
+    }
+    var frac='<div class="cntbox"><b style="color:'+ccolor+'">'+cl.length+'</b><span>/ '+TOTAL+' clientes</span></div>';
+    return '<div class="'+cls+'">'+header+frac+chips+'<div class="stt">'+pill(st,s.kind)+'</div></div>';
   }
   function vencHTML(){
     var n={step:"Próximos vencimientos",who:"Lo que se viene",g:"cal",c:"#f3b74a"};
-    var rows="",any=false,flt=hasLedy();
+    var rows="",any=false,flt=hasLedy(),cnt=0;
     VENC.forEach(function(v){
       var cl=v.clientes.filter(function(c){return flt?LEDYSET[key(c)]:true;});
-      if(!cl.length)return;any=true;
+      if(!cl.length)return;any=true;cnt+=cl.length;
       var when=v.left<=0?"hoy":("en "+v.left+(v.left===1?" día":" días"));
       var chips=cl.map(function(c){return '<span class="chip">'+esc(short(c))+'</span>';}).join("");
       rows+='<div class="vday"><b>'+v.dia+'</b> <span>· '+when+'</span></div><div class="chips" style="margin-top:3px;margin-bottom:5px">'+chips+'</div>';
     });
     if(!any)rows='<div class="none">sin vencimientos cerca</div>';
-    return '<div class="node hot"><div class="nhead">'+orb(n,false)+'<div><div class="step">'+esc(n.step)+'</div><div class="who">'+esc(n.who)+'</div></div></div><div class="vrow">'+rows+'</div><div class="stt"><span class="pill st-wait">AGENDA</span></div></div>';
+    var header='<div class="eyebrow">Agenda tributaria</div>'+cred(n.step,n.who,"CAL",n.c,G[n.g],false);
+    var frac='<div class="cntbox"><b style="color:var(--wip)">'+cnt+'</b><span>/ '+TOTAL+' por vencer</span></div>';
+    return '<div class="node hot">'+header+frac+'<div class="vrow">'+rows+'</div><div class="stt"><span class="pill st-wait">AGENDA</span></div></div>';
   }
   function parHTML(n){var st=AG[n.a]||"libre",on=st==="trabajando";
-    return '<div class="pnode'+(on?" on":"")+'">'+orb(n,on)+'<div class="step">'+esc(n.step)+'</div><div class="who">'+esc(n.who)+'</div>'+pill(st,"agent")+'</div>';}
+    return '<div class="pnode'+(on?" on":"")+'">'+cred(n.who,n.step+" · VG",n.id,n.c,G[n.g],on)+
+      '<div class="pcount"><b style="color:'+(on?"var(--ok)":"var(--muted2)")+'">'+(on?1:0)+'</b><span>/ 1 en curso</span></div>'+
+      '<div class="stt">'+pill(st,"agent")+'</div></div>';}
 
   function render(){
+    TOTAL=0;[0,1,2,3,4,5].forEach(function(e){TOTAL+=(STCL[e]||[]).length;});
     var vact=VENC.some(function(v){return v.clientes.some(function(c){return !hasLedy()||LEDYSET[key(c)];});});
     var parts=[vencHTML(),'<div class="arrow'+(vact?" flow":"")+'"><span class="dot"></span></div>'];
     STAGES.forEach(function(s,i){
@@ -238,8 +267,10 @@
     el("flow").innerHTML=parts.join("");
     el("parallel").innerHTML=PAR.map(parHTML).join("");
     // total
-    var pres=(STCL[5]||[]).length, falta=0;[0,1,2,3,4].forEach(function(e){falta+=(STCL[e]||[]).length;});
-    el("tot").innerHTML='<b>'+pres+'</b> presentados · <i>'+falta+'</i> en proceso';
+    var pres=(STCL[5]||[]).length, falta=TOTAL-pres;
+    el("tot").innerHTML='<b>'+pres+'</b>/'+TOTAL+' presentados · <i>'+falta+'</i> en proceso';
+    var working=PAR.filter(function(n){return AG[n.a]==="trabajando";}).length;
+    if(el("agtot"))el("agtot").innerHTML='<b>'+working+'</b> / '+PAR.length+' trabajando ahora';
   }
 
   function tick(){var d=new Date();function p(n){return (n<10?"0":"")+n;}
