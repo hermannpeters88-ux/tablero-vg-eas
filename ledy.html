@@ -4,226 +4,277 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Escritorio de Ledy · VG</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=Segoe+UI&display=swap">
 <style>
   :root{
-    --bg:#0c1016; --panel:#141b24; --panel2:#1b2430; --line:#263241;
-    --ink:#e8eef4; --muted:#8aa0b4;
-    --violet:#8b6fc4; --violet-deep:#623F98; --gold:#CD9834;
-    --ok:#36d07f; --okbg:#10301f; --wip:#f0b23a; --wipbg:#3a2c10; --todo:#ff6b5a; --todobg:#3a1a16;
-    --cyan:#49d6e0;
-    --f:"Segoe UI",-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+    --bg0:#070a12; --bg1:#0e1426; --panel:rgba(20,28,48,.72); --line:#2a3a63;
+    --ink:#eaf2ff; --muted:#93a6cf;
+    --violet:#8b6fc4; --violet-deep:#623F98; --gold:#CD9834; --cyan:#53e1ff; --pink:#ff6afb;
+    --ok:#3bed8e; --wip:#ffc24b; --todo:#ff5c7a;
+    --pix:"Press Start 2P",monospace; --term:"VT323",monospace;
+    --f:"Segoe UI",-apple-system,BlinkMacSystemFont,Arial,sans-serif;
   }
   *{box-sizing:border-box}
-  html,body{margin:0;height:100%}
-  body{background:radial-gradient(1200px 600px at 80% -10%, #15202e 0%, var(--bg) 60%);color:var(--ink);font-family:var(--f);font-size:16px;padding:22px 26px;min-height:100%}
-  a{color:inherit;text-decoration:none}
-  .top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:14px}
+  html,body{margin:0;min-height:100%}
+  body{
+    font-family:var(--f);color:var(--ink);font-size:16px;padding:16px 20px 28px;min-height:100vh;
+    background:
+      radial-gradient(900px 500px at 85% -5%, #182a55 0%, transparent 60%),
+      radial-gradient(700px 500px at 0% 110%, #2a1748 0%, transparent 55%),
+      linear-gradient(180deg,var(--bg1),var(--bg0));
+    background-attachment:fixed;
+  }
+  .scan{position:fixed;inset:0;pointer-events:none;z-index:50;opacity:.25;
+    background:repeating-linear-gradient(0deg, rgba(0,0,0,.18) 0 1px, transparent 1px 3px)}
+  .top{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
   .brand{display:flex;align-items:center;gap:14px;min-width:0}
-  .logo{width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,var(--violet-deep),#8b6fc4);display:grid;place-items:center;font-weight:800;font-size:20px;color:#fff;flex:none}
-  .brand h1{margin:0;font-size:22px;letter-spacing:.2px}
-  .brand .sub{color:var(--muted);font-size:13px;margin-top:2px}
-  .live{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
-  .clock{font-variant-numeric:tabular-nums;font-size:26px;font-weight:700;letter-spacing:1px}
-  .clock .d{display:block;font-size:12px;color:var(--muted);font-weight:500;letter-spacing:.4px;text-align:right}
-  .dot{width:9px;height:9px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 0 rgba(54,208,127,.6);animation:p 2s infinite}
-  @keyframes p{0%{box-shadow:0 0 0 0 rgba(54,208,127,.5)}70%{box-shadow:0 0 0 10px rgba(54,208,127,0)}100%{box-shadow:0 0 0 0 rgba(54,208,127,0)}}
-  .pilled{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);background:var(--panel);border:1px solid var(--line);padding:5px 10px;border-radius:999px}
-  .grid{display:grid;grid-template-columns:1.15fr 1fr;gap:18px;margin-top:18px}
-  @media (max-width:900px){.grid{grid-template-columns:1fr}}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px 20px}
-  .card h2{margin:0 0 4px;font-size:13px;letter-spacing:1.4px;text-transform:uppercase;color:var(--gold)}
-  .card .cap{color:var(--muted);font-size:12.5px;margin:0 0 14px}
-  .kpis{display:flex;gap:10px;margin:0 0 14px;flex-wrap:wrap}
-  .kpi{flex:1;min-width:90px;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;text-align:center}
-  .kpi b{display:block;font-size:26px;line-height:1.1}
-  .kpi span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
-  .row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 12px;border-radius:11px;background:var(--panel2);border:1px solid var(--line);margin-bottom:9px}
-  .row .who b{font-size:15px}
-  .row .who small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
-  .badge{font-size:12px;font-weight:700;padding:5px 10px;border-radius:8px;white-space:nowrap}
-  .b-todo{color:var(--todo);background:var(--todobg)} .b-wip{color:var(--wip);background:var(--wipbg)} .b-ok{color:var(--ok);background:var(--okbg)}
-  .vto{font-variant-numeric:tabular-nums;font-size:12px;color:var(--muted)}
-  .empty{color:var(--ok);background:var(--okbg);border:1px solid #1d4d33;border-radius:12px;padding:16px;text-align:center;font-size:15px}
-  .money{font-variant-numeric:tabular-nums;font-weight:700;color:var(--gold)}
-  .agents{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-  @media (max-width:560px){.agents{grid-template-columns:repeat(2,1fr)}}
-  .ag{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;gap:10px;align-items:center}
-  .ag .s{width:11px;height:11px;border-radius:50%;flex:none;margin-top:3px}
-  .s-trabajando{background:var(--ok);box-shadow:0 0 8px var(--ok)} .s-esperando{background:var(--wip)} .s-libre{background:#46566a}
-  .ag .n{min-width:0}
-  .ag .n b{font-size:13.5px;display:block;line-height:1.15}
-  .ag .n small{color:var(--muted);font-size:11px}
-  .foot{margin-top:18px;color:var(--muted);font-size:12px;text-align:center}
-  .loading{color:var(--muted);font-size:13px;padding:8px 0}
+  .coin{width:52px;height:52px;border-radius:12px;flex:none;display:grid;place-items:center;
+    background:conic-gradient(from 210deg,var(--violet-deep),#b58bff,var(--cyan),var(--violet-deep));
+    box-shadow:0 0 22px rgba(120,100,230,.5);color:#0a0f1e;font-family:var(--pix);font-size:16px}
+  .brand h1{margin:0;font-family:var(--pix);font-size:17px;line-height:1.5;color:#fff;text-shadow:0 0 12px rgba(120,160,255,.5)}
+  .brand .sub{color:var(--cyan);font-family:var(--term);font-size:20px;letter-spacing:1px;margin-top:2px}
+  .hud{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .live{font-family:var(--term);font-size:19px;color:var(--ok);display:inline-flex;align-items:center;gap:8px;
+    border:1px solid #1e6b45;background:#0c2a1c;padding:3px 12px;border-radius:999px}
+  .live .d{width:9px;height:9px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px var(--ok);animation:bl 1.4s infinite}
+  @keyframes bl{50%{opacity:.3}}
+  .clock{font-family:var(--pix);font-size:18px;color:#fff;letter-spacing:1px}
+  .clock .dd{display:block;font-family:var(--term);font-size:17px;color:var(--muted);text-align:right;letter-spacing:.5px;margin-top:3px}
+
+  .layout{display:grid;grid-template-columns:1.5fr 1fr;gap:16px;margin-top:16px}
+  @media (max-width:980px){.layout{grid-template-columns:1fr}}
+
+  /* ---------- OFICINA ARCADE ---------- */
+  .office{position:relative;border:2px solid var(--line);border-radius:18px;overflow:hidden;
+    background:linear-gradient(180deg,#0b1430 0%,#0b1430 46%, #10203f 46%, #0c1830 100%);
+    box-shadow:inset 0 0 60px rgba(0,0,0,.5)}
+  .office .wall{position:absolute;inset:0 0 54% 0;
+    background-image:linear-gradient(rgba(70,110,200,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(70,110,200,.08) 1px,transparent 1px);
+    background-size:28px 28px}
+  .office .floor{position:absolute;inset:46% 0 0 0;
+    background-image:linear-gradient(115deg,rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(65deg,rgba(255,255,255,.04) 1px,transparent 1px);
+    background-size:40px 40px}
+  .sign{position:relative;z-index:2;margin:14px auto 4px;width:max-content;max-width:92%;text-align:center;
+    font-family:var(--pix);font-size:13px;color:#fff;padding:9px 16px;border-radius:10px;
+    background:linear-gradient(180deg,#2a1c52,#1a1138);border:2px solid var(--violet);
+    box-shadow:0 0 18px rgba(139,111,196,.6), inset 0 0 12px rgba(139,111,196,.3)}
+  .sign small{display:block;font-family:var(--term);font-size:16px;color:var(--cyan);letter-spacing:1px;margin-top:5px}
+  .legend{position:relative;z-index:2;display:flex;gap:14px;justify-content:center;flex-wrap:wrap;
+    font-family:var(--term);font-size:16px;color:var(--muted);margin:6px 0 8px}
+  .legend i{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:5px;vertical-align:middle}
+  .desks{position:relative;z-index:2;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:6px 14px 18px}
+  @media (max-width:620px){.desks{grid-template-columns:repeat(2,1fr)}}
+  .desk{position:relative;border-radius:12px;padding:10px 8px 8px;text-align:center;
+    background:linear-gradient(180deg,rgba(32,44,78,.55),rgba(14,20,40,.55));border:1px solid var(--line)}
+  .char{position:relative;height:86px;display:flex;align-items:flex-end;justify-content:center}
+  .char svg{display:block;filter:drop-shadow(0 6px 6px rgba(0,0,0,.5))}
+  .desk.on .bob{animation:bob 1.6s ease-in-out infinite}
+  @keyframes bob{50%{transform:translateY(-4px)}}
+  .halo{position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:62px;height:14px;border-radius:50%;filter:blur(5px);opacity:.0}
+  .desk.on .halo{background:var(--ok);opacity:.55;animation:gl 1.8s infinite}
+  .desk.wait .halo{background:var(--wip);opacity:.4}
+  @keyframes gl{50%{opacity:.25}}
+  .zzz{position:absolute;top:6px;right:16px;font-family:var(--pix);font-size:9px;color:#5f7093;opacity:.8}
+  .nm{font-weight:700;font-size:13.5px;margin-top:4px;line-height:1.1}
+  .cg{font-family:var(--term);font-size:15px;color:var(--muted);letter-spacing:.5px}
+  .stt{font-family:var(--pix);font-size:8px;margin-top:5px;padding:3px 0;border-radius:6px}
+  .st-on{color:#0a2417;background:var(--ok)} .st-wait{color:#2a1e06;background:var(--wip)} .st-off{color:#8aa;background:#1b2740}
+  .counts{position:relative;z-index:2;display:flex;gap:10px;justify-content:center;padding:0 14px 14px}
+  .cnt{font-family:var(--term);font-size:17px;color:var(--muted)}
+  .cnt b{font-family:var(--pix);font-size:12px;margin-right:4px}
+
+  /* ---------- PANELES "AL DÍA" ---------- */
+  .side{display:grid;gap:16px;align-content:start}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px 16px;backdrop-filter:blur(3px)}
+  .panel h2{margin:0 0 2px;font-family:var(--pix);font-size:11px;letter-spacing:1px;color:var(--gold)}
+  .panel .cap{font-family:var(--term);font-size:15px;color:var(--muted);margin:0 0 10px}
+  .kpis{display:flex;gap:8px;margin-bottom:10px}
+  .kpi{flex:1;background:rgba(10,16,34,.6);border:1px solid var(--line);border-radius:10px;padding:8px;text-align:center}
+  .kpi b{display:block;font-family:var(--pix);font-size:16px}
+  .kpi span{font-family:var(--term);font-size:14px;color:var(--muted)}
+  .row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 11px;border-radius:10px;
+    background:rgba(10,16,34,.5);border:1px solid var(--line);margin-bottom:7px}
+  .row b{font-size:14.5px}
+  .row small{display:block;font-family:var(--term);font-size:14px;color:var(--muted)}
+  .badge{font-family:var(--pix);font-size:8px;padding:5px 7px;border-radius:7px;white-space:nowrap}
+  .b-todo{color:#2a0d13;background:var(--todo)} .b-wip{color:#2a1e06;background:var(--wip)}
+  .money{font-family:var(--term);font-size:19px;font-weight:700;color:var(--gold)}
+  .empty{font-family:var(--term);font-size:18px;color:var(--ok);background:#0c2a1c;border:1px solid #1e6b45;border-radius:10px;padding:12px;text-align:center}
+  .loading{font-family:var(--term);font-size:16px;color:var(--muted);padding:6px 0}
+  .foot{margin-top:14px;text-align:center;font-family:var(--term);font-size:15px;color:var(--muted)}
 </style>
 </head>
 <body>
-  <div class="top">
-    <div class="brand">
-      <div class="logo">vg</div>
-      <div>
-        <h1>Escritorio de Ledy</h1>
-        <div class="sub">VG Asociados · Directora Contable</div>
-      </div>
+<div class="scan"></div>
+
+<div class="top">
+  <div class="brand">
+    <div class="coin">vg</div>
+    <div>
+      <h1>ESCRITORIO DE LEDY</h1>
+      <div class="sub">VG Asociados · Directora Contable</div>
     </div>
-    <div class="live">
-      <span class="pilled"><span class="dot"></span> EN VIVO · se actualiza solo</span>
-      <div class="clock" id="clock">--:--:--<span class="d" id="date">—</span></div>
+  </div>
+  <div class="hud">
+    <span class="live"><span class="d"></span> EN VIVO</span>
+    <div class="clock" id="clock">--:--:--<span class="dd" id="date">—</span></div>
+  </div>
+</div>
+
+<div class="layout">
+  <!-- OFICINA ARCADE -->
+  <div class="office">
+    <div class="wall"></div><div class="floor"></div>
+    <div class="sign">VG CONTABILIDAD<small>tu oficina · estado real</small></div>
+    <div class="legend">
+      <span><i style="background:var(--ok)"></i>trabajando</span>
+      <span><i style="background:var(--wip)"></i>esperando</span>
+      <span><i style="background:#46566a"></i>libre</span>
+    </div>
+    <div class="desks" id="desks"></div>
+    <div class="counts">
+      <span class="cnt"><b style="color:var(--ok)" id="cTrab">0</b>trabajando</span>
+      <span class="cnt"><b style="color:var(--wip)" id="cEsp">0</b>esperando</span>
+      <span class="cnt"><b style="color:#8aa" id="cLib">0</b>libres</span>
     </div>
   </div>
 
-  <div class="grid">
-    <div style="display:grid;gap:18px">
-      <div class="card">
-        <h2>Para presentar</h2>
-        <p class="cap">Tus clientes del cierre que todavía no están presentados.</p>
-        <div class="kpis">
-          <div class="kpi"><b id="kpiPres" style="color:var(--ok)">—</b><span>Presentados</span></div>
-          <div class="kpi"><b id="kpiFalta" style="color:var(--todo)">—</b><span>Faltan</span></div>
-          <div class="kpi"><b id="kpiTot">—</b><span>Tus clientes</span></div>
-        </div>
-        <div id="presentar"><div class="loading">Cargando el cierre…</div></div>
-      </div>
-
-      <div class="card">
-        <h2>Para cobrar</h2>
-        <p class="cap">Lo que figura pendiente de cobro a tu cargo (cartera).</p>
-        <div id="cobrar"><div class="loading">Cargando la cartera…</div></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>Tu equipo de agentes</h2>
-      <p class="cap">VG Contabilidad · estado real ahora mismo.</p>
+  <!-- AL DÍA -->
+  <div class="side">
+    <div class="panel">
+      <h2>PARA PRESENTAR</h2>
+      <p class="cap">Tus clientes del cierre sin presentar.</p>
       <div class="kpis">
-        <div class="kpi"><b id="agTrab" style="color:var(--ok)">—</b><span>Trabajando</span></div>
-        <div class="kpi"><b id="agEsp" style="color:var(--wip)">—</b><span>Esperando</span></div>
-        <div class="kpi"><b id="agLib" style="color:var(--muted)">—</b><span>Libres</span></div>
+        <div class="kpi"><b style="color:var(--ok)" id="kPres">—</b><span>presentados</span></div>
+        <div class="kpi"><b style="color:var(--todo)" id="kFalta">—</b><span>faltan</span></div>
+        <div class="kpi"><b id="kTot">—</b><span>tus clientes</span></div>
       </div>
-      <div class="agents" id="agents"><div class="loading">Cargando agentes…</div></div>
+      <div id="presentar"><div class="loading">Cargando el cierre…</div></div>
+    </div>
+    <div class="panel">
+      <h2>PARA COBRAR</h2>
+      <p class="cap">Cartera pendiente a tu cargo.</p>
+      <div id="cobrar"><div class="loading">Cargando la cartera…</div></div>
     </div>
   </div>
+</div>
 
-  <div class="foot" id="foot">Actualizado al abrir · se refresca solo cada 3 minutos</div>
+<div class="foot" id="foot">se refresca solo cada 3 minutos</div>
 
 <script>
 (function(){
   "use strict";
-  var SHEET = "1W-B0Sc16DQK2bEVk0TeyVzUatbRaajmw-eMmudiD7Wo";
-  var COBROS_API = "https://script.google.com/macros/s/AKfycbzPa-w8t8w-atOvJjYR-S7KHksg5acgdnARlMAUF5uRvPJxMAOe4BvJBF2K058a16I/exec";
-  var EJECUTIVA = "Ledy";
-  var VGC = [["balanza","Bruno","Contador"],["cargador","Carla","Digitador"],["imputador","Iván","Imputador"],
-             ["presentador","Paula","Presentador"],["vigia","Vera","Vigía"],["talonario","Tomás","Facturador"],
-             ["retenciones","Renzo","Retenciones"],["lector","Lucía","Lectura"],["auditor","Aldo","Auditor"]];
-  var MESES = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+  var SHEET="1W-B0Sc16DQK2bEVk0TeyVzUatbRaajmw-eMmudiD7Wo";
+  var COBROS_API="https://script.google.com/macros/s/AKfycbzPa-w8t8w-atOvJjYR-S7KHksg5acgdnARlMAUF5uRvPJxMAOe4BvJBF2K058a16I/exec";
+  var EJECUTIVA="Ledy";
+  // id, nombre, cargo, colorRopa, colorPelo
+  var VGC=[
+    ["balanza","Bruno","Contador","#5b8def","#3a2a1a"],
+    ["cargador","Carla","Digitador","#e86aa6","#2a1a2a"],
+    ["imputador","Iván","Imputador","#3fb6a8","#20160f"],
+    ["presentador","Paula","Presentador","#c48bff","#2a1830"],
+    ["vigia","Vera","Vigía","#f0a84b","#2a1810"],
+    ["talonario","Tomás","Facturador","#6fd38b","#1a1410"],
+    ["retenciones","Renzo","Retenciones","#ff7a6b","#201210"],
+    ["lector","Lucía","Lectura","#7fb2ff","#2a1f16"],
+    ["auditor","Aldo","Auditor","#d9c24b","#241a10"]
+  ];
 
   function el(id){return document.getElementById(id);}
   function esc(s){return String(s==null?"":s).replace(/[&<>]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c];});}
   function num(v){var n=parseInt(String(v==null?"":v).replace(/\D/g,""),10);return isNaN(n)?0:n;}
-  function fmtGs(n){try{return "Gs " + Number(n).toLocaleString("es-PY");}catch(e){return "Gs "+n;}}
+  function fmtGs(n){try{return "Gs "+Number(n).toLocaleString("es-PY");}catch(e){return "Gs "+n;}}
 
-  function tick(){
-    var d=new Date();
-    function p(n){return (n<10?"0":"")+n;}
-    el("clock").firstChild.nodeValue = p(d.getHours())+":"+p(d.getMinutes())+":"+p(d.getSeconds());
-    el("date").textContent = d.toLocaleDateString("es-PY",{weekday:"long",day:"numeric",month:"long"});
+  // --- personaje SVG (cabeza, cuerpo, monitor), "3D-ish" con gradientes ---
+  function charSVG(ropa,pelo,on){
+    var g="g"+Math.random().toString(36).slice(2,7);
+    return '<svg class="bob" width="78" height="86" viewBox="0 0 78 86" aria-hidden="true">'+
+      '<defs>'+
+        '<radialGradient id="'+g+'s" cx="40%" cy="30%" r="80%"><stop offset="0%" stop-color="#ffe7cf"/><stop offset="100%" stop-color="#e9b48a"/></radialGradient>'+
+        '<linearGradient id="'+g+'r" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="'+ropa+'"/><stop offset="100%" stop-color="#1b2540"/></linearGradient>'+
+      '</defs>'+
+      // monitor
+      '<rect x="8" y="54" width="26" height="18" rx="2" fill="#0c1730" stroke="#2a3a63"/>'+
+      '<rect x="10" y="56" width="22" height="14" rx="1" fill="'+(on?'#123b2e':'#111a30')+'"/>'+
+      (on?'<rect x="12" y="59" width="13" height="2" fill="#3bed8e"/><rect x="12" y="63" width="9" height="2" fill="#2bbf72"/>':'')+
+      '<rect x="18" y="72" width="6" height="4" fill="#223055"/>'+
+      // cuerpo
+      '<path d="M44 86 q-14 0 -14 -16 q0 -14 14 -14 q14 0 14 14 q0 16 -14 16 z" fill="url(#'+g+'r)"/>'+
+      // cabeza
+      '<circle cx="52" cy="40" r="14" fill="url(#'+g+'s)"/>'+
+      // pelo
+      '<path d="M39 38 q0 -16 13 -16 q13 0 13 15 q-5 -7 -13 -7 q-9 0 -13 8 z" fill="'+pelo+'"/>'+
+      // ojos
+      '<circle cx="48" cy="40" r="1.6" fill="#1c2436"/><circle cx="56" cy="40" r="1.6" fill="#1c2436"/>'+
+      (on?'<path d="M47 46 q5 4 10 0" stroke="#9a5a44" stroke-width="1.4" fill="none" stroke-linecap="round"/>':'<path d="M47 46 q5 2 10 0" stroke="#9a5a44" stroke-width="1.4" fill="none" stroke-linecap="round"/>')+
+    '</svg>';
   }
-  setInterval(tick,1000); tick();
 
-  // ---- gviz loader (JSONP) ----
-  function gviz(sheetName, cb){
-    var fn = "__cb_" + sheetName + "_" + Date.now();
-    window[fn] = function(resp){
-      try{
-        var rows = (resp.table.rows||[]).map(function(r){ return (r.c||[]).map(function(c){ return c? c.v : null; }); });
-        cb(null, rows);
-      }catch(e){ cb(e); }
-      try{ delete window[fn]; }catch(_){ window[fn]=undefined; }
-      if(s.parentNode) s.parentNode.removeChild(s);
-    };
+  function tick(){var d=new Date();function p(n){return (n<10?"0":"")+n;}
+    el("clock").firstChild.nodeValue=p(d.getHours())+":"+p(d.getMinutes())+":"+p(d.getSeconds());
+    el("date").textContent=d.toLocaleDateString("es-PY",{weekday:"long",day:"numeric",month:"long"});}
+  setInterval(tick,1000);tick();
+
+  function gviz(sheetName,cb){
+    var fn="__cb"+Math.random().toString(36).slice(2,8);
+    window[fn]=function(resp){try{var rows=(resp.table.rows||[]).map(function(r){return (r.c||[]).map(function(c){return c?c.v:null;});});cb(null,rows);}catch(e){cb(e);}try{delete window[fn];}catch(_){}if(s.parentNode)s.parentNode.removeChild(s);};
     var s=document.createElement("script");
-    s.src="https://docs.google.com/spreadsheets/d/"+SHEET+"/gviz/tq?tqx=out:json;responseHandler:"+fn+"&sheet="+encodeURIComponent(sheetName)+"&headers=0&_="+Date.now();
-    s.onerror=function(){ cb(new Error("no cargó "+sheetName)); };
-    document.body.appendChild(s);
+    s.src="https://docs.google.com/spreadsheets/d/"+SHEET+"/gviz/tq?tqx=out:json;responseHandler:"+fn+"&sheet="+encodeURIComponent(sheetName)+"&_="+Date.now();
+    s.onerror=function(){cb(new Error("x"));};document.body.appendChild(s);
   }
 
-  // ---- CIERRE (para presentar) ----
-  function loadCierre(){
-    gviz("Cierre", function(err, rows){
-      if(err){ el("presentar").innerHTML='<div class="loading">No pude leer el cierre ahora. Reintento en un rato.</div>'; return; }
-      var mine = rows.slice(1).filter(function(r){ return r[0] && String(r[9]||"").trim().toLowerCase()===EJECUTIVA.toLowerCase(); });
-      var pres = mine.filter(function(r){ return num(r[4])>=5; });
-      var falta = mine.filter(function(r){ return num(r[4])<5; });
-      el("kpiPres").textContent = pres.length;
-      el("kpiFalta").textContent = falta.length;
-      el("kpiTot").textContent = mine.length;
-      var today = new Date().getDate();
-      falta.sort(function(a,b){ return num(a[2])-num(b[2]); });
-      if(falta.length===0){
-        el("presentar").innerHTML='<div class="empty">✓ Tenés todos tus clientes presentados. ¡Al día!</div>';
-        return;
-      }
-      el("presentar").innerHTML = falta.map(function(r){
-        var etapa=num(r[4]), nombre=esc(r[5]||"Sin iniciar"), vto=num(r[2]);
-        var cls = etapa>=3?"b-wip":"b-todo";
-        var venc = (vto && vto<today)?' · <span style="color:var(--todo)">vencido</span>':'';
-        return '<div class="row"><div class="who"><b>'+esc(r[0])+'</b>'+
-               '<small>'+esc(r[3]||"IVA")+' · vence el '+vto+venc+'</small></div>'+
-               '<span class="badge '+cls+'">'+nombre+'</span></div>';
-      }).join("");
-    });
-  }
-
-  // ---- AGENTES ----
   function loadAgentes(){
-    gviz("Agentes", function(err, rows){
-      if(err){ el("agents").innerHTML='<div class="loading">No pude leer los agentes ahora.</div>'; return; }
-      var map={}; rows.forEach(function(r){ if(r[0]) map[String(r[0]).trim()]=String(r[1]||"").trim().toLowerCase(); });
+    gviz("Agentes",function(err,rows){
+      var map={};if(!err){rows.forEach(function(r){if(r[0])map[String(r[0]).trim()]=String(r[1]||"").trim().toLowerCase();});}
       var t=0,e=0,l=0;
-      var html = VGC.map(function(a){
-        var st = map[a[0]] || "libre";
-        if(st==="trabajando")t++; else if(st==="esperando")e++; else l++;
-        return '<div class="ag"><span class="s s-'+esc(st)+'"></span><div class="n"><b>'+esc(a[1])+'</b><small>'+esc(a[2])+'</small></div></div>';
+      el("desks").innerHTML=VGC.map(function(a){
+        var st=map[a[0]]||"libre";var on=st==="trabajando",wait=st==="esperando";
+        if(on)t++;else if(wait)e++;else l++;
+        var cls=on?"desk on":(wait?"desk wait":"desk");
+        var sttxt=on?'<div class="stt st-on">TRABAJANDO</div>':(wait?'<div class="stt st-wait">ESPERANDO</div>':'<div class="stt st-off">LIBRE</div>');
+        return '<div class="'+cls+'">'+(!on&&!wait?'<span class="zzz">z z</span>':'')+
+          '<div class="char"><span class="halo"></span>'+charSVG(a[3],a[4],on)+'</div>'+
+          '<div class="nm">'+esc(a[1])+'</div><div class="cg">'+esc(a[2])+'</div>'+sttxt+'</div>';
       }).join("");
-      el("agents").innerHTML = html;
-      el("agTrab").textContent=t; el("agEsp").textContent=e; el("agLib").textContent=l;
+      el("cTrab").textContent=t;el("cEsp").textContent=e;el("cLib").textContent=l;
     });
   }
 
-  // ---- COBROS (cartera) ----
+  function loadCierre(){
+    gviz("Cierre",function(err,rows){
+      if(err){el("presentar").innerHTML='<div class="loading">No pude leer el cierre ahora.</div>';return;}
+      var mine=rows.slice(1).filter(function(r){return r[0]&&String(r[9]||"").trim().toLowerCase()===EJECUTIVA.toLowerCase();});
+      var pres=mine.filter(function(r){return num(r[4])>=5;});
+      var falta=mine.filter(function(r){return num(r[4])<5;});
+      el("kPres").textContent=pres.length;el("kFalta").textContent=falta.length;el("kTot").textContent=mine.length;
+      var today=new Date().getDate();falta.sort(function(a,b){return num(a[2])-num(b[2]);});
+      if(falta.length===0){el("presentar").innerHTML='<div class="empty">✓ Todos tus clientes presentados ¡al día!</div>';return;}
+      el("presentar").innerHTML=falta.map(function(r){
+        var etapa=num(r[4]),nombre=esc(r[5]||"Sin iniciar"),vto=num(r[2]);
+        var cls=etapa>=3?"b-wip":"b-todo";var venc=(vto&&vto<today)?' · <span style="color:var(--todo)">vencido</span>':'';
+        return '<div class="row"><div><b>'+esc(r[0])+'</b><small>'+esc(r[3]||"IVA")+' · vence el '+vto+venc+'</small></div><span class="badge '+cls+'">'+nombre+'</span></div>';
+      }).join("");
+    });
+  }
+
   function loadCobros(){
-    fetch(COBROS_API, {cache:"no-store"}).then(function(r){ return r.json(); }).then(function(d){
-      var out=[];
-      (d.clientes||[]).forEach(function(c){
-        (c.facturas||[]).forEach(function(f){
-          var resp=String(f.responsable||"").trim().toLowerCase();
-          var est=String(f.estadoCobro||"").trim().toLowerCase();
-          if(resp===EJECUTIVA.toLowerCase() && est.indexOf("pend")===0){
-            out.push({ nombre:f.label||f.razonSocial||"(sin nombre)", monto:num(f.monto), mes:f.mes||"", detalle:f.detalle||"" });
-          }
-        });
-      });
-      if(out.length===0){ el("cobrar").innerHTML='<div class="empty">✓ No tenés cobros pendientes a tu cargo.</div>'; return; }
-      out.sort(function(a,b){ return b.monto-a.monto; });
-      var total=out.reduce(function(s,x){return s+x.monto;},0);
-      el("cobrar").innerHTML =
-        '<div class="kpis"><div class="kpi"><b style="color:var(--gold);font-size:20px">'+fmtGs(total)+'</b><span>Total a cobrar</span></div>'+
-        '<div class="kpi"><b>'+out.length+'</b><span>Facturas</span></div></div>' +
-        out.map(function(x){
-          return '<div class="row"><div class="who"><b>'+esc(x.nombre)+'</b><small>'+esc(x.detalle||x.mes)+(x.mes?' · '+esc(x.mes):'')+'</small></div>'+
-                 '<span class="money">'+fmtGs(x.monto)+'</span></div>';
-        }).join("");
-    }).catch(function(){
-      el("cobrar").innerHTML='<div class="loading">La cartera no está disponible en este momento (se reintenta solo).</div>';
-    });
+    fetch(COBROS_API,{cache:"no-store"}).then(function(r){return r.json();}).then(function(d){
+      var out=[];(d.clientes||[]).forEach(function(c){(c.facturas||[]).forEach(function(f){
+        var resp=String(f.responsable||"").trim().toLowerCase();var est=String(f.estadoCobro||"").trim().toLowerCase();
+        if(resp===EJECUTIVA.toLowerCase()&&est.indexOf("pend")===0)out.push({nombre:f.label||f.razonSocial||"(sin nombre)",monto:num(f.monto),mes:f.mes||"",detalle:f.detalle||""});
+      });});
+      if(out.length===0){el("cobrar").innerHTML='<div class="empty">✓ Sin cobros pendientes a tu cargo.</div>';return;}
+      out.sort(function(a,b){return b.monto-a.monto;});var total=out.reduce(function(s,x){return s+x.monto;},0);
+      el("cobrar").innerHTML='<div class="kpis"><div class="kpi"><b style="color:var(--gold);font-size:13px">'+fmtGs(total)+'</b><span>a cobrar</span></div><div class="kpi"><b>'+out.length+'</b><span>facturas</span></div></div>'+
+        out.map(function(x){return '<div class="row"><div><b>'+esc(x.nombre)+'</b><small>'+esc(x.detalle||x.mes)+'</small></div><span class="money">'+fmtGs(x.monto)+'</span></div>';}).join("");
+    }).catch(function(){el("cobrar").innerHTML='<div class="loading">Cartera no disponible ahora (se reintenta).</div>';});
   }
 
-  function refreshAll(){
-    loadCierre(); loadAgentes(); loadCobros();
-    el("foot").textContent = "Última actualización: " + new Date().toLocaleTimeString("es-PY") + " · se refresca solo cada 3 minutos";
-  }
-  refreshAll();
-  setInterval(refreshAll, 180000); // 3 min
+  function refreshAll(){loadAgentes();loadCierre();loadCobros();
+    el("foot").textContent="Última actualización: "+new Date().toLocaleTimeString("es-PY")+" · se refresca solo cada 3 minutos";}
+  refreshAll();setInterval(refreshAll,180000);
 })();
 </script>
 </body>
