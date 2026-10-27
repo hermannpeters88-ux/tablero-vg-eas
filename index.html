@@ -4370,7 +4370,13 @@ if(DEMO_MODE){
   window.__cierreHtml=function(month,hoyD){
     /* Formato de cierre.html (pedido de Hermann 07/10): agrupado por día, UNA fila por cliente, barra de 5 etapas,
        estado a la derecha. Scroll interno (#tv-venc-scroll) con auto-scroll lento para la TV. */
-    var L=window.__cierre; if(!L||!L.length) return null;
+    var _Lall=window.__cierre; if(!_Lall||!_Lall.length) return null;
+    /* El cierre es de obligaciones MENSUALES (IVA). IRP es anual y las filas SIN RUC no se pueden verificar
+       (Hermann 27/10): salen de la lista y de la alarma de atrasados, y se listan aparte como nota informativa,
+       así la alarma roja muestra solo pendientes mensuales reales. */
+    function _esMensual(c){ return c.ruc && !/IRP/i.test(String(c.imp||'')); }
+    var _noMens=_Lall.filter(function(c){ return !_esMensual(c); });
+    var L=_Lall.filter(_esMensual); if(!L.length) return null;
     var VERDE='#15935b', VERDE_S='#e4f5ec', GRIS='#eef2f7', MUTED='#5b6b82';
     var dias={}; L.forEach(function(c){ (dias[c.dia]=dias[c.dia]||[]).push(c); });
     var orden=Object.keys(dias).map(Number).sort(function(a,b){return a-b;});
@@ -4421,6 +4427,10 @@ if(DEMO_MODE){
       return '<span style="font-size:.52em;background:'+(on?VERDE_S:GRIS)+';color:'+(on?VERDE:MUTED)+';padding:1px 6px;border-radius:8px;font-weight:700;white-space:nowrap">'+esc(e)+' '+libre+'/'+tot+'</span>';
     }).join('');
     var sabo = saboChips ? '<div style="display:flex;gap:3px;flex-wrap:wrap;align-items:center;margin-bottom:2px"><span style="font-size:.52em;color:'+MUTED+';font-weight:700;white-space:nowrap">🏖️ Sáb. libre:</span>'+saboChips+'</div>' : '';
+    // Nota informativa: clientes que NO vencen este mes (IRP anual) o sin RUC — fuera de la alarma de atrasados
+    var notaNM = _noMens.length
+      ? '<div style="font-size:.5em;color:'+MUTED+';background:#f5f7fa;border:1px dashed #d4dbe6;border-radius:5px;padding:2px 7px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">ℹ️ No vencen este mes (IRP anual / sin RUC): '+_noMens.map(function(c){return esc(c.cliente);}).join(' · ')+'</div>'
+      : '';
     // Arrastre del mes anterior (clientes que quedaron sin presentar/cobrar al cerrar el mes)
     var arr = window.__arrastre;
     var arrStrip = (arr && arr.items && arr.items.length)
@@ -4448,7 +4458,7 @@ if(DEMO_MODE){
     return '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">'
       +'<div style="font-size:.72em;font-weight:700;white-space:nowrap">📅 Cierre — '+esc((month&&month.name)||'')+'</div>'
       +'<div style="display:flex;gap:3px">'+chip('#fbe6ea','#e2445c','Vencen hoy: '+hoyN)+chip('#fbf1dd','#c6870d','Próx. 3 días: '+proxN)
-      +chip('#e4f5ec','#15935b','Presentados: '+pres+'/'+L.length)+'</div></div>'+arrStrip+pinAtras+pinHoy+sabo+ley
+      +chip('#e4f5ec','#15935b','Presentados: '+pres+'/'+L.length)+'</div></div>'+arrStrip+pinAtras+pinHoy+sabo+notaNM+ley
       +'<div id="tv-venc-scroll" style="flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column">'+cuerpo+'</div>';
   };
   // Auto-scroll lento de la lista (la TV no se toca): baja, pausa 4 s abajo, vuelve arriba, pausa 4 s.
