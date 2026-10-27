@@ -3866,7 +3866,7 @@ const rodyClientes = calcClientesStats(["rodi","rody","rodolfo","alejandra","gab
     const promOps = vOps.length ? Math.round(vOps.reduce((a,b)=>a+b,0)/vOps.length) : null;
     const medals=['🥇','🥈','🥉'];
     const podC=['#f59e0b','#94a3b8','#cd7f32'];
-    const podH=[80,60,45];
+    const podH=[52,42,32];
 
     const col2 = [
       card(`
@@ -3875,7 +3875,7 @@ const rodyClientes = calcClientesStats(["rodi","rody","rodolfo","alejandra","gab
         <div style="font-size:.5em;color:#999;text-align:center;margin-bottom:3px">Solo equipo operativo · Cumplimiento promedio: ${fmtP(promOps)}</div>
         <div style="display:flex;justify-content:space-around;align-items:flex-end;flex:1;gap:4px">
           ${sorted.map((p,i)=>{
-            const sz = i===0?46:36;
+            const sz = i===0?38:30;
             // Medalla solo con cumplimiento > 0 (no premiar 0% ni "sin tareas"): si no, lugar en gris
             const conMedalla = p.s!=null && p.s>0;
             const pc = conMedalla ? podC[i] : '#cbd5e1';
@@ -3895,7 +3895,7 @@ const rodyClientes = calcClientesStats(["rodi","rody","rodolfo","alejandra","gab
             </div>`;
           }).join('')}
         </div>
-      `,'1.22','#f59e0b'),
+      `,'1.34','#f59e0b'),
 
       card((window.__cierreHtml&&window.__cierreHtml(month,hoyD))||`
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">
@@ -3921,7 +3921,7 @@ const rodyClientes = calcClientesStats(["rodi","rody","rodolfo","alejandra","gab
             </div>`;
           }).join('')}
         </div>
-      `,'1.15','#3b82f6'),
+      `,'1.88','#3b82f6'),
 
       card(`
         <div style="font-size:.72em;font-weight:700;margin-bottom:3px">💰 Cobros Cartera</div>
@@ -3957,7 +3957,7 @@ const rodyClientes = calcClientesStats(["rodi","rody","rodolfo","alejandra","gab
             </div>`;
           }).join('')}
         </div>
-      `,'1.03','#10b981'),
+      `,'0.81','#10b981'),
 
       card(`
         <div style="font-size:.72em;font-weight:700;margin-bottom:3px">💬 Kommo · Atención a clientes</div>
@@ -3967,7 +3967,7 @@ const rodyClientes = calcClientesStats(["rodi","rody","rodolfo","alejandra","gab
           <div><div style="font-size:1.6em;font-weight:800;color:#1a1a2e" data-kommo="abiertos">—</div><div style="font-size:.5em;color:#888">Leads abiertos</div></div>
         </div>
         <div style="font-size:.45em;color:#aaa;margin-top:3px;text-align:center" data-kommo="upd"></div>
-      `,'0.55','#06b6d4'),
+      `,'0.50','#06b6d4'),
 
     ].join('');
 
@@ -4428,15 +4428,15 @@ if(DEMO_MODE){
       : '';
     var cuerpo=orden.filter(function(d){return d!==hoyD;}).map(function(d){
       var cs=dias[d], ok=cs.filter(function(c){return c.etapa>=5;}).length, r=rel(d);
-      var hd='<div style="display:flex;align-items:center;gap:5px;margin:3px 0 1px;font-size:.6em">'
+      var hd='<div style="display:flex;align-items:center;gap:5px;margin:5px 0 2px;font-size:.68em">'
         +'<b>Día '+d+'</b><span style="font-size:.85em;font-weight:700;background:'+r[1]+';color:'+r[2]+';padding:0 6px;border-radius:8px">'+r[0]+'</span>'
         +'<span style="color:'+MUTED+';font-size:.9em">'+ok+'/'+cs.length+' presentados</span></div>';
       var filas=cs.map(function(c){
-        var llen=(c.etapa>=5?4:Math.min(c.etapa,3)); var segs=''; for(var i=0;i<4;i++){ segs+='<span style="flex:1;height:6px;border-radius:2px;background:'+(i<llen?VERDE:GRIS)+'"></span>'; }
+        var llen=(c.etapa>=5?4:Math.min(c.etapa,3)); var segs=''; for(var i=0;i<4;i++){ segs+='<span style="flex:1;height:8px;border-radius:2px;background:'+(i<llen?VERDE:GRIS)+'"></span>'; }
         var est=c.etapa>=5?'✅ Presentado':(c.etapa===0?'<span style="color:'+MUTED+';font-weight:500">Sin iniciar</span>':ETAPAS[c.etapa]);
         if(c.pago) est+=' <span style="color:'+VERDE+'">✓ pagado</span>';
-        return '<div style="display:grid;grid-template-columns:1.5fr 1.6fr 1fr;gap:6px;align-items:center;font-size:.55em;'
-          +'background:'+(c.etapa>=5?VERDE_S:'#fff')+';border:1px solid #e3e8f0;border-radius:4px;padding:2px 5px;margin-bottom:1px">'
+        return '<div style="display:grid;grid-template-columns:1.5fr 1.6fr 1fr;gap:6px;align-items:center;font-size:.64em;'
+          +'background:'+(c.etapa>=5?VERDE_S:'#fff')+';border:1px solid #e3e8f0;border-radius:4px;padding:4px 7px;margin-bottom:2px">'
           +'<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><b style="font-weight:600">'+esc(c.cliente)+'</b> <span style="color:'+MUTED+'">· '+esc(c.imp||'—')+'</span></span>'
           +'<span style="display:flex;gap:2px">'+segs+'</span>'
           +'<span style="text-align:right;white-space:nowrap;font-weight:600">'+est+'</span></div>';
