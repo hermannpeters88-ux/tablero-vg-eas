@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Oficina de agentes · Grupo G (MAQUETA v7 · TV automática)</title>
+<style>
+:root{--bg:#f1ece2;--ink:#2f2a24;--mut:#5a5348;--card:#fffdf8;--line:#e0d7c5;--red:#d93a40;--blue:#2f6fdc;--gray:#8a9096;--gold:#c8962e}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--ink);font-family:"Avenir Next","Helvetica Neue",Helvetica,Arial,sans-serif;-webkit-text-size-adjust:100%;cursor:none}
+body{display:flex;flex-direction:column;min-height:100vh;font-size:20px}
+header{display:flex;align-items:center;flex-wrap:nowrap;gap:6px 20px;padding:7px 18px;background:var(--card);border-bottom:2px solid var(--line)}
+header h1{font:700 28px Georgia,"Times New Roman",serif;white-space:nowrap}
+#cnt{display:flex;gap:12px}
+.pill{display:flex;align-items:baseline;gap:9px;background:#faf6ec;border:2px solid var(--line);border-radius:14px;padding:3px 16px 4px;white-space:nowrap}
+.pill span{font-size:22px;font-weight:700;color:#4a443a}
+.pill b{font:700 38px/1 Georgia,serif}
+.pill.r{border-color:var(--red);background:#fff0f0}.pill.r b{color:var(--red)}
+.pill.b b{color:var(--blue)}
+.leg{margin-left:auto;display:flex;gap:4px 16px;font-size:20px;font-weight:600;align-items:center;white-space:nowrap}
+.leg i{display:inline-block;width:18px;height:18px;border-radius:50%;margin-right:6px;vertical-align:-2px}
+.chip{font-size:20px;border:1px solid var(--line);border-radius:999px;padding:2px 12px;background:#faf6ec;color:#4a443a;display:inline-block;margin:0 6px 5px 0}
+.chip b{color:var(--ink)}
+.chip.demo{border-color:#e9c46a;background:#fff6dc}.chip.real{border-color:#9ad4b0;background:#eaf8ef}
+main{flex:1;display:flex;min-height:0}
+#stage{flex:1;position:relative;min-width:0;overflow:hidden;background:radial-gradient(ellipse at 50% 40%,#f8f4ea,#e9e2d3 90%)}
+#cv{position:absolute;inset:0;width:100%;height:100%;display:block}
+#side{width:640px;flex:none;background:var(--card);border-left:2px solid var(--line);padding:12px 18px;display:flex;flex-direction:column;gap:10px;overflow:hidden}
+#prog{border-bottom:2px solid var(--line);padding-bottom:9px}
+#prog .fila{display:flex;align-items:center;gap:12px;margin-bottom:7px}
+#ofn{font:800 26px "Avenir Next",Helvetica,sans-serif}
+#dots{display:flex;gap:7px;margin-left:auto}
+#dots i{width:20px;height:20px;border-radius:50%;background:#ddd5c4;border:2px solid #c9bfa8}
+#dots i.ok{background:#9ad4b0;border-color:#6fb58a}#dots i.on{background:var(--ink);border-color:var(--ink);transform:scale(1.25)}
+#bar{height:10px;border-radius:6px;background:#e7dfcd;overflow:hidden}#bar b{display:block;height:100%;width:0;background:var(--ink);border-radius:6px}
+#pc{flex:1;min-height:0;overflow:hidden}
+.fx{animation:fx .6s ease both}@keyframes fx{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+#pc h2{font:700 36px/1.1 Georgia,serif}
+#pc .sub{font-size:24px;color:var(--mut);margin-top:6px;line-height:1.3}
+#pc h3{font-size:20px;letter-spacing:.08em;color:var(--mut);text-transform:uppercase;margin:12px 0 6px}
+.ban{color:#fff;border-radius:14px;padding:12px 16px;margin-bottom:10px;line-height:1.15}
+.ban b{display:block;font:800 40px/1.05 "Avenir Next",Helvetica,sans-serif;letter-spacing:.01em}
+.ban span{display:block;font-size:24px;margin-top:6px;line-height:1.25;font-weight:500}
+.ban.sm b{font-size:26px}
+.cargo{font:700 36px/1.1 Georgia,serif;margin:2px 0 2px}
+.jefe{display:inline-block;background:#fff4d6;border:2px solid var(--gold);color:#6b4a10;border-radius:999px;padding:0 12px;font-size:20px;font-weight:700;margin-bottom:6px}
+.hace{font-size:25px;line-height:1.3;margin-bottom:4px}
+.ps{list-style:none;font-size:24px;line-height:1.28}
+.ps li{padding:6px 0 6px 38px;position:relative;border-top:1px solid var(--line)}
+.ps li:before{content:attr(data-n);position:absolute;left:0;top:7px;width:28px;height:28px;border-radius:50%;background:var(--ink);color:#fff;font:700 20px/28px sans-serif;text-align:center}
+.ps li.def{color:#7a5a10}
+.te{margin-top:10px;border:3px solid var(--red);background:#fff0f0;border-radius:12px;padding:8px 14px;font-size:24px;line-height:1.28}
+.te b{color:var(--red);font-size:26px}
+.te.no{border-color:var(--line);background:#faf6ec;color:var(--mut)}
+.li{display:flex;align-items:center;gap:10px;padding:6px 12px;border:2px solid #f0c9cb;border-radius:10px;background:#fff7f7;margin-bottom:6px;line-height:1.2}
+.li .t{flex:1;min-width:0}.li .t b{display:block;font-size:22px}.li .t span{color:var(--mut);font-size:20px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.li em{font-style:normal;flex:none;background:var(--red);color:#fff;border-radius:999px;padding:1px 12px;font-size:21px;font-weight:700}
+.mas{font-size:20px;color:var(--mut);padding:2px 4px}
+.nota{margin-top:auto}
+@media(max-width:900px){
+ html,body{cursor:auto}
+ body{min-height:0;font-size:16px}main{flex-direction:column}
+ header{flex-wrap:wrap;gap:6px 10px;padding:6px 10px}header h1{font-size:19px}
+ #cnt{width:100%;gap:6px}.pill{flex:1;flex-direction:column;align-items:center;gap:0;padding:2px 4px;border-radius:10px}.pill span{font-size:14px}.pill b{font-size:28px}
+ .leg{margin-left:0;font-size:15px;gap:2px 12px;flex-wrap:wrap}.leg i{width:12px;height:12px}
+ #stage{height:46vh;min-height:300px;flex:none}
+ #side{width:auto;border-left:0;border-top:2px solid var(--line);overflow:visible;padding:10px 12px}
+ #ofn{font-size:19px}#dots i{width:14px;height:14px}
+ #pc h2{font-size:25px}#pc .sub,.hace,.ps,.te{font-size:17px}.ban b{font-size:26px}.ban span{font-size:17px}.ban.sm b{font-size:19px}.cargo{font-size:25px}
+ #pc h3{font-size:14px}.li .t b{font-size:16px}.li .t span{font-size:14px;white-space:normal}.li em{font-size:15px}
+ .ps li:before{width:24px;height:24px;font-size:15px;line-height:24px}.ps li{padding-left:32px}.te b{font-size:18px}
+ .chip{font-size:14px}.jefe{font-size:15px}
+}
+@media(min-width:901px){html,body{height:100vh;overflow:hidden}}
+@media(min-width:901px) and (max-width:1500px){#side{width:500px}.ban b{font-size:32px}#pc h2,.cargo{font-size:30px}.hace,.ps,.te,#pc .sub,.ban span{font-size:21px}}
+</style></head><body>
+<header>
+ <h1>Oficina de agentes · Grupo G</h1>
+ <div id="cnt"><div class="pill b"><span>Tareas equipo:</span><b id="c2">0</b></div><div class="pill r"><span>Urgentes:</span><b id="c3">0</b></div><div class="pill b"><span>Trabajando:</span><b id="c1">0</b></div></div>
+ <div class="leg"><span><i style="background:var(--gray)"></i>Quieto</span><span><i style="background:var(--blue)"></i>Trabajando</span><span><i style="background:var(--red)"></i>Te necesita</span></div>
+</header>
+<main>
+ <section id="stage"><canvas id="cv"></canvas></section>
+ <aside id="side">
+  <div id="prog"><div class="fila"><span id="ofn">Vista general</span><span id="dots"></span></div><div id="bar"><b id="barb"></b></div></div>
+  <div id="pc"></div>
+  <div class="nota"><span class="chip demo"><b>DEMOSTRACIÓN</b> quién trabaja y los traslados</span><span class="chip real"><b>REAL</b> <span id="fechaReal">pendientes</span></span></div>
+ </aside>
+</main>
+<script>
+// ===== DATOS REALES (los reescribe generar_oficina.py desde jarvis_pendientes.py) =====
+const REAL = {"gen": "02/11 15:34", "aprobados_hoy": 0, "pend": [{"id": "p1", "a": "roble", "t": "Directorio de Doble G", "u": 0, "f": "Directorio Doble G · pendiente", "e": "Grupo G"}, {"id": "p2", "a": "guardian", "t": "Seguridad y accesos", "u": 1, "f": "Guardián · seguridad de sistemas", "e": "Grupo G"}, {"id": "p7", "a": "roble", "t": "Contrato Doble G", "u": 0, "f": "Contrato Doble G", "e": "Doble G"}, {"id": "p15", "a": "mate", "t": "Socios de AIMA", "u": 0, "f": "CRM de AIMA", "e": "AIMA"}, {"id": "p27", "a": "correo", "t": "Jarvis y correo", "u": 0, "f": "Correo / Jarvis (Mini)", "e": "VG"}, {"id": "p40", "a": "balanza", "t": "Gestiones de calle", "u": 0, "f": "Procesos VG · trámites", "e": "VG"}, {"id": "p42", "a": "balanza", "t": "Accesos de clientes", "u": 0, "f": "Accesos de clientes VG", "e": "VG"}, {"id": "p60", "a": "guardian", "t": "Seguridad y accesos", "u": 1, "f": "Guardián · seguridad de sistemas", "e": "Grupo G"}, {"id": "p94", "a": "correo", "t": "Jarvis y correo", "u": 0, "f": "Correo / Jarvis (Mini)", "e": "Grupo G"}, {"id": "p107", "a": "balanza", "t": "Pago de impuesto de cliente", "u": 1, "f": "Matriz VG · Marangatú", "e": "VG"}, {"id": "p265", "a": "guardian", "t": "Seguridad y accesos", "u": 1, "f": "Guardián · seguridad de sistemas", "e": "Grupo G"}, {"id": "p266", "a": "guardian", "t": "Seguridad y accesos", "u": 0, "f": "Guardián · seguridad de sistemas", "e": "Grupo G"}, {"id": "p268", "a": "correo", "t": "Jarvis y correo", "u": 0, "f": "Correo / Jarvis (Mini)", "e": "VG"}, {"id": "p269", "a": "faro", "t": "Oficina de agentes de Grupo G", "u": 0, "f": "Oficina de agentes · maqueta", "e": "Grupo G"}, {"id": "p303", "a": "compras", "t": "Mejora de Compras VG (OK pendiente)", "u": 0, "f": "Buzón de mejoras VG", "e": "VG"}, {"id": "p322", "a": "compras", "t": "Mejora de Compras VG (OK pendiente)", "u": 0, "f": "Buzón de mejoras VG", "e": "VG"}, {"id": "p331", "a": "compras", "t": "Mejora de Compras VG (OK pendiente)", "u": 0, "f": "Buzón de mejoras VG", "e": "VG"}, {"id": "p333", "a": "compras", "t": "Mejora de Compras VG (OK pendiente)", "u": 0, "f": "Buzón de mejoras VG", "e": "VG"}, {"id": "p335", "a": "compras", "t": "Mejora de Compras VG (OK pendiente)", "u": 0, "f": "Buzón de mejoras VG", "e": "VG"}, {"id": "p340", "a": "compras", "t": "Mejora de Compras VG (OK pendiente)", "u": 0, "f": "Buzón de mejoras VG", "e": "VG"}, {"id": "p343", "a": "compras", "t": "Mejora de Compras VG (OK pendiente)", "u": 0, "f": "Buzón de mejoras VG", "e": "VG"}, {"id": "p376", "a": "compras", "t": "Mejora de Compras VG (OK pendiente)", "u": 0, "f": "Buzón de mejoras VG", "e": "VG"}, {"id": "p377", "a": "compras", "t": "Mejora de Compras VG (OK pendiente)", "u": 0, "f": "Buzón de mejoras VG", "e": "VG"}, {"id": "p418", "a": "faro", "t": "Decisión del Grupo", "u": 0, "f": "Pendientes de Grupo G", "e": "Grupo G"}]};
+// ===== CONEXIÓN FUTURA (ver TRASPASO.md): JSON {"agentes":{"cargador":"trabajando",...}} =====
+const ESTADO_URL = "https://script.google.com/macros/s/AKfycbxVYNdaEsXvCgrwZFtyPhkeWkQUXF0HpOSqlr7x-Ap_BfDtA09lG4uN2FoJ8sHmnjkj/exec";
+
+// ---------- mundo: 10 x 7 celdas de 3x3 baldosas ----------
+const W=30,D=21,WH=1.5;
+const ZN={
+ gg:{u:.14,n:"GRUPO G – Control",s:"Vigila y une a las empresas",c:"#1D1D1B",t:"#ececea",r:[9,0,21,6]},
+ aima:{n:"AIMA",s:"Cuida a los grupos y socios",c:"#62047A",t:"#f3e5f7",r:[21,0,30,6]},
+ vgc:{n:"VG CONTABILIDAD",s:"Impuestos y vencimientos",c:"#471B5B",t:"#ece3f1",r:[0,6,9,15]},
+ vga:{n:"VG ADMINISTRACIÓN",s:"Compras, cajas y cierre",c:"#E06339",t:"#fdebe2",r:[9,6,18,15]},
+ vgs:{n:"VG ASOCIADOS",s:"Mira VG completo",c:"#471B5B",c2:"#E06339",t:"#efe6f3",r:[18,6,24,15]},
+ dg:{n:"DOBLE G",s:"Consultoría y fondos",c:"#623F98",t:"#ebe5f6",r:[24,6,30,9]},
+ infra:{n:"INFRAESTRUCTURA",s:"Sistemas, avisos y pedidos",c:"#0b7f94",t:"#e0f1f4",r:[0,15,15,21]},
+ dir:{n:"DIRECCIÓN",s:"Acá decide el Sr. Hermann",c:"#a9701f",t:"#f6e3c4",r:[0,0,9,6]},
+ des:{n:"SALA DE DESCANSO",s:"Pausa del equipo",c:"#6f6a5c",t:"#f6f2e8",r:[24,9,30,15]},
+ reu:{n:"SALA DE REUNIONES",s:"Reuniones",c:"#6f6a5c",t:"#f3efe4",r:[15,15,30,21]}
+};
+const ANC={"aima": (29.5, 5.5), "gg": (12.5, 0.5), "infra": (10.5, 20.5), "vgc": (8.5, 9), "vga": (17.5, 14.5), "dg": (24.5, 8.5), "vgs": (23.5, 14.5), "dir": (2, 5.5), "reu": (23.5, 20.5), "des": (29.5, 14.5)};for(const k in ANC){ZN[k].ax=ANC[k][0];ZN[k].ay=ANC[k][1]}
+const SH=["#4caf6a","#e86f9a","#f08a3c","#d9453d","#8a5ad0","#3d8fe0","#2fb5a4","#e6b422"];
+const SKIN=["#f1c9a0","#e0ac80","#fadcbc","#c68b5e","#f3d2b3"],HAIR=["#3a2a1c","#1c1c22","#7a4a2a","#c9a14a","#8a2a1a","#2a2a38"];
+// [zona,id,etiqueta corta,cargo,persona,estado ejemplo(T/L),qué hace,col,fila,gerente]
+const AG=[
+ ["gg","faro","Director General","Director General","Fabio","T","Mira todo el grupo y le pide cuentas a cada oficina. La decisión final es de Hermann.",3,0,1],
+ ["gg","tesorero","Tesorero","Tesorero","Teresa","L","Reparte los fondos entre Doble G, VG y AIMA. Espera el OK antes de mover.",4,0],
+ ["gg","informegrupo","Informe del Grupo","Informe del Grupo","Irma","T","Arma el informe de las 7:30 y el consolidado de todas las empresas.",5,0],
+ ["gg","ctrladm","Veedor Administr.","Veedor de Administración","Adrián","T","Controla que Administración cumpla: compras, cierre y tableros.",6,0],
+ ["gg","ctrlcont","Veedor Contab.","Veedor de Contabilidad","Celia","T","Controla impuestos y vencimientos de Contabilidad.",3,1],
+ ["gg","ctrlmkt","Veedor Marketing","Veedor de Marketing","Marina","L","Controla que se cumpla el cronograma de publicaciones.",4,1],
+ ["gg","ctrlinfra","Veedor Infra.","Veedor de Infraestructura","Íñigo","L","Controla que los asistentes automáticos y los accesos funcionen.",5,1],
+ ["aima","mate","Anfitrión","Anfitrión","Matías","T","Recibe y cuida a los grupos de AIMA, como el anfitrión del mate.",7,0,1],
+ ["aima","informeaima","Analista de AIMA","Analista de AIMA","Inés","T","Arma los informes de AIMA para los socios.",8,0],
+ ["aima","datosaima","Datos AIMA","Datos AIMA","Darwin","L","Mantiene al día los contactos y datos de AIMA (a confirmar).",9,0],
+ ["aima","reunion","Reunión AIMA","Reunión AIMA","Rita","L","Recuerda y prepara las reuniones de AIMA (a confirmar).",7,1],
+ ["aima","cajaaima","Flujo Caja AIMA","Analista de Flujo de Caja AIMA","Alma","L","Ordena los ingresos y gastos de AIMA.",8,1],
+ ["vgc","balanza","Contador","Contador","Bruno","T","Coordina todo el trabajo de impuestos de los clientes y responde a Ledy.",0,2,1],
+ ["vgc","cargador","Digitador","Digitador","Carla","T","Carga las facturas de cada cliente en el sistema de impuestos.",1,2],
+ ["vgc","imputador","Imputador","Imputador","Iván","L","Decide a qué impuesto va cada comprobante. Si hay duda, consulta a Ledy.",2,2],
+ ["vgc","presentador","Presentador","Presentador","Paula","L","Deja listas las declaraciones para que se revisen.",0,3],
+ ["vgc","vigia","Vigía","Vigía","Vera","L","Avisa los vencimientos antes de que llegue la fecha.",1,3],
+ ["vgc","talonario","Facturador","Facturador","Tomás","L","Emite las facturas de los clientes.",2,3],
+ ["vgc","retenciones","Analista Retenc.","Analista de Retenciones","Renzo","T","Rastrea las retenciones que le hicieron a cada cliente.",0,4],
+ ["vgc","lector","Analista Lectura","Analista de Lectura","Lucía","L","Lee en masa los libros y comprobantes de los clientes.",1,4],
+ ["vgc","auditor","Auditor","Auditor","Aldo","L","Revisa que lo cargado y presentado esté bien.",2,4],
+ ["vga","cajero","Administrador","Administrador","Camilo","T","Coordina compras, cajas y cierre; responde a Verónica.",3,2,1],
+ ["vga","cajavg","Flujo Caja VG","Analista de Flujo de Caja VG","Cata","L","Ordena los ingresos y gastos de VG.",4,2],
+ ["vga","compras","Comprador","Comprador","Marcos","T","Lee las facturas de compra (foto o PDF) y las registra.",5,2],
+ ["vga","cierre","Analista de Cierre","Analista de Cierre","Cecilia","L","Prepara el cierre mensual.",3,3],
+ ["vga","agendaeq","Agenda del Equipo","Agenda del Equipo","Agustina","T","Manda el mail de las 7:30 con las tareas de cada persona.",4,3],
+ ["vga","tablero","Analista Tableros","Analista de Tableros","Teo","T","Mantiene el tablero de la TV de la oficina.",5,3],
+ ["vga","atencion","Asesor Atención","Asesor de Atención","Ana","L","Ordena las consultas de clientes que llegan por mensaje.",3,4],
+ ["vga","cajaicho","Flujo Caja ICHO","Analista de Flujo de Caja ICHO","Ignacio","L","Ordena los ingresos y gastos de ICHO (cliente de VG).",4,4],
+ ["vga","cajadorsia","Flujo Caja Dorsia","Analista de Flujo de Caja Dorsia","Dora","L","Ordena los ingresos y gastos de Dorsia (cliente de VG).",5,4],
+ ["vgs","atlas","Gerente","Gerente de VG Asociados","Atlas","T","Une Contabilidad y Administración de VG y mira el negocio completo.",6,2,1],
+ ["vgs","andirectorio","Analista Directorio","Analista de Directorio","Dina","L","Arma el tablero y los informes de la reunión de directorio de VG.",7,2],
+ ["vgs","ancartera","Analista Cartera","Analista de Cartera","Carmen","T","Concilia la cartera y vigila la mora de los clientes de VG.",6,3],
+ ["vgs","ansocios","Analista Socios","Analista de Socios","Sofía","L","Sigue a los socios y sus reuniones.",7,3],
+ ["vgs","anindic","Analista Indicad.","Analista de Indicadores","Ismael","T","Arma el informe de las 7:30 y el consolidado de VG.",6,4],
+ ["dg","roble","Consultor","Consultor","Tito","L","Acompaña a los clientes de consultoría de Doble G.",8,2,1],
+ ["dg","cajadg","Flujo Caja Doble G","Analista de Flujo de Caja Doble G","Darío","L","Ordena los ingresos y gastos de Doble G.",9,2],
+ ["infra","jarvis","Jarvis","Jarvis · Jefe de gabinete","Jarvis","T","Recibe los pedidos de Hermann y los deriva a quien corresponde.",0,5,1],
+ ["infra","taller","Jefe de Taller","Jefe de Taller","Tato","T","Ejecuta los pedidos solo, de punta a punta.",1,5],
+ ["infra","guardian","Superv. Sistemas","Supervisor de Sistemas","Gaby","L","Vigila los asistentes automáticos y los accesos; avisa si algo se cae.",2,5],
+ ["infra","locutor","Locutor","Locutor","Lorenzo","L","Pone la voz: los avisos hablados.",3,5],
+ ["infra","agenda","Agenda","Agenda","Alicia","T","Lleva los pendientes y recordatorios de Hermann.",4,5],
+ ["infra","buzon","Recepc. Mejoras","Recepcionista de Mejoras","Bautista","L","Recibe las ideas de mejora que deja el equipo.",0,6],
+ ["infra","correo","Correo","Correo","Coral","L","Lee y ordena el mail de Hermann.",1,6],
+ ["infra","echo","Echo","Echo","Elena","T","Saluda al equipo por el parlante de la oficina (8:30).",2,6],
+ ["infra","gestorhogar","Gestor del Hogar","Gestor del Hogar","Hugo","L","Prepara las compras de la casa para que Hermann apruebe.",3,6]
+];
+const DOCS={gg:["el resumen del grupo","la lista de cuentas","el control semanal"],aima:["el informe de socios","la lista de reuniones","el flujo del mes"],
+ vgc:["el lote de facturas","el borrador del IVA","la lista de vencimientos"],vga:["las compras del día","el flujo de caja","el cierre del mes"],
+ vgs:["el informe de cartera","la agenda del directorio","el cuadro de socios"],dg:["el estado de clientes","el flujo del mes"],
+ infra:["el pedido de Hermann","el aviso de sistemas","la lista de pendientes"]};
+const NOMBRE_Z={gg:"Grupo G",aima:"AIMA",vgc:"VG Contabilidad",vga:"VG Administración",vgs:"VG Asociados",dg:"Doble G",infra:"Infraestructura"};
+
+// ---------- agentes ----------
+const A=[],BYID={};
+AG.forEach((r,n)=>{const [z,id,lab,cargo,per,ex,para,i,j,ger]=r;
+ const a={z,id,lab,cargo,per,para,ger:!!ger,i,j,st:ex==="T"?"work":"idle",need:0,temas:[],urg:0,
+  sx:3*i+1,sy:3*j+1.5,gx:3*i+2.5,ay:3*j+2.5,shirt:SH[(n*3+z.length)%SH.length],skin:SKIN[n%SKIN.length],hair:HAIR[(n*7)%HAIR.length],
+  x:0,y:0,seat:true,face:"-y",trip:null,cool:1+Math.random()*12,ph:Math.random()*6,hit:null,doc:0,flash:0};
+ a.x=a.sx;a.y=a.sy;if(ger){a.shirt="#2b3a67"}A.push(a);BYID[id]=a});
+const HER={z:"dir",id:"hermann",lab:"Sr. Hermann",cargo:"Dirección · Sr. Hermann",per:"Hermann",para:"Decide. Jarvis le acerca lo que necesita su aprobación.",
+ sx:5,sy:2.4,gx:2.5,ay:2.5,x:5,y:2.4,seat:true,face:"-y",shirt:"#ffffff",skin:"#f1c9a0",hair:"#2a2a38",st:"work",need:0,ger:true,hit:null,ph:1,flash:0,trip:null};
+BYID.hermann=HER;
+function aplicarReal(){
+ A.forEach(a=>{a.need=0;a.temas=[];a.urg=0;a.pids=[];a.items=[]});
+ REAL.pend.forEach(p=>{const a=BYID[p.a];if(!a)return;a.need++;a.temas.push(p.t);a.pids.push(p.id);a.items.push({t:p.t,f:p.f,id:p.id,u:p.u});if(p.u)a.urg++});
+ A.forEach(a=>{if(a.need)a.st="need";else if(a.st==="need")a.st="idle"});
+}
+aplicarReal();
+
+// ---------- cámara ----------
+const cv=document.getElementById("cv"),ctx=cv.getContext("2d");
+let CW=0,CH=0,DPR=1,S0=40,V={k:1,px:0,py:0},VT=null,S=40,OX=0,OY=0,narrow=false;
+function resize(){const b=cv.getBoundingClientRect();DPR=Math.min(2.5,window.devicePixelRatio||1);CW=b.width;CH=b.height;cv.width=Math.round(CW*DPR);cv.height=Math.round(CH*DPR);
+ narrow=window.innerWidth<=900;
+ const mw=(W+D)/2,mh=(W+D)/4+WH*.55+.35;
+ // Llena mejor la pantalla: permite recortar ~2 unidades del borde vacío del piso a los lados
+ // (nunca escritorios) para no dejar tanto margen vertical en notebooks; la altura sigue topeada.
+ S0=Math.min(CW*1.10/mw,(CH-(narrow?10:56))*.99/mh)}
+function bx(s){return CW/2-(W-D)*s/4}
+function by(s){return (CH-(narrow?0:40)-((W+D)/4+.1)*s)/2+WH*.55*s+(narrow?0:4)}
+function setView(){S=S0*V.k;OX=bx(S)+V.px;OY=by(S)+V.py}
+function P(x,y,z){return[OX+(x-y)*S/2,OY+(x+y)*S/4-z*S*.55]}
+// ---------- primitivas ----------
+const _cc={};
+function C(h){if(_cc[h])return _cc[h];const n=parseInt(h.slice(1),16),r=n>>16,g=n>>8&255,b=n&255;
+ const m=(f,a)=>`rgb(${Math.min(255,r*f+a|0)},${Math.min(255,g*f+a|0)},${Math.min(255,b*f+a|0)})`;return _cc[h]=[m(1,16),m(.94,0),m(.76,0)]}
+const OUT="rgba(70,55,40,.2)";
+function pl(pts,fill,stroke){ctx.beginPath();for(let i=0;i<pts.length;i++){const q=P(pts[i][0],pts[i][1],pts[i][2]);i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1])}ctx.closePath();
+ if(fill){ctx.fillStyle=fill;ctx.fill()}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=1;ctx.stroke()}}
+function box(x,y,z,w,d,h,col,fL,fR,fT){const c=typeof col==="string"?C(col):col;
+ pl([[x+w,y,z],[x+w,y+d,z],[x+w,y+d,z+h],[x+w,y,z+h]],fR||c[2],OUT);
+ pl([[x,y+d,z],[x+w,y+d,z],[x+w,y+d,z+h],[x,y+d,z+h]],fL||c[1],OUT);
+ pl([[x,y,z+h],[x+w,y,z+h],[x+w,y+d,z+h],[x,y+d,z+h]],fT||c[0],OUT)}
+function quad(f,u,v){// punto bilineal sobre una cara [p0 abajo-izq,p1 abajo-der,p2 arriba-der,p3 arriba-izq]
+ const a=[f[0][0]+(f[1][0]-f[0][0])*u,f[0][1]+(f[1][1]-f[0][1])*u],b=[f[3][0]+(f[2][0]-f[3][0])*u,f[3][1]+(f[2][1]-f[3][1])*u];return[a[0]+(b[0]-a[0])*v,a[1]+(b[1]-a[1])*v]}
+function faceL(x,y,z,w,d,h){return[P(x,y+d,z),P(x+w,y+d,z),P(x+w,y+d,z+h),P(x,y+d,z+h)]}
+function faceR(x,y,z,w,d,h){return[P(x+w,y+d,z),P(x+w,y,z),P(x+w,y,z+h),P(x+w,y+d,z+h)]}
+function cyl(x,y,z,r,h,col){const c=C(col),q0=P(x,y,z),q1=P(x,y,z+h),rx=.7071*r*S,ry=.3536*r*S;
+ ctx.fillStyle=c[1];ctx.beginPath();ctx.ellipse(q0[0],q0[1],rx,ry,0,0,Math.PI);ctx.lineTo(q1[0]-rx,q1[1]);ctx.ellipse(q1[0],q1[1],rx,ry,0,Math.PI,0,true);ctx.closePath();ctx.fill();
+ ctx.fillStyle=c[0];ctx.beginPath();ctx.ellipse(q1[0],q1[1],rx,ry,0,0,7);ctx.fill();ctx.strokeStyle=OUT;ctx.stroke()}
+function ball(x,y,z,r,col){const q=P(x,y,z),R=r*S*.55,g=ctx.createRadialGradient(q[0]-R*.35,q[1]-R*.4,R*.1,q[0],q[1],R*1.05);const c=C(col);g.addColorStop(0,c[0]);g.addColorStop(1,c[2]);
+ ctx.fillStyle=g;ctx.beginPath();ctx.arc(q[0],q[1],R,0,7);ctx.fill()}
+function shadow(x,y,r,a){const q=P(x,y,0);ctx.fillStyle=`rgba(60,45,30,${a||.13})`;ctx.beginPath();ctx.ellipse(q[0],q[1],r*S*.7,r*S*.35,0,0,7);ctx.fill()}
+function planeText(txt,x,y,size,col,axis,alpha){// texto pegado al piso (axis x) o a la pared y=0 (axis w)
+ ctx.save();if(axis==="w"){const q=P(x,0,y);ctx.setTransform(DPR*S/2,DPR*S/4,0,DPR*S*.55,DPR*q[0],DPR*q[1])}
+ else{const q=P(x,y,0);ctx.setTransform(DPR*S/2,DPR*S/4,-DPR*S/2,DPR*S/4,DPR*q[0],DPR*q[1])}
+ ctx.scale(1/30,1/30);ctx.font=`700 ${size*30}px ui-monospace,Menlo,monospace`;ctx.globalAlpha=alpha||1;ctx.fillStyle=col;ctx.textBaseline="alphabetic";
+ let xx=0;for(const ch of txt){ctx.fillText(ch,xx,0);xx+=size*30*.66}ctx.restore()}
+
+// ---------- escena estática ----------
+const STAT=[];function st(x0,y0,x1,y1,fn){STAT.push({x0,y0,x1,y1,fn})}
+function bush(x,y,s){s=s||1;st(x-.25,y-.25,x+.25,y+.25,()=>{shadow(x,y,.4*s);box(x-.17,y-.17,0,.34,.34,.22,"#f2ece0");ball(x,y,.34*s,.27*s,"#3fa95a");ball(x-.08,y+.04,.5*s,.2*s,"#57c06f");ball(x+.1,y-.05,.52*s,.16*s,"#3fa95a")})}
+function palm(x,y){st(x-.25,y-.25,x+.25,y+.25,()=>{shadow(x,y,.35);box(x-.15,y-.15,0,.3,.3,.25,"#d9cdb8");
+ const b=P(x,y,.25);ctx.lineCap="round";for(let k=0;k<7;k++){const a=k*Math.PI*2/7,L=S*.42,tx=b[0]+Math.cos(a)*L,ty=b[1]-S*.55*.55-Math.abs(Math.sin(a))*S*.08;
+  ctx.strokeStyle=k%2?"#2f9a52":"#49b86a";ctx.lineWidth=S*.075;ctx.beginPath();ctx.moveTo(b[0],b[1]);ctx.quadraticCurveTo(b[0]+Math.cos(a)*L*.5,b[1]-S*.45,tx,ty);ctx.stroke()}ctx.lineCap="butt"})}
+function puf(x,y,col,r){r=r||.38;st(x-r,y-r,x+r,y+r,()=>{shadow(x,y,r*1.1);cyl(x,y,0,r,.34,col);ball(x,y,.3,r*.8,col)})}
+function sofa(x,y,w,col,dir){st(x,y,x+w,y+.95,()=>{shadow(x+w/2,y+.5,w*.5);box(x,y,0,w,.95,.32,col);box(x,y+.72,.32,w,.23,.42,col);box(x,y,.32,.22,.72,.2,col);box(x+w-.22,y,.32,.22,.72,.2,col)})}
+function rail(x0,y0,x1,y1){// baranda de vidrio, tramos de 1 baldosa
+ const n=Math.round(Math.hypot(x1-x0,y1-y0)),dx=(x1-x0)/n,dy=(y1-y0)/n;
+ for(let k=0;k<n;k++){const ax=x0+dx*k,ay=y0+dy*k,bx=ax+dx,by=ay+dy;
+  st(Math.min(ax,bx)-.05,Math.min(ay,by)-.05,Math.max(ax,bx)+.05,Math.max(ay,by)+.05,()=>{
+   pl([[ax,ay,.04],[bx,by,.04],[bx,by,.8],[ax,ay,.8]],"rgba(190,225,235,.32)","rgba(120,150,160,.5)");
+   pl([[ax,ay,.8],[bx,by,.8],[bx,by,.86],[ax,ay,.86]],"#b9c3c6");box(ax-.04,ay-.04,0,.08,.08,.86,"#c3ccd0")})}}
+function mkDesk(a){const i=a.i,j=a.j,x=3*i,y=3*j;
+ st(x+.7,y+1.0,x+1.3,y+1.2,()=>{shadow(x+1,y+1.58,.4,.12);box(x+.97,y+1.55,0,.06,.06,.2,"#8a93a6");cyl(x+1,y+1.58,.2,.3,.12,"#7d8aa3")});
+ st(x,y,x+2,y+1,()=>{ // escritorio
+  shadow(x+1,y+.6,1.25,.1);
+  box(x,y+.1,0,.08,.8,.52,"#e8dcc6");box(x+1.92,y+.1,0,.08,.8,.52,"#e8dcc6");box(x+.08,y+.12,.14,1.84,.06,.38,"#d9ccb3");
+  box(x-.02,y,.52,2.04,.95,.07,"#f1e7d2");
+  // computadora
+  box(x+.82,y+.22,.59,.36,.22,.05,"#2f323a");box(x+.97,y+.3,.64,.06,.06,.2,"#2f323a");
+  const mx=x+.55,my=y+.28,mw=.9,mh=.52,mz=.84;box(mx,my,mz,mw,.06,mh,"#2a2d34");
+  const f=faceL(mx+.04,my,mz+.04,mw-.08,.06,mh-.08),on=a.st==="work",need=a.st==="need";
+  ctx.beginPath();f.forEach((p,k)=>k?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();
+  const t=performance.now()/1000;
+  ctx.fillStyle=need?"#ffd9d6":on?`hsl(212,85%,${a.flash>0?82:66+Math.sin(t*3+a.ph)*4}%)`:"#4b5057";ctx.fill();
+  if(on||need){ctx.strokeStyle=need?"#e5484d":"#fff";ctx.lineWidth=Math.max(1,S*.025);for(let k=0;k<4;k++){const w=.35+((Math.sin(t*2+k*2.1+a.ph)+1)/2)*.45,p0=quad(f,.1,.78-k*.17),p1=quad(f,.1+w*.8,.78-k*.17);ctx.beginPath();ctx.moveTo(p0[0],p0[1]);ctx.lineTo(p1[0],p1[1]);ctx.stroke()}}
+  box(x+.62,y+.62,.59,.76,.26,.03,"#e6dcc8"); // teclado
+  if(a.doc>0){box(x+1.45,y+.5,.59,.3,.22,.03,"#ffffff");box(x+1.5,y+.53,.62,.2,.02,.01,"#e5484d")}
+  // taza
+  cyl(x+1.7,y+.42,.59,.07,.1,a.shirt)
+ })}
+A.forEach(mkDesk);
+
+// ---------- piso, paredes y detalles fijos ----------
+function dibujarFondo(){
+ // losa
+ pl([[W,0,0],[W,D,0],[W,D,-.2],[W,0,-.2]],"#cfc7b6");pl([[0,D,0],[W,D,0],[W,D,-.2],[0,D,-.2]],"#ddd5c4");
+ pl([[0,0,0],[W,0,0],[W,D,0],[0,D,0]],"#f8f4ea");
+ // zonas
+ for(const k in ZN){const z=ZN[k],[a,b,c,d]=z.r;pl([[a,b,.001],[c,b,.001],[c,d,.001],[a,d,.001]],z.t)}
+ // parquet de Dirección
+ pl([[0,0,.002],[9,0,.002],[9,6,.002],[0,6,.002]],"#e2a75e");
+ for(let k=0;k<12;k++){pl([[0,k*.5,.003],[9,k*.5,.003],[9,k*.5+.5,.003],[0,k*.5+.5,.003]],k%2?"#e8b46e":"#d99a4b")}
+ ctx.strokeStyle="rgba(120,70,20,.22)";ctx.lineWidth=1;ctx.beginPath();for(let k=0;k<12;k++)for(let m=0;m<9;m++){const xo=m+(k%2?.5:0);const a=P(xo,k*.5,.004),b=P(xo,k*.5+.5,.004);ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1])}ctx.stroke();
+ // alfombra azul
+ pl([[3.1,.9,.006],[8.1,.9,.006],[8.1,4.9,.006],[3.1,4.9,.006]],"#2d4a8c");pl([[3.35,1.15,.007],[7.85,1.15,.007],[7.85,4.65,.007],[3.35,4.65,.007]],"#e8c14a");
+ pl([[3.55,1.35,.008],[7.65,1.35,.008],[7.65,4.45,.008],[3.55,4.45,.008]],"#3d62b0");
+ // cuadrícula suave en el resto del piso
+ ctx.strokeStyle="rgba(120,105,80,.07)";ctx.lineWidth=1;ctx.beginPath();
+ for(let k=0;k<=W;k++){const a=P(k,0,0),b=P(k,D,0);ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1])}for(let k=0;k<=D;k++){const a=P(0,k,0),b=P(W,k,0);ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1])}ctx.stroke();
+ // marcos de zona
+ for(const k in ZN){const z=ZN[k],[a,b,c,d]=z.r,m=.22;ctx.setLineDash([]);pl([[a+m,b+m,.01],[c-m,b+m,.01],[c-m,d-m,.01],[a+m,d-m,.01]],null,z.c+"88")}
+ // rótulos en el piso
+ const lab=(t,x,y,c,s)=>planeText(t,x,y,s||.62,c,"f",.85);
+ // pared izquierda (x=0) y derecha (y=0)
+ pl([[0,0,0],[0,D,0],[0,D,WH],[0,0,WH]],"#eadfca","rgba(90,70,40,.2)");pl([[0,0,WH],[0,D,WH],[-.2,D,WH],[-.2,0,WH]],"#d4c7ad");
+ pl([[0,0,0],[W,0,0],[W,0,WH],[0,0,WH]],"#f1e6d1","rgba(90,70,40,.2)");pl([[0,0,WH],[W,0,WH],[W,-.2,WH],[0,-.2,WH]],"#d9ccb2");
+ pl([[0,0,0],[W,0,0],[W,0,.14],[0,0,.14]],"#d8c9aa");pl([[0,0,0],[0,D,0],[0,D,.14],[0,0,.14]],"#cdbd9d");
+ // ventanas en la pared izquierda
+ [[1.2,3.2],[5,7],[9,11],[13,15],[17,19.2]].forEach(([a,b])=>{pl([[0,a,.55],[0,b,.55],[0,b,1.25],[0,a,1.25]],"#cfe9f4","#9aa9ae");
+  pl([[0,(a+b)/2,.55],[0,(a+b)/2+.02,.55],[0,(a+b)/2+.02,1.25],[0,(a+b)/2,1.25]],"#9aa9ae");pl([[0,a,.9],[0,b,.9],[0,b,.92],[0,a,.92]],"#9aa9ae")});
+ // banderines GRUPO G en la pared derecha
+ const cols=["#7a4fc2","#c8962e","#ffffff","#e06339","#7a4fc2","#c8962e"];"GRUPO G".replace(" ","").split("").forEach((ch,k)=>{const x=10.2+k*1.5;
+  pl([[x,0,1.35],[x+1.05,0,1.35],[x+.52,0,.7]],cols[k],"rgba(60,40,20,.25)");planeText(ch,x+.3,1.0,.4,k===2?"#7a4fc2":"#fff","w")});
+ ctx.strokeStyle="#9d8a66";ctx.lineWidth=1.2;const c0=P(10,0,1.36),c1=P(21,0,1.36);ctx.beginPath();ctx.moveTo(c0[0],c0[1]);ctx.lineTo(c1[0],c1[1]);ctx.stroke();
+ // pared AIMA: tablero con logos y pared Dirección: reloj
+ pl([[22.2,0,.5],[25.2,0,.5],[25.2,0,1.2],[22.2,0,1.2]],"#f8e1f1","rgba(120,60,100,.3)");planeText("AIMA",22.7,.68,.42,"#b0489c","w");
+ pl([[.4,0,.4],[2.4,0,.4],[2.4,0,1.15],[.4,0,1.15]],"#fff7e6","rgba(120,90,40,.3)");planeText("G·G",.7,.62,.45,"#c8962e","w");
+ const ck=P(8.4,0,1.0);ctx.fillStyle="#fff";ctx.strokeStyle="#6b6455";ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(ck[0],ck[1],S*.15,S*.15*.7,0,0,7);ctx.fill();ctx.stroke();
+ ctx.beginPath();ctx.moveTo(ck[0],ck[1]);ctx.lineTo(ck[0],ck[1]-S*.08);ctx.moveTo(ck[0],ck[1]);ctx.lineTo(ck[0]+S*.07,ck[1]);ctx.stroke();
+}
+// muebles de Dirección
+st(3.5,.9,6.5,1.7,()=>{shadow(5,1.3,1.8,.12);box(3.5,.9,0,.14,.8,.55,"#9a5f2c");box(6.36,.9,0,.14,.8,.55,"#9a5f2c");box(3.55,1.0,.1,2.9,.06,.42,"#8a5426");
+ box(3.4,.85,.55,3.2,.95,.09,"#b8773a");box(4.4,1.1,.64,.7,.22,.04,"#2f323a");box(4.65,1.18,.68,.06,.06,.18,"#2f323a");
+ box(4.2,1.0,.86,1.2,.07,.6,"#2a2d34");const f=faceL(4.24,1.0,.9,1.12,.07,.52);ctx.beginPath();f.forEach((p,k)=>k?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();ctx.fillStyle="#6fa8f0";ctx.fill();
+ ctx.strokeStyle="#fff";ctx.lineWidth=Math.max(1,S*.025);for(let k=0;k<4;k++){const a=quad(f,.1,.78-k*.17),b=quad(f,.1+.55,.78-k*.17);ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke()}
+ box(5.8,1.15,.64,.36,.2,.04,"#e8dcc6");box(3.7,1.2,.64,.2,.2,.14,"#c8962e");box(6.0,1.1,.64,.3,.1,.12,"#fff")});
+st(2.4,5.0,3.4,5.4,()=>{});
+sofa(.5,2.4,2.0,"#c8aa86");
+st(7.2,0,8.8,.9,()=>{box(7.2,0,0,1.6,.5,1.15,"#a9733a");for(let r=0;r<3;r++)for(let k=0;k<7;k++)box(7.28+k*.2,.3,.2+r*.35,.14,.1,.25,["#d9453d","#3d8fe0","#e6b422","#4caf6a","#ffffff","#8a5ad0","#f08a3c"][(k+r*2)%7])});
+palm(1.1,.6);bush(8.6,5.3);bush(.7,5.3);
+// Grupo G
+bush(20.6,5.3,.9);bush(21.4,3.2,.9);puf(19.8,4.9,"#f4c430");puf(20.5,4.3,"#4aa3e0",.3);
+// AIMA
+bush(29.4,5.3,.9);puf(29,3.5,"#e86f9a",.34);puf(28.3,4.4,"#8a5ad0",.3);
+// VG
+bush(8.4,14.3,.9);palm(17.5,14.4);bush(23.5,14.3);bush(23.6,8.5,.9);
+// Doble G
+palm(29.4,8.4);
+// Infra
+bush(14.4,20.2,.9);st(12.1,17.1,14.2,18.4,()=>{box(12.1,17.4,0,.9,.9,.06,"#c8c0b0")});
+// sala de descanso: tele + sofá + pufs + cafetera
+st(27.4,9.2,29.6,9.5,()=>{shadow(28.5,9.4,1.2);box(27.8,9.2,0,1.4,.34,.18,"#3a3d46");box(27.5,9.25,.18,2.0,.12,1.0,"#22252c");
+ const f=faceL(27.55,9.25,.23,1.9,.12,.9);ctx.beginPath();f.forEach((p,k)=>k?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();const g=ctx.createLinearGradient(f[3][0],f[3][1],f[1][0],f[1][1]);g.addColorStop(0,"#3b4a66");g.addColorStop(1,"#1d2433");ctx.fillStyle=g;ctx.fill()});
+sofa(27.4,13.0,2.2,"#d1856f");puf(25,13.3,"#e5484d");puf(25.9,14.1,"#4caf6a",.32);
+st(24.3,9.4,24.9,10.0,()=>{shadow(24.6,9.7,.4);box(24.35,9.45,0,.5,.5,.9,"#e8eef2");box(24.4,9.5,.9,.4,.4,.35,"#8ecae6");cyl(24.6,9.7,1.25,.18,.05,"#bfe3f2")});
+// sala de reuniones
+st(18.6,17.4,26.6,19.6,()=>{shadow(22.6,18.5,3.8,.12);box(19,17.6,0,.25,1.6,.62,"#cdbf9f");box(25.6,17.6,0,.25,1.6,.62,"#cdbf9f");box(18.6,17.4,.62,8,2.0,.1,"#f6efe0");
+ for(let k=0;k<4;k++){box(19.6+k*1.7,16.8,0,.5,.4,.45,"#5b6478");box(19.6+k*1.7,19.8,0,.5,.4,.45,"#5b6478")}box(24.8,17.7,.72,.5,.5,.02,"#3d8fe0");box(21.6,18.2,.72,.7,.45,.02,"#e8c14a")});
+st(21,20.6,24.6,20.9,()=>{box(21,20.6,0,3.6,.12,1.05,"#fbfbf8");const f=faceL(21.1,20.6,.1,3.4,.12,.85);ctx.beginPath();f.forEach((p,k)=>k?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();ctx.fillStyle="#eef3f6";ctx.fill();
+ ctx.strokeStyle="#7a4fc2";ctx.lineWidth=S*.03;ctx.beginPath();[[.1,.3],[.4,.6],[.7,.45],[.9,.75]].forEach((p,k)=>{const q=quad(f,p[0],p[1]);k?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1])});ctx.stroke()});
+bush(29.3,20.2,1);puf(28.2,19.8,"#f4c430",.36);puf(27.5,20.4,"#4aa3e0",.3);palm(15.8,20.3);
+// barandas de vidrio (con puertas en las baldosas libres)
+rail(0,6,2,6);rail(3,6,9,6);rail(9,0,9,5);rail(15,15,17,15);rail(18,15,26,15);rail(27,15,30,15);rail(15,15,15,21);
+
+// ---------- personas (muñecos de bloques) ----------
+function person(a,x,y,o){
+ const fa=o.face,fx=fa[1]==="x",sg=fa[0]==="+"?1:-1,seat=o.pose==="sit",t=o.t||0;
+ const B=(al,pp,z,wa,wp,h,col)=>{let cx,cy,w,d;if(fx){cx=x+sg*al;cy=y+pp;w=wa;d=wp}else{cx=x+pp;cy=y+sg*al;w=wp;d=wa}box(cx-w/2,cy-d/2,z,w,d,h,col)};
+ const wk=o.pose==="walk",sw=wk?Math.sin(t*9):0,bob=wk?Math.abs(Math.cos(t*9))*.035:0,z0=seat?.3:0;
+ shadow(x,y,.33,.16);
+ const pant=a.ger?"#252a3d":"#3a4560";
+ if(seat){B(.16,-.09,.28,.34,.14,.1,pant);B(.16,.09,.28,.34,.14,.1,pant);B(0,0,.22,.3,.34,.1,pant)}
+ else{B(sw*.13,-.09,0,.14,.14,.38,pant);B(-sw*.13,.09,0,.14,.14,.38,pant);B(sw*.13,-.09,0,.17,.14,.06,"#20222a");B(-sw*.13,.09,0,.17,.14,.06,"#20222a")}
+ const tz=(seat?.36:.38)+bob;
+ B(-.02,0,tz,.2,.36,.46,a.shirt);
+ if(a.ger){B(.1,0,tz+.1,.06,.06,.3,"#c8962e")}
+ // brazos
+ const typ=o.typing?Math.sin(t*14):0;
+ if(seat){B(.2+typ*.03,-.22,tz+.12,.3,.09,.09,a.shirt);B(.2-typ*.03,.22,tz+.12,.3,.09,.09,a.shirt);B(.38+typ*.03,-.22,tz+.12,.1,.09,.09,o.skin);B(.38-typ*.03,.22,tz+.12,.1,.09,.09,o.skin)}
+ else{B(-sw*.12,-.23,tz+.04,.1,.09,.4,a.shirt);B(sw*.12,.23,tz+.04,.1,.09,.4,a.shirt);B(-sw*.12,-.23,tz,.1,.09,.07,o.skin);B(sw*.12,.23,tz,.1,.09,.07,o.skin)}
+ // cabeza
+ const hz=tz+.46,hs=.29,hx=x-hs/2+(fx?0:0),hy=y-hs/2;
+ const c=C(o.skin),ch=C(o.hair);let cL=ch[1],cR=ch[2];
+ if(fa==="+y")cL=c[1];if(fa==="+x")cR=c[2];
+ box(hx,hy,hz,hs,hs,.3,[ch[0],c[1],c[2]],cL,cR,ch[0]);
+ if(fa==="+y"||fa==="+x"){const f=fa==="+y"?faceL(hx,hy,hz,hs,hs,.3):faceR(hx,hy,hz,hs,hs,.3);
+  ctx.fillStyle=ch[1];ctx.beginPath();[quad(f,0,.78),quad(f,1,.78),quad(f,1,1),quad(f,0,1)].forEach((p,k)=>k?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.fill();
+  ctx.fillStyle="#1d1d26";for(const u of[.3,.7]){const p=quad(f,u,.5);ctx.fillRect(p[0]-S*.017,p[1]-S*.017,S*.034,S*.04)}
+  const m=quad(f,.5,.25);ctx.fillStyle="#b4655a";ctx.fillRect(m[0]-S*.02,m[1],S*.04,S*.012)}
+ if(o.carry){B(.3,0,tz+.12,.26,.2,.03,"#ffffff");B(.3,0,tz+.15,.18,.14,.01,"#e5484d")}
+}
+// ---------- viajes (caminatas) ----------
+const FEED=[];let tFeed=0;
+const hhmm=()=>{const d=new Date();return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")};
+function log(t){FEED.unshift({h:hhmm(),t});if(FEED.length>8)FEED.pop()}
+function route(A_,B_){const p=[[A_.sx,A_.sy],[A_.gx,A_.sy],[A_.gx,A_.ay]];
+ if(A_.ay!==B_.ay)p.push([A_.gx,B_.ay]);if(A_.gx!==B_.gx||A_.ay!==B_.ay)p.push([B_.gx,B_.ay]);p.push([B_.gx,B_.sy]);
+ return p.filter((q,i)=>!i||Math.hypot(q[0]-p[i-1][0],q[1]-p[i-1][1])>.01)}
+const LOUNGE={sx:26.5,sy:11.5,gx:26.5,ay:11.5};
+function start(a,target,kind,txt,doc){const p=route(a,target);a.trip={out:p,pts:p.slice(),i:1,phase:"out",wait:0,kind,target,txt,doc,tgt:target};a.seat=false;a.x=p[0][0];a.y=p[0][1]}
+function walking(){return A.filter(a=>a.trip).length+(HER.trip?1:0)}
+function planear(){
+ if(walking()>=6)return;
+ const libres=A.filter(a=>!a.trip&&a.cool<=0);if(!libres.length)return;
+ const a=libres[Math.floor(Math.random()*libres.length)];
+ if(a.st==="work"){
+  const mates=A.filter(b=>b.z===a.z&&b!==a);if(!mates.length){a.cool=8;return}
+  const b=(a.ger||Math.random()<.5)?mates[Math.floor(Math.random()*mates.length)]:(mates.find(m=>m.ger)||mates[0]);
+  const doc=DOCS[a.z][Math.floor(Math.random()*DOCS[a.z].length)];
+  start(a,b,"doc",`<b>${a.cargo}</b> le pasó ${doc} a <b>${b.cargo}</b>`,doc);a.cool=14+Math.random()*16;
+ }else if(a.st==="idle"){start(a,LOUNGE,"pausa",`<b>${a.cargo}</b> se toma una pausa`);a.cool=30+Math.random()*30}
+ else{a.cool=10}
+}
+function llevarAHermann(){
+ const j=BYID.jarvis;if(j.trip||!REAL.pend.length&&false)return;const n=REAL.pend.length;
+ start(j,HER,"her",n?`<b>Jarvis</b> le llevó a <b>Sr. Hermann</b> las aprobaciones pendientes (${n})`:`<b>Jarvis</b> le llevó a <b>Sr. Hermann</b> el resumen del día`,"las aprobaciones");j.cool=60;
+}
+function avanzar(a,dt){const tr=a.trip;if(!tr)return;
+ if(tr.phase==="wait"){tr.wait-=dt;a.face=tr.kind==="pausa"?"+y":(tr.target.sx<a.x?"-x":"+x");if(tr.wait<=0){
+   if(tr.kind==="doc"||tr.kind==="her"){a.carryOff=true;tr.target.flash=2.5;tr.target.doc=tr.kind==="doc"?5:0;log(tr.txt)}
+   else log(tr.txt);
+   tr.pts=tr.out.slice().reverse();tr.i=1;tr.phase="back"}return}
+ const sp=2.3*dt;let rem=sp;
+ while(rem>0&&tr.i<tr.pts.length){const q=tr.pts[tr.i],dx=q[0]-a.x,dy=q[1]-a.y,d=Math.hypot(dx,dy);
+  if(Math.abs(dx)>Math.abs(dy))a.face=dx>0?"+x":"-x";else if(d>0.001)a.face=dy>0?"+y":"-y";
+  if(d<=rem){a.x=q[0];a.y=q[1];rem-=d;tr.i++}else{a.x+=dx/d*rem;a.y+=dy/d*rem;rem=0}}
+ if(tr.i>=tr.pts.length){
+  if(tr.phase==="out"){tr.phase="wait";tr.wait=tr.kind==="pausa"?4+Math.random()*3:1.6}
+  else{a.trip=null;a.seat=true;a.carryOff=false;a.x=a.sx;a.y=a.sy;a.face="-y"}}
+}
+// ---------- dibujo de agentes + etiquetas ----------
+const DOT={work:"#3b82f6",idle:"#9aa0a6",need:"#e5484d"};
+let SEL=null,LBL=[],tNow=0,tourT=0;
+function dibujaAgente(a,t){const walk=!!a.trip&&(a.trip.phase!=="wait"),sit=a.seat&&!a.trip;
+ person(a,a.x,a.y,{face:a.face,pose:walk?"walk":(sit?"sit":"stand"),t:t+a.ph,typing:sit&&(a.st==="work"||a.st==="need"),skin:a.skin,hair:a.hair,carry:a.trip&&a.trip.doc&&!a.carryOff&&a.trip.phase!=="back"});
+ if(a.st==="need"&&sit){const q=P(a.x,a.y,0),pu=(Math.sin(t*3)+1)/2;ctx.strokeStyle=`rgba(229,72,77,${.55-pu*.4})`;ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(q[0],q[1],S*(.36+pu*.2),S*(.18+pu*.1),0,0,7);ctx.stroke()}
+ if(SEL===a){const q=P(a.x,a.y,0);ctx.strokeStyle="#3b82f6";ctx.lineWidth=2.2;ctx.setLineDash([5,4]);ctx.beginPath();ctx.ellipse(q[0],q[1],S*.5,S*.25,0,0,7);ctx.stroke();ctx.setLineDash([])}}
+function etiqueta(a,t){
+ if(SELZ&&dimA>.25&&a.z!==SELZ)return;
+ const need=a.st==="need",col=DOT[a.st],zoomed=S>=100;
+ const q=P(a.x,a.y,a.seat&&!a.trip?1.62:1.52);
+ let x=q[0],y=q[1]-S*.1-(need?Math.abs(Math.sin(t*4))*3:0);
+ if(!(a===SEL||(a.ger&&SELZ===a.z))){// en la general TODOS van como punto; el nombre del jefe aparece al acercarse a su oficina
+  const r=need?Math.max(9,S*.17):Math.max(6,S*.1);
+  if(need){const pu=(Math.sin(t*3)+1)/2;ctx.strokeStyle=`rgba(217,58,64,${.5-pu*.35})`;ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,r+3+pu*5,0,7);ctx.stroke()}
+  ctx.fillStyle=col;ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill();ctx.strokeStyle="#fff";ctx.lineWidth=2;ctx.stroke();
+  if(need&&a.need>1){ctx.fillStyle="#fff";ctx.font="700 14px sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(a.need,x,y+.5);ctx.textAlign="left"}
+  LBL.push({a,x:x-15,y:y-15,w:30,h:30+S*.9});return}
+ const fs=narrow?15:Math.max(20,Math.min(22,S*.3)),h=fs*1.65,pad=fs*.6,fam='"Avenir Next","Helvetica Neue",Arial,sans-serif';
+ const txt=(a.ger?"★ ":"")+a.cargo;
+ ctx.font=`${a.ger?700:600} ${fs}px ${fam}`;const tw=ctx.measureText(txt).width,w=tw+pad*2+fs*.9;
+ let tx="",tw2=0;if(need){tx=a.need>1?`Te necesita · ${a.need}`:"Te necesita";ctx.font=`700 ${fs}px ${fam}`;tw2=ctx.measureText(tx).width+fs}
+ const tot=w+(need?tw2+3:0),x0=x-tot/2,y0=y-h-((!a.ger&&a===SEL)?h*1.2:0);
+ ctx.save();ctx.shadowColor="rgba(60,40,10,.25)";ctx.shadowBlur=6;ctx.shadowOffsetY=2;
+ ctx.fillStyle=SEL===a?"#eef5ff":"rgba(255,253,248,.97)";rr(x0,y0,w,h,h/2);ctx.fill();ctx.restore();
+ ctx.strokeStyle=SEL===a?"#2f6fdc":col;ctx.lineWidth=SEL===a?2.5:1.8;rr(x0,y0,w,h,h/2);ctx.stroke();
+ ctx.fillStyle=col;ctx.beginPath();ctx.arc(x0+pad+fs*.25,y0+h/2,fs*.3,0,7);ctx.fill();
+ ctx.font=`${a.ger?700:600} ${fs}px ${fam}`;ctx.fillStyle="#2f2a24";ctx.textBaseline="middle";ctx.fillText(txt,x0+pad+fs*.9,y0+h/2+.5);
+ if(need){ctx.save();ctx.shadowColor="rgba(217,58,64,.4)";ctx.shadowBlur=8;ctx.fillStyle="#d93a40";rr(x0+w+3,y0,tw2,h,h/2);ctx.fill();ctx.restore();ctx.font=`700 ${fs}px ${fam}`;ctx.fillStyle="#fff";ctx.fillText(tx,x0+w+3+fs*.5,y0+h/2+.5)}
+ LBL.push({a,x:x0,y:y0,w:tot,h:h+S*1.3})}
+function miembros(k){return k==="dir"?[HER]:A.filter(a=>a.z===k)}
+let OVL=null;
+function zonaTags(){if(S<22)return;
+ const ovw=!SELZ&&V.k<1.05,fs=narrow?14:Math.max(20,Math.min(24,S*.3)),sf=narrow?13:Math.max(20,fs-2),fam='"Avenir Next","Helvetica Neue",Arial,sans-serif';
+ if(!SELZ&&!ovw)return;
+ const info={};
+ for(const k in ZN){if(SELZ&&k!==SELZ&&dimA>.25)continue;const z=ZN[k],r=z.r,mem=miembros(k);
+  ctx.textBaseline="middle";ctx.font=`800 ${fs}px ${fam}`;const tw=ctx.measureText(z.n).width;
+  const extra=(mem.length>1&&k!=="dir")?"+"+(mem.length-1)+" del equipo":"";
+  ctx.font=`700 ${sf}px ${fam}`;const ew=extra?ctx.measureText(extra).width:0;
+  ctx.font=`500 ${sf}px ${fam}`;const sw=ctx.measureText(z.s).width;
+  const w=Math.max(tw,sw,ew)+fs*1.5,lh=fs*1.2,h=lh*(extra?3:2)+fs*.5;info[k]={z,r,mem,extra,w,h,lh}}
+ if(ovw){// vista general: rótulos en los huecos libres, con una línea hacia su oficina
+  if(!OVL||OVL.key!==CW+"x"+CH+"/"+S0){
+   const hq=P(HER.x,HER.y,1.62),labs=LBL.filter(l=>l.a).map(l=>({x:l.x,y:l.y,w:l.w,h:Math.min(l.h,38)})).concat([{x:hq[0]-110,y:hq[1]-50,w:220,h:42}]),placed=[],res={key:CW+"x"+CH+"/"+S0};
+   const ia=(p,q)=>Math.max(0,Math.min(p.x+p.w,q.x+q.w)-Math.max(p.x,q.x))*Math.max(0,Math.min(p.y+p.h,q.y+q.h)-Math.max(p.y,q.y));
+   const ks=Object.keys(info).sort((p,q)=>info[q].w*info[q].h-info[p].w*info[p].h);
+   for(const k of ks){const t=info[k],r=t.r,c0=P((r[0]+r[2])/2,(r[1]+r[3])/2,0);let best=null,bs=1e18;
+    for(let cx=t.w/2+4;cx<=CW-t.w/2-4;cx+=12)for(let cy=t.h/2+4;cy<=CH-t.h/2-4;cy+=12){
+     const R={x:cx-t.w/2,y:cy-t.h/2,w:t.w,h:t.h};let c=Math.hypot(cx-c0[0],cy-c0[1])*.5;
+     for(const l of labs)c+=ia(R,l)*3;for(const l of placed)c+=ia(R,l)*8;
+     if(c<bs){bs=c;best=[cx,cy,R]}}
+    placed.push(best[2]);res[k]=[best[0],best[1],c0]}
+   OVL=res}
+  for(const k in info){const t=info[k],o=OVL[k];if(!o)continue;ctx.strokeStyle=t.z.c;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(o[0],o[1]);ctx.lineTo(o[2][0],o[2][1]);ctx.stroke();ctx.fillStyle=t.z.c;ctx.beginPath();ctx.arc(o[2][0],o[2][1],6,0,7);ctx.fill()}}
+ for(const k in info){const t=info[k],z=t.z,r=t.r,w=t.w,h=t.h,lh=t.lh,extra=t.extra,mem=t.mem;
+  let cx,cy;if(ovw&&OVL&&OVL[k]){cx=OVL[k][0];cy=OVL[k][1]}else{const ax=z.ax!=null?z.ax:(r[0]+r[2])/2,ay=z.ay!=null?z.ay:r[3]-.2,q=P(ax,ay,.05);cx=q[0];cy=q[1]}
+  const x0=cx-w/2,y0=cy-h/2;
+  ctx.save();ctx.shadowColor="rgba(30,15,50,.35)";ctx.shadowBlur=7;ctx.shadowOffsetY=3;ctx.fillStyle=z.c;rr(x0,y0,w,h,8);ctx.fill();ctx.restore();
+  if(z.c2){ctx.fillStyle=z.c2;rr(x0,y0,fs*.45,h,4);ctx.fill()}
+  ctx.fillStyle="#fff";ctx.textAlign="left";const tx=x0+fs*.75;let yy=y0+fs*.25+lh*.5;
+  ctx.font=`800 ${fs}px ${fam}`;ctx.fillText(z.n,tx,yy);yy+=lh;
+  ctx.fillStyle="rgba(255,255,255,.95)";ctx.font=`500 ${sf}px ${fam}`;ctx.fillText(z.s,tx,yy);
+  if(extra){yy+=lh;ctx.fillStyle="#ffe49a";ctx.font=`700 ${sf}px ${fam}`;ctx.fillText(extra,tx,yy)}
+  const nn=mem.filter(a=>a.need).length;
+  if(nn){const rd=fs*.62;ctx.fillStyle="#d93a40";ctx.strokeStyle="#fff";ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(x0+w,y0,rd,0,7);ctx.fill();ctx.stroke();ctx.fillStyle="#fff";ctx.font=`800 ${fs*.8}px ${fam}`;ctx.textAlign="center";ctx.fillText(nn,x0+w,y0+.5);ctx.textAlign="left"}
+  LBL.push({z:k,x:x0,y:y0,w,h})}}
+function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
+function ordenar(items){// orden de pintado por cajas (topológico)
+ const n=items.length,vis=new Array(n).fill(0),out=[],bf=(p,q)=>p.x1<=q.x0+.001||p.y1<=q.y0+.001;
+ const before=items.map(()=>[]);
+ for(let i=0;i<n;i++)for(let j=i+1;j<n;j++){const p=items[i],q=items[j],pq=p.x1<=q.x0+.001||p.y1<=q.y0+.001,qp=q.x1<=p.x0+.001||q.y1<=p.y0+.001;
+  if(pq&&!qp)before[j].push(i);else if(qp&&!pq)before[i].push(j);else if(!pq&&!qp){if((p.x0+p.x1+p.y0+p.y1)<=(q.x0+q.x1+q.y0+q.y1))before[j].push(i);else before[i].push(j)}}
+ const go=i=>{if(vis[i])return;vis[i]=1;for(const k of before[i])go(k);out.push(items[i])};
+ for(let i=0;i<n;i++)go(i);return out}
+// ---------- bucle ----------
+let last=performance.now();
+function frame(now){const dt=Math.min(.1,(now-last)/1000);last=now;tNow=now/1000;
+ // cámara hacia el destino
+ if(VT){V.k+=(VT.k-V.k)*Math.min(1,dt*5);V.px+=(VT.px-V.px)*Math.min(1,dt*5);V.py+=(VT.py-V.py)*Math.min(1,dt*5);if(Math.abs(VT.k-V.k)<.003&&Math.abs(VT.px-V.px)<.5)VT=null}
+ setView();
+ A.forEach(a=>{if(a.cool>0&&!a.trip)a.cool-=dt;if(a.flash>0)a.flash-=dt;if(a.doc>0&&a.flash<=0)a.doc=0;avanzar(a,dt)});HER.flash>0&&(HER.flash-=dt);
+ tFeed-=dt;if(tFeed<=0){planear();tFeed=.7}
+ ctx.setTransform(DPR,0,0,DPR,0,0);ctx.clearRect(0,0,CW,CH);
+ dibujarFondo();
+ const items=STAT.slice();
+ A.forEach(a=>{const r=a.trip?.28:.28;items.push({x0:a.x-r,x1:a.x+r,y0:a.y-r,y1:a.y+r,fn:()=>dibujaAgente(a,tNow)})});
+ HER.cargo="Dirección · Sr. Hermann";HER.temas=[];items.push({x0:HER.x-.3,x1:HER.x+.3,y0:HER.y-.3,y1:HER.y+.3,fn:()=>{box(HER.x-.28,HER.y-.1,0,.56,.5,.3,"#3b2d24");person(HER,HER.x,HER.y,{face:"-y",pose:"sit",t:tNow,typing:true,skin:HER.skin,hair:HER.hair})}});
+ ordenar(items).forEach(it=>it.fn());
+ LBL=[];A.forEach(a=>etiqueta(a,tNow));if(!SELZ)zonaTags();
+ // Hermann
+ {const q=P(HER.x,HER.y,1.62),fs=narrow?13:Math.max(20,Math.min(22,S*.3));if(S>=34&&!(SELZ&&dimA>.25)){const fam='"Avenir Next","Helvetica Neue",Arial,sans-serif';ctx.font=`800 ${fs}px ${fam}`;const tx="★ Sr. Hermann",tw=ctx.measureText(tx).width,w=tw+fs*1.8,h=fs*1.65,x0=q[0]-w/2,y0=q[1]-h-S*.1;ctx.save();ctx.shadowColor="rgba(60,40,10,.25)";ctx.shadowBlur=6;ctx.fillStyle="#fff4d6";rr(x0,y0,w,h,h/2);ctx.fill();ctx.restore();ctx.strokeStyle="#c8962e";ctx.lineWidth=2.4;rr(x0,y0,w,h,h/2);ctx.stroke();ctx.fillStyle="#6b4a10";ctx.textBaseline="middle";ctx.fillText(tx,x0+fs*.9,y0+h/2+.5);LBL.push({a:HER,x:x0,y:y0,w,h:h+S*1.3})}}
+ atenuar(dt);if(SELZ)zonaTags();tourTick(dt);
+ requestAnimationFrame(frame)}
+
+// ---------- recorrido automático (la TV no se toca: todo se mueve solo) ----------
+const $=id=>document.getElementById(id);
+const uniq=a=>[...new Set(a)];
+const temasDe=a=>uniq(a.temas||[]);
+const VEL=+((/[?&]vel=([\d.]+)/.exec(location.search)||[0,1])[1])||1;
+const ZORD=["gg","aima","vgc","vga","vgs","dg","infra"];
+const DEF="Detalle fino: a definir con Hermann";
+const TOUR={
+ gg:{obj:"Vigila a todas las empresas y reparte los fondos con su OK.",ag:[
+  {id:"faro",p:["Junta los controles de cada oficina","Arma el pedido de cuentas","Se lo lleva a Jarvis y al Sr. Hermann","La decisión final siempre es de Hermann"]},
+  {id:"tesorero",p:["Anota los préstamos recibidos","Propone cómo repartir entre Doble G, VG y AIMA","Nada se mueve sin su «confirmado»","Si falta un dato, dice «sin dato» y no inventa"]},
+  {id:"informegrupo",p:["Arma el informe de las 7:30","Junta el consolidado de cada empresa","Solo informa: no mueve ni envía nada"]}]},
+ aima:{obj:"Cuida a los grupos y a los socios de AIMA.",ag:[
+  {id:"mate",p:["Cuida el trato con los grupos y los socios","Habla con el tono cercano de la marca AIMA",DEF]},
+  {id:"informeaima",p:["Junta los datos del mes de cada grupo","Arma el informe para los socios","Si falta un dato, dice «sin dato»",DEF]},
+  {id:"cajaaima",p:["Anota ingresos y gastos con su código","Deja el flujo de caja al día","Solo ordena: nunca mueve plata",DEF]}]},
+ vgc:{obj:"Que cada impuesto de los clientes salga bien y a tiempo.",ag:[
+  {id:"balanza",p:["Reparte el trabajo entre su equipo","Mira que cada impuesto salga antes del vencimiento","Lo contable lo define Ledy","Si hay duda, se la pregunta a Ledy"]},
+  {id:"cargador",p:["Toma las facturas de cada cliente","Las carga en el sistema de impuestos","Trabaja solo cuando hay facturas en cola","Deja todo listo para imputar"]},
+  {id:"imputador",p:["Decide a qué impuesto va cada comprobante","Sigue el reglamento que definió Ledy","Si hay duda, consulta a Ledy","Lo contable lo aprueba Ledy"]}]},
+ vga:{obj:"Compras, cajas y cierre del mes, todo en orden.",ag:[
+  {id:"cajero",p:["Mira que las compras estén cargadas","Controla las cajas","Prepara el cierre del mes","Responde a Verónica"]},
+  {id:"compras",p:["Lee la factura (foto o PDF)","La registra en la planilla","Al terminar la tanda, deja un resumen","Si algo no se entiende, avisa"]},
+  {id:"agendaeq",p:["Arma el mail de las 7:30","Lleva las tareas de cada persona","Lo manda de lunes a viernes"]}]},
+ vgs:{obj:"Mira VG completo: cartera, socios y directorio.",ag:[
+  {id:"atlas",p:["Une Contabilidad y Administración","Mira el negocio completo","Prepara lo que se ve en el directorio",DEF]},
+  {id:"ancartera",p:["Compara lo cobrado con lo facturado","Marca a los clientes con atraso","Vigila que la mora no crezca"]},
+  {id:"andirectorio",p:["Arma el tablero del directorio de VG","Junta los informes de la reunión",DEF]}]},
+ dg:{obj:"Acompaña a los clientes de consultoría y ordena el flujo de caja.",ag:[
+  {id:"roble",p:["Acompaña a los clientes de consultoría","Sigue lo acordado con cada cliente",DEF]},
+  {id:"cajadg",p:["Anota ingresos y gastos con su código","Deja el flujo de caja al día","Solo ordena: nunca mueve plata"]}]},
+ infra:{obj:"Sistemas, avisos y pedidos: lo que hace funcionar a los demás.",ag:[
+  {id:"jarvis",p:["Recibe su pedido por Telegram","Lo manda a quien corresponde","Le avisa cuando está listo","Si hace falta su OK, se lo pide"]},
+  {id:"taller",p:["Toma el pedido y lo hace de punta a punta","Antes de crear algo, mira que no exista ya","Nunca paga ni borra por su cuenta","Al terminar, le avisa"]},
+  {id:"guardian",p:["Vigila los asistentes automáticos","Revisa que los accesos no venzan","Si algo se cae, avisa enseguida"]}]}
+};
+let STEPS=[],stepI=-1,stepT0=0,clock=0,cicloT0=0,SELZ=null,dimA=0,ciclos=0;
+// Ritmo (02/11 Hermann: las tareas pasaban muy rápido). Las oficinas CON equipo (vgc/vga/aima) se quedan
+// más tiempo para poder leer las tareas; las demás y los agentes, un poco más que antes. Afinable con ?vel=
+(function(){const EQZ={vgc:1,vga:1,aima:1};STEPS.push({k:"over",d:11});ZORD.forEach((z,zi)=>{STEPS.push({k:"zona",z,zi,d:EQZ[z]?13:6.5});TOUR[z].ag.forEach(g=>STEPS.push({k:"ag",z,zi,g,d:6}))})})();
+const DUR=STEPS.reduce((s,x)=>s+x.d,0);
+$("dots").innerHTML=ZORD.map(()=>"<i></i>").join("");
+function enfocar(zk){
+ if(!zk){VT={k:1,px:0,py:0};return}
+ const [a,b,c,d]=ZN[zk].r,span=(c-a)+(d-b);
+ let k=Math.min(CW*.8*2/(span*S0),CH*.8/((span/4+1.9)*S0));k=Math.max(1.15,Math.min(3.4,k));
+ fly2((a+c)/2,(b+d)/2,k)}
+function fly2(wx,wy,k){const s=S0*k;VT={k,px:CW/2-bx(s)-(wx-wy)*s/2,py:CH/2-by(s)-(wx+wy)*s/4+s*.33}}
+function necesitan(z){return miembros(z).filter(a=>a.need).sort((x,y)=>(y.urg-x.urg)||(y.need-x.need))}
+function miembros(k){return k==="dir"?[HER]:A.filter(a=>a.z===k)}
+// ---------- de dónde sale cada acción (para que el equipo sepa qué corregir) ----------
+const FUENTEZ={gg:"Pendientes de Grupo G",aima:"CRM / datos de AIMA",vgc:"Matriz VG · Cierre del mes",vga:"Cierre VG · cobros",vgs:"Tablero Directorio VG",dg:"Clientes de Doble G",infra:"Jarvis / sistemas",dir:"Pendientes del Sr. Hermann"};
+const FUENTE={compras:"Buzón de mejoras VG",guardian:"Guardián de Jarvis",correo:"Correo de Hermann",jarvis:"Pedidos por Telegram",taller:"Pedidos al taller",balanza:"Matriz VG · Marangatú",mate:"CRM de AIMA (Kommo)",roble:"Clientes de Doble G",tablero:"Tablero VG EAS",echo:"Saludo Alexa",faro:"Pendientes de Grupo G",tesorero:"Fondos del Grupo",ancartera:"Cobros / cartera VG"};
+function fuentesDe(a){const g={},o=[];(a.items||[]).forEach(it=>{const f=it.f||FUENTE[a.id]||FUENTEZ[a.z]||"Pendientes";if(!g[f]){g[f]=[];o.push(f)}g[f].push(it)});return {g,o};}
+function origenHtml(a){const {g,o}=fuentesDe(a);if(!o.length)return "";
+ return o.map(f=>`<div style="margin-top:7px;font-size:19px;color:var(--mut);font-weight:600">📍 De: <b style="color:#2f2a24">${f}</b> <span style="font-size:17px;opacity:.75">${g[f].slice(0,6).map(it=>"#"+it.id).join(" ")}${g[f].length>6?" …":""}</span></div>`).join("");}
+function fuenteMini(a){const {o}=fuentesDe(a);if(!o.length)return "";const txt=o.length===1?o[0]:o[0]+" +"+(o.length-1);return `<span style="display:block;color:#a06a2a;font-weight:600">📍 ${txt}</span>`;}
+// ---------- TAREAS DEL EQUIPO por oficina y persona (en vivo desde la API del tablero) ----------
+function esc(t){return String(t==null?"":t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+// Persona → oficina base; las tareas que mencionan AIMA se mueven a la oficina de AIMA.
+const PERSONAS=[["Nahobi","nahobi","vgc"],["Ledy","ledy","vgc"],["Gabi","gabi","vga"]];
+const BASE_EXTRA={aima:["gabi"]}; // Gabi SIEMPRE se muestra en AIMA (ella la maneja), tenga o no tareas de AIMA
+function areaTarea(t,def){return /aima|asamblea\s*aima|\bsocio/i.test(t)?"aima":def;}
+function teamTotal(){const T=window.__team;return T?((T.ledy||[]).length+(T.nahobi||[]).length+(T.gabi||[]).length):0;}
+function personaLi(nom,ts,max){max=max||3;return `<div class="li" style="align-items:flex-start"><div class="t"><b>${esc(nom)}</b><span>${ts.length?ts.slice(0,max).map(esc).join(" · "):"sin tareas pendientes"}</span>${ts.length>max?`<span style="color:#a06a2a;font-weight:600">+${ts.length-max} más</span>`:""}</div><em>${ts.length}</em></div>`;}
+function tieneEquipo(zk){return PERSONAS.some(p=>p[2]===zk)||!!BASE_EXTRA[zk];}
+function equipoDeOficina(zk){const T=window.__team;if(!T)return null;const res=[];
+ PERSONAS.forEach(([nom,key,def])=>{const ts=(T[key]||[]).filter(t=>areaTarea(t,def)===zk);
+  if(ts.length>0||def===zk||(BASE_EXTRA[zk]||[]).includes(key))res.push([nom,ts]);});
+ return res.length?res:null;}
+function tareasEquipoHtml(zk,max){if(!tieneEquipo(zk))return "";const T=window.__team;
+ if(!T)return '<div class="te no" style="margin-top:12px">Cargando tareas del equipo…</div>';
+ const eq=equipoDeOficina(zk);if(!eq)return "";
+ return '<h3>Tareas del equipo acá</h3>'+eq.map(([nom,ts])=>personaLi(nom,ts,max||3)).join("");}
+function teHtml(a){const t=temasDe(a);return a.need?`<div class="te"><b>Te necesita</b> · ${a.need} pendiente${a.need>1?"s":""}<br>${t.slice(0,2).join(" · ")}${origenHtml(a)}</div>`:`<div class="te no">Por ahora no necesita nada de usted.</div>`}
+function pasosHtml(l){return '<ul class="ps">'+l.map((x,i)=>`<li data-n="${i+1}"${x===DEF?' class="def"':""}>${x}</li>`).join("")+"</ul>"}
+function renderStep(s){
+ SELZ=s.z||null;SEL=null;const pc=$("pc");
+ $("dots").querySelectorAll("i").forEach((e,i)=>{e.className=s.k==="over"?"":(i<s.zi?"ok":i===s.zi?"on":"")});
+ if(s.k==="over"){
+  $("ofn").textContent="Vista general";
+  const h=new Date().getHours(),T=window.__team||{},tt=teamTotal(),urg=REAL.pend.filter(p=>p.u).length,ndH=REAL.pend.length;
+  const PP=[["Nahobi","nahobi"],["Ledy","ledy"],["Gabi","gabi"]];
+  const porPersona=PP.map(([nom,key])=>esc(nom)+' <b style="color:var(--ink)">'+((T[key]||[]).length)+'</b>').join(" · ");
+  pc.innerHTML=`<div class="fx"><h2>${h<12?"Buenos días":h<20?"Buenas tardes":"Buenas noches"}, Sr. Hermann</h2>`+
+   `<div class="sub">${tt?`El equipo tiene <b style="color:var(--ink)">${tt}</b> tareas pendientes. `:"Cargando las tareas del equipo… "}Ahora recorremos las oficinas.</div>`+
+   (tt?`<div class="sub" style="margin-top:9px;font-size:22px"><b style="color:var(--mut);font-weight:700">Por persona:</b> ${porPersona}</div>`:"")+
+   `<h3>Tareas pendientes del equipo</h3>`+
+   PP.map(([nom,key])=>{const ts=T[key]||[];return ts.length?personaLi(nom,ts,2):"";}).join("")+
+   (ndH?`<div class="mas" style="margin-top:10px">Además, <b>${ndH}</b> decisión${ndH>1?"es":""} suya${urg?` · <b style="color:var(--red)">${urg} urgente${urg>1?"s":""}</b>`:""}.</div>`:"")+
+   `</div>`;
+  enfocar(null);return}
+ const z=ZN[s.z],T=TOUR[s.z];$("ofn").textContent=`Oficina ${s.zi+1} de 7`;
+ const ban=`background:${z.c}${z.c2?`;border-left:14px solid ${z.c2}`:""}`;
+ if(s.k==="zona"){
+  const m=miembros(s.z),jf=m.find(a=>a.ger),nd=necesitan(s.z),eq=tareasEquipoHtml(s.z,3);
+  pc.innerHTML=`<div class="fx"><div class="ban" style="${ban}"><b>${z.n}</b><span>${T.obj}</span></div>`+
+   `<div class="sub"><b>${jf.cargo}</b> a cargo · ${m.length} personas</div>`+
+   (eq?eq+(nd.length?`<div class="mas" style="margin-top:8px">Además, <b>${nd.length}</b> cosa${nd.length>1?"s":""} esperan su decisión acá.</div>`:""):
+    `<div class="sub" style="font-size:22px">Vamos a ver a ${T.ag.length} de sus cargos principales${m.length>T.ag.length?` (+${m.length-T.ag.length} más en el equipo)`:""}.</div>`+
+    (nd.length?`<h3>Te necesitan acá</h3>`+nd.slice(0,narrow?2:3).map(a=>`<div class="li"><div class="t"><b>${a.cargo}</b><span>${temasDe(a).slice(0,2).join(" · ")}</span>${fuenteMini(a)}</div><em>${a.need}</em></div>`).join(""):`<div class="te no" style="margin-top:14px">En esta oficina nadie espera su decisión.</div>`))+`</div>`;
+  enfocar(s.z);return}
+ const a=BYID[s.g.id];SEL=a;
+ pc.innerHTML=`<div class="fx"><div class="ban sm" style="${ban}"><b>${z.n}</b></div>`+(a.ger?'<div class="jefe">★ Jefe de la oficina</div>':"")+
+  `<div class="cargo">${a.cargo}</div><div class="hace">${a.para}</div><h3>Pasos y cosas a tener en cuenta</h3>${pasosHtml(s.g.p)}${teHtml(a)}</div>`;
+ enfocar(s.z)}
+function irStep(i){if(i>=STEPS.length){i=0;ciclos++}if(i===0)cicloT0=clock;stepI=i;stepT0=clock;renderStep(STEPS[i]);window.__oficina&&(window.__oficina.ciclos=ciclos)}
+function tourTick(dt){
+ clock+=dt*VEL;if(stepI<0){irStep(0);return}
+ const s=STEPS[stepI];if(clock-stepT0>=s.d)irStep(stepI+1);
+ $("barb").style.width=Math.min(100,((clock-cicloT0)/DUR)*100)+"%"}
+function atenuar(dt){
+ dimA+=((SELZ?.6:0)-dimA)*Math.min(1,dt*4);if(dimA<.01||!SELZ)return;
+ const r=ZN[SELZ].r,pts=[];[[r[0],r[1]],[r[2],r[1]],[r[2],r[3]],[r[0],r[3]]].forEach(([x,y])=>{pts.push(P(x,y,0),P(x,y,3.2))});
+ pts.sort((p,q)=>p[0]-q[0]||p[1]-q[1]);const cr=(o,a,b)=>(a[0]-o[0])*(b[1]-o[1])-(a[1]-o[1])*(b[0]-o[0]);
+ const lo=[],up=[];for(const p of pts){while(lo.length>1&&cr(lo[lo.length-2],lo[lo.length-1],p)<=0)lo.pop();lo.push(p)}
+ for(const p of pts.slice().reverse()){while(up.length>1&&cr(up[up.length-2],up[up.length-1],p)<=0)up.pop();up.push(p)}
+ const hull=lo.slice(0,-1).concat(up.slice(0,-1));
+ ctx.save();ctx.beginPath();ctx.rect(0,0,CW,CH);hull.forEach((p,k)=>k?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();ctx.clip("evenodd");
+ ctx.fillStyle=`rgba(241,236,226,${dimA})`;ctx.fillRect(0,0,CW,CH);ctx.restore();
+ const z=ZN[SELZ],f=[[r[0],r[1]],[r[2],r[1]],[r[2],r[3]],[r[0],r[3]]].map(([x,y])=>P(x,y,.02));
+ ctx.strokeStyle=z.c;ctx.lineWidth=4;ctx.beginPath();f.forEach((p,k)=>k?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();ctx.stroke()}
+// ---------- contadores ----------
+function panel(){
+ $("c1").textContent=A.filter(a=>a.st==="work").length;$("c2").textContent=teamTotal();$("c3").textContent=REAL.pend.filter(p=>p.u).length;
+ $("fechaReal").textContent=REAL.gen==="ejemplo"?"sin datos reales cargados":"pendientes al "+REAL.gen}
+// ---------- arranque ----------
+async function estadoVivo(){try{const c=new AbortController();setTimeout(()=>c.abort(),25000);const j=await (await fetch(ESTADO_URL+"?t="+Date.now(),{signal:c.signal})).json();const g=j.agentes||{};let n=0;
+ for(const id in g){const a=BYID[id];if(!a)continue;n++;a.st=g[id]==="trabajando"?"work":"idle"}if(n){aplicarReal();document.querySelector(".chip.demo").innerHTML="<b>EN VIVO</b> estados"}
+ try{const pend=o=>((o&&o.tareas)||[]).filter(t=>t&&t.pendiente).map(t=>String(t.tarea||"").trim()).filter(Boolean);
+  window.__team={ledy:pend(j.tareasPendLedy),nahobi:pend(j.tareasPendMaga),gabi:pend(j.rodyTareasPend)};
+  const s=STEPS[stepI];if(s)renderStep(s);}catch(e){}
+ }catch(e){}}
+window.addEventListener("resize",()=>{OVL=null;resize();const s=STEPS[stepI];if(s)enfocar(s.k==="over"?null:s.z)});
+resize();VT=null;V={k:1,px:0,py:0};
+panel();setInterval(panel,1000);estadoVivo();setInterval(estadoVivo,60000);
+setTimeout(llevarAHermann,9000);setInterval(llevarAHermann,75000);
+requestAnimationFrame(frame);
+window.__oficina={get LBL(){return LBL},ZN,A,HER,REAL,STAT,ordenar,STEPS,DUR,ciclos:0,get S(){return S},get paso(){return stepI},get reloj(){return clock},walking};
+window.addEventListener("error",e=>{window.__errores=(window.__errores||0)+1});
+</script></body></html>

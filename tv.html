@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TV · Grupo G</title>
+<style>
+ html,body{margin:0;height:100%;background:#f1ece2;overflow:hidden}
+ iframe{position:fixed;inset:0;width:100vw;height:100vh;border:0;display:block;background:#f1ece2}
+</style></head><body>
+<iframe id="f" src="index.html" allow="autoplay"></iframe>
+<script>
+/* Rotador de la TV — alterna solo entre los 3 reportes. Tiempos en MINUTOS (editables acá abajo). */
+const SCENES=[
+ {url:"index.html",  min:18},  // Tablero VG EAS (operativo del día)
+ {url:"oficina.html",min:7},   // Oficina de agentes (recorrido ~3:20 → ~2 vueltas)
+ {url:"equipo.html", min:5}    // Tareas del equipo (lista de pendientes)
+];
+let i=0;const f=document.getElementById("f");
+function go(n){
+ i=((n%SCENES.length)+SCENES.length)%SCENES.length;
+ const s=SCENES[i];
+ if(f.getAttribute("src")!==s.url) f.src=s.url;     // recarga fresco cada vez que vuelve
+ clearTimeout(window.__t);
+ window.__t=setTimeout(()=>go(i+1), Math.max(1,s.min)*60*1000);
+}
+go(0);
+/* Recarga el rotador entero cada 6 h (limpia el navegador de la TV). */
+setTimeout(()=>location.reload(),6*60*60*1000);
+</script></body></html>
