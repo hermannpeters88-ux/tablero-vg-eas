@@ -3233,6 +3233,9 @@ function render(){
   // Cierre del mes: la TV lo toma de la API (appData.cierre) porque el gviz JSONP
   // a veces no carga en el navegador de la Samsung. El gviz sigue como refresco extra.
   try{ if(appData.cierre && appData.cierre.length){ window.__cierre = appData.cierre; } }catch(e){}
+  // Arrastre del mes anterior: igual que el cierre, la TV lo toma de la API (appData.arrastre) porque el
+  // gviz no carga en la Samsung. Si la API lo trae, pisa al gviz; si no, queda lo que haya traído el gviz.
+  try{ if(appData.arrastre && (appData.arrastre.items || appData.arrastre.label!=null)){ window.__arrastre = appData.arrastre; } }catch(e){}
   // Sync VG Contabilidad en COBROS_DATA desde procesoMes (fuente: Proceso Junio)
   const _pm = appData.procesoMes;
   if(_pm && _pm.resumen && !_pm.error){
@@ -3888,8 +3891,8 @@ const rodyClientes = calcClientesStats(["rodi","rody","rodolfo","alejandra","gab
               ${photoHtml}
               <div style="font-size:.6em;font-weight:700;margin-bottom:2px">${p.n}</div>
               <div style="background:${pc};border-radius:3px 3px 0 0;width:100%;height:${podH[i]}px;display:flex;flex-direction:column;align-items:center;justify-content:center">
-                <div style="font-size:${i===0?1.05:0.9}em;font-weight:700;color:white">${fmtP(p.s)}</div>
-                <div style="font-size:.45em;color:rgba(255,255,255,0.8)">${p.t==='sin tareas'?'sin tareas del mes':(p.t.indexOf('conv.')>=0?p.t:p.t+' tareas')}</div>
+                <div style="font-size:${i===0?1.05:0.9}em;font-weight:700;color:${conMedalla?'white':'#475569'}">${p.s==null?'—':fmtP(p.s)}</div>
+                <div style="font-size:.45em;color:${conMedalla?'rgba(255,255,255,0.8)':'#64748b'}">${p.s==null?'sin vto. aún':(p.t==='sin tareas'?'sin tareas del mes':(p.t.indexOf('conv.')>=0?p.t:p.t+' tareas'))}</div>
               </div>
               <div style="background:#f8f9fa;border-radius:0 0 3px 3px;width:100%;padding:1px;font-size:.48em;color:#666;text-align:center">Cumplimiento</div>
             </div>`;
