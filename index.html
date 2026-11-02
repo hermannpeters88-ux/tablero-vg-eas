@@ -3881,7 +3881,8 @@ const rodyClientes = calcClientesStats(["rodi","rody","rodolfo","alejandra","gab
             const sz = i===0?38:30;
             // Medalla solo con cumplimiento > 0 (no premiar 0% ni "sin tareas"): si no, lugar en gris
             const conMedalla = p.s!=null && p.s>0;
-            const pc = conMedalla ? podC[i] : '#cbd5e1';
+            const sinVto = p.s==null; // aún no tiene vencimientos este mes (medición al vencimiento)
+            const pc = conMedalla ? podC[i] : (sinVto ? '#cde6d4' : '#cbd5e1');
             const photoSrc = (MEMBER_PHOTOS&&MEMBER_PHOTOS[p.id])||'';
             const photoHtml = photoSrc
               ? `<img src="${photoSrc}" style="width:${sz}px;height:${sz}px;border-radius:50%;object-fit:cover;border:2px solid ${pc};margin:2px;">`
@@ -3891,8 +3892,8 @@ const rodyClientes = calcClientesStats(["rodi","rody","rodolfo","alejandra","gab
               ${photoHtml}
               <div style="font-size:.6em;font-weight:700;margin-bottom:2px">${p.n}</div>
               <div style="background:${pc};border-radius:3px 3px 0 0;width:100%;height:${podH[i]}px;display:flex;flex-direction:column;align-items:center;justify-content:center">
-                <div style="font-size:${i===0?1.05:0.9}em;font-weight:700;color:${conMedalla?'white':'#475569'}">${p.s==null?'—':fmtP(p.s)}</div>
-                <div style="font-size:.45em;color:${conMedalla?'rgba(255,255,255,0.8)':'#64748b'}">${p.s==null?'sin vto. aún':(p.t==='sin tareas'?'sin tareas del mes':(p.t.indexOf('conv.')>=0?p.t:p.t+' tareas'))}</div>
+                <div style="font-size:${i===0?1.05:0.9}em;font-weight:700;color:${conMedalla?'white':(sinVto?'#15803d':'#475569')}">${sinVto?'Al día':fmtP(p.s)}</div>
+                <div style="font-size:.45em;color:${conMedalla?'rgba(255,255,255,0.8)':(sinVto?'#2f8a56':'#64748b')}">${sinVto?'sin vto. aún':(p.t==='sin tareas'?'sin tareas del mes':(p.t.indexOf('conv.')>=0?p.t:p.t+' tareas'))}</div>
               </div>
               <div style="background:#f8f9fa;border-radius:0 0 3px 3px;width:100%;padding:1px;font-size:.48em;color:#666;text-align:center">Cumplimiento</div>
             </div>`;
