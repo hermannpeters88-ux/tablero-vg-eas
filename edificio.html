@@ -144,7 +144,7 @@ function marcarActiva(){
 }
 /* mapea coordenadas de la imagen (1600x899, "contain") a la pantalla */
 const sceneEl=document.getElementById('scene'), IMGW=1600, IMGH=899;
-const FLOORY=[225,440,620,845], ELEVX=1170, OFF_L=270, OFF_R=1000;   // y del piso por empresa, x del ascensor
+const FLOORY=[155,360,565,820], ELEVX=1135, OFF_L=260, OFF_R=1010;   // y REAL del piso por empresa, x del ascensor
 function mapImg(ix,iy){ const SW=sceneEl.clientWidth, SH=sceneEl.clientHeight, sc=Math.min(SW/IMGW,SH/IMGH);
  return [ (SW-IMGW*sc)/2+ix*sc, (SH-IMGH*sc)/2+iy*sc ]; }
 let gPhase='patrol', gFrom=0, gX=OFF_L, gY=FLOORY[0], gDir=1;
@@ -153,9 +153,9 @@ function tick(now){ const dt=Math.min(.05,(now-last)/1000); last=now;
  if(el>=DWELL){ gFrom=idx; idx=(idx+1)%EMP.length; t0=now; marcarActiva(); gPhase='toElev'; }
  if(gPhase==='toElev'){ gY=FLOORY[gFrom]; gX+=(ELEVX-gX)*Math.min(1,dt*3.4); if(ELEVX-gX<12) gPhase='ride'; }
  else if(gPhase==='ride'){ gX=ELEVX; gY+=(FLOORY[idx]-gY)*Math.min(1,dt*2.6); if(Math.abs(FLOORY[idx]-gY)<6){ gPhase='patrol'; gDir=-1; } }
- else { gY=FLOORY[idx]; const rr=(idx===3?900:OFF_R); gX+=gDir*(rr-OFF_L)/5*dt; if(gX<OFF_L){gX=OFF_L;gDir=1;} if(gX>rr){gX=rr;gDir=-1;} }
+ else { gY=FLOORY[idx]; const rr=(idx===3?700:OFF_R); gX+=gDir*(rr-OFF_L)/5*dt; if(gX<OFF_L){gX=OFF_L;gDir=1;} if(gX>rr){gX=rr;gDir=-1;} }
  const p=mapImg(gX,gY); const G=document.getElementById('guard');
- G.style.transform=`translate(${(p[0]-30).toFixed(1)}px,${(p[1]-74).toFixed(1)}px)`;
+ G.style.transform=`translate(${(p[0]-30).toFixed(1)}px,${(p[1]-40).toFixed(1)}px)`;
  const im=G.querySelector('.av-img'); if(im) im.style.transform='scaleX('+(gDir>=0?1:-1)+')';
  requestAnimationFrame(tick);
 }
