@@ -117,6 +117,16 @@
  .act b:nth-child(2){animation-delay:.18s}.act b:nth-child(3){animation-delay:.36s}
  @keyframes blink{0%,78%,100%{opacity:.25;transform:translateY(0)}38%{opacity:1;transform:translateY(-2px)}}
  @keyframes bob{0%,100%{transform:translate(-50%,-50%)}50%{transform:translate(-50%,-66%)}}
+ /* --- etiqueta de AGENTE (personaje) sobre cada figura --- */
+ .atag{position:absolute;transform:translate(-50%,-50%);z-index:3;display:flex;align-items:center;gap:5px;
+   background:rgba(8,14,24,.82);border:1px solid rgba(255,255,255,.18);border-radius:999px;
+   padding:3px 9px 3px 6px;white-space:nowrap;opacity:.5;transition:opacity .8s,box-shadow .8s;box-shadow:0 2px 7px rgba(0,0,0,.4)}
+ .atag.on{opacity:1;box-shadow:0 4px 14px rgba(0,0,0,.55)}
+ .atag .sd{width:8px;height:8px;border-radius:50%;background:#8aa0b5;flex:0 0 auto;box-shadow:0 0 0 3px rgba(255,255,255,.07)}
+ .atag .sd.work{animation:apulse 1.6s infinite}
+ @keyframes apulse{0%,100%{box-shadow:0 0 0 2px rgba(76,175,106,.5)}50%{box-shadow:0 0 0 5px rgba(76,175,106,0)}}
+ .atag .nn{font-size:11px;font-weight:800;color:#eaf2fb;letter-spacing:.2px}
+ .atag .cg{font-size:10px;font-weight:700;color:#9fb2c6}
  /* --- foco pulsante sobre la persona con la que se habla --- */
  #spot{position:absolute;left:50%;top:50%;width:46vmin;height:46vmin;transform:translate(-50%,-50%);
    z-index:3;pointer-events:none;border-radius:50%;opacity:0;transition:opacity .9s;
@@ -173,6 +183,33 @@ const FLOORS={
  ai:{ac:'#d14fb0',nm:'AIMA',sub:'Comunidad de inversores',logo:'l_ai.png',wx:600,wy:476,wh:42},
  dg:{ac:'#7c4fd0',nm:'DOBLE G',sub:'Consultoría y fondos',logo:'l_dg.png', wx:430,wy:668,wh:40}
 };
+/* === Oficina de Agentes: 46 bots reales como personajes [zona, cargo corto, nombre personaje] === */
+const AGMETA={
+ faro:['gg','Director General','Fabio'],tesorero:['gg','Tesorero','Teresa'],informegrupo:['gg','Informe del Grupo','Irma'],
+ ctrladm:['gg','Veedor Administr.','Adrián'],ctrlcont:['gg','Veedor Contab.','Celia'],ctrlmkt:['gg','Veedor Marketing','Marina'],ctrlinfra:['gg','Veedor Infra.','Íñigo'],
+ mate:['aima','Anfitrión','Matías'],informeaima:['aima','Analista de AIMA','Inés'],datosaima:['aima','Datos AIMA','Darwin'],reunion:['aima','Reunión AIMA','Rita'],cajaaima:['aima','Flujo Caja AIMA','Alma'],
+ balanza:['vgc','Contador','Bruno'],cargador:['vgc','Digitador','Carla'],imputador:['vgc','Imputador','Iván'],presentador:['vgc','Presentador','Paula'],vigia:['vgc','Vigía','Vera'],talonario:['vgc','Facturador','Tomás'],retenciones:['vgc','Analista Retenc.','Renzo'],lector:['vgc','Analista Lectura','Lucía'],auditor:['vgc','Auditor','Aldo'],
+ cajero:['vga','Administrador','Camilo'],cajavg:['vga','Flujo Caja VG','Cata'],compras:['vga','Comprador','Marcos'],cierre:['vga','Analista de Cierre','Cecilia'],agendaeq:['vga','Agenda del Equipo','Agustina'],tablero:['vga','Analista Tableros','Teo'],atencion:['vga','Asesor Atención','Ana'],cajaicho:['vga','Flujo Caja ICHO','Ignacio'],cajadorsia:['vga','Flujo Caja Dorsia','Dora'],
+ atlas:['vgs','Gerente','Atlas'],andirectorio:['vgs','Analista Directorio','Dina'],ancartera:['vgs','Analista Cartera','Carmen'],ansocios:['vgs','Analista Socios','Sofía'],anindic:['vgs','Analista Indicad.','Ismael'],
+ roble:['dg','Consultor','Tito'],cajadg:['dg','Flujo Caja Doble G','Darío'],
+ jarvis:['infra','Jarvis','Jarvis'],taller:['infra','Jefe de Taller','Tato'],guardian:['infra','Superv. Sistemas','Gaby'],locutor:['infra','Locutor','Lorenzo'],agenda:['infra','Agenda','Alicia'],buzon:['infra','Recepc. Mejoras','Bautista'],correo:['infra','Correo','Coral'],echo:['infra','Echo','Elena'],gestorhogar:['infra','Gestor del Hogar','Hugo']
+};
+const ZFLOOR={gg:'gg',dir:'gg',infra:'gg',vgc:'vg',vga:'vg',vgs:'vg',aima:'ai',dg:'dg'};
+const ZHUM={gg:'Hermann',dir:'Hermann',infra:'Hermann',vgc:'Ledy',vga:'Verónica',vgs:'Ledy',aima:'Gabriela',dg:'Hermann'};
+function agFloor(id){const m=AGMETA[id];return m?ZFLOOR[m[0]]:null;}
+/* agentes destacados (con cara) sobre las figuras de cada piso */
+const ATAGS=[
+ {id:'faro',x:300,y:120},{id:'informegrupo',x:600,y:120},{id:'jarvis',x:860,y:120},
+ {id:'balanza',x:345,y:332},{id:'cajero',x:635,y:332},{id:'atlas',x:885,y:332},
+ {id:'mate',x:345,y:512},{id:'informeaima',x:635,y:512},{id:'cajaaima',x:845,y:512},
+ {id:'roble',x:300,y:690},{id:'cajadg',x:520,y:690}
+];
+/* estado vivo por agente (del API) */
+let AGST={};
+function stOf(id){const s=String(AGST[id]||'').toLowerCase();return s==='trabajando'?'work':s==='esperando'?'wait':'free';}
+const STCOL={work:'#4caf6a',wait:'#e6b422',free:'#8aa0b5'};
+/* agente que "llama" a cada humano (su gerente-bot de zona) */
+const HUMAG={Ledy:'balanza',Nahobi:'cargador',Gabi:'cargador'};
 /* el GUION: cámara que entra piso por piso y habla con cada uno (más lento, más paradas) */
 const TOUR=[
  {k:null,fx:800,fy:440,z:1.00,dur:4200,est:true},
@@ -241,19 +278,21 @@ function pers(){
  };
 }
 function stat(tasks){return {n:tasks.length,u:tasks.filter(isUrg).length,list:tasks};}
-/* --- capa de vida: puntos de actividad sobre los escritorios de cada piso --- */
-const ACTS=[
- ['gg',300,120],['gg',600,120],['gg',860,120],
- ['vg',345,332],['vg',635,332],['vg',885,332],
- ['ai',345,512],['ai',635,512],['ai',845,512],
- ['dg',300,690],['dg',520,690]
-];
-function buildActs(){
- ACTS.forEach(([k,ix,iy])=>{
-  const d=document.createElement('div'); d.className='act'; d.dataset.k=k;
-  d.style.left=(ix/IMGW*100)+'%'; d.style.top=(iy/IMGH*100)+'%';
-  d.innerHTML='<b></b><b></b><b></b>';
+/* --- capa de agentes: cada figura destacada es un bot con su estado vivo --- */
+function buildAtags(){
+ ATAGS.forEach(t=>{
+  const m=AGMETA[t.id]; if(!m) return; const fl=ZFLOOR[m[0]];
+  const d=document.createElement('div'); d.className='atag'; d.dataset.k=fl; d.dataset.id=t.id;
+  d.style.left=(t.x/IMGW*100)+'%'; d.style.top=((t.y-26)/IMGH*100)+'%';
+  d.innerHTML=`<span class="sd"></span><span class="nn">${esc(m[2])}</span><span class="cg">· ${esc(m[1])}</span>`;
   world.appendChild(d);
+ });
+ pintarEstados();
+}
+function pintarEstados(){
+ document.querySelectorAll('.atag').forEach(d=>{
+  const st=stOf(d.dataset.id), sd=d.querySelector('.sd');
+  sd.style.background=STCOL[st]; sd.className='sd'+(st==='work'?' work':'');
  });
 }
 /* --- MARCADOR (totales + por persona) --- */
@@ -302,9 +341,10 @@ function speaker(sp){
  const p=P[sp]||{who:sp,rol:'',tasks:[]};
  if(!TEAM) return {who:p.who,rol:p.rol,line:'Cargando…'};
  const t=p.tasks, u=t.filter(isUrg).length;
+ const ag=HUMAG[p.who], am=ag&&AGMETA[ag];
  if(!t.length) return {who:p.who,rol:p.rol,line:'Todo al día ✓',ok:true};
- return {who:p.who,rol:p.rol,badge:{p:t.length,u},
-   line:`Pendientes de ${p.who}:`,
+ const caller= am ? `🤖 ${esc(am[1])} (${esc(am[2])}) → llama a ${p.who}:` : `Pendientes de ${p.who}:`;
+ return {who:p.who,rol:p.rol,badge:{p:t.length,u}, line:caller, lineRaw:true,
    items:t.slice(0,4).map(x=>({t:x,urg:isUrg(x)})), more:t.length>4?`+${t.length-4} más`:''};
 }
 /* --- layout del mundo (contain) + logos de pared --- */
@@ -361,8 +401,8 @@ function paintShot(){
    document.getElementById('iln').innerHTML=(d.lines||[]).map(l=>{const w=/⚠/.test(l)?'warn':(/✓/.test(l)?'ok':'');return `<div class="w ${w}">${esc(l)}</div>`;}).join('');
    info.classList.add('show');
  } else info.classList.remove('show');
- // capa de vida: actividad del piso activo + foco sobre la persona
- document.querySelectorAll('.act').forEach(a=>a.classList.toggle('on',a.dataset.k===s.k));
+ // agentes del piso activo encendidos + foco sobre la persona
+ document.querySelectorAll('.atag').forEach(a=>a.classList.toggle('on',a.dataset.k===s.k));
  document.getElementById('spot').classList.toggle('show', !!s.sp);
  marcarFila();
 }
@@ -389,16 +429,17 @@ async function cargar(){
  if(m.status==='fulfilled'){ MAIN=m.value; const j=m.value;
    const pend=o=>((o&&o.tareas)||[]).filter(t=>t&&t.pendiente).map(t=>String(t.tarea||"").trim()).filter(Boolean);
    TEAM={ledy:pend(j.tareasPendLedy),nahobi:pend(j.tareasPendMaga),gabi:pend(j.rodyTareasPend)};
+   AGST=(j&&j.agentes)||{}; pintarEstados();
    const lv=document.getElementById('live'); lv.classList.remove('load');
    document.getElementById('livet').textContent='EN VIVO';
-   document.getElementById('lives').textContent='datos del equipo';
+   document.getElementById('lives').textContent='agentes y equipo';
  } else { document.getElementById('lives').textContent='sin conexión — reintentando…'; }
  if(cb.status==='fulfilled') COBROS=cb.value;
  if(vn.status==='fulfilled') VENC=vn.value;
  pintarScore(); paintShot();
 }
 /* --- arranque --- */
-function start(){ buildActs(); layout(); pintarScore(); paintShot(); requestAnimationFrame(loop); cargar(); setInterval(cargar,60000); }
+function start(){ buildAtags(); layout(); pintarScore(); paintShot(); requestAnimationFrame(loop); cargar(); setInterval(cargar,60000); }
 const im=new Image();
 im.onload=()=>{ document.getElementById('bg').src=BGIMG; start(); };
 im.onerror=()=>{ document.getElementById('stage').style.background='linear-gradient(160deg,#14365c,#0b1626)'; start(); };
