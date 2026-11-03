@@ -64,8 +64,8 @@
  #title .tx .nm{font-size:30px;font-weight:900;letter-spacing:.3px;color:var(--ac,#10243a);line-height:1}
  #title .tx .sb{font-size:16px;font-weight:700;color:#5a6b7e;margin-top:4px}
  /* --- globo de diálogo del compañero (arriba del centro) --- */
- #bubble{position:absolute;left:50%;top:15.5%;z-index:9;transform:translateX(-50%);
-   min-width:360px;max-width:60%;opacity:0;transition:opacity .55s}
+ #bubble{position:absolute;left:50%;top:auto;bottom:53%;z-index:9;transform:translateX(-50%);
+   min-width:360px;max-width:54%;opacity:0;transition:opacity .55s}
  #bubble.show{opacity:1}
  #bubble .box{position:relative;background:linear-gradient(180deg,#152536,#0d1826);
    border:1.5px solid var(--ac,#5aa0ff);border-radius:18px;padding:14px 20px 16px;box-shadow:0 20px 50px rgba(0,0,0,.6)}
@@ -91,6 +91,22 @@
  #bubble .tail{position:absolute;left:50%;bottom:-13px;width:26px;height:14px;transform:translateX(-50%);overflow:hidden}
  #bubble .tail:after{content:"";position:absolute;left:50%;top:-14px;width:18px;height:18px;
    transform:translateX(-50%) rotate(45deg);background:#0d1826;border-right:1.5px solid var(--ac,#5aa0ff);border-bottom:1.5px solid var(--ac,#5aa0ff)}
+ /* --- tarjeta de informe (cobros / vencimientos / robots) --- */
+ #info{position:absolute;left:50%;top:auto;bottom:53%;z-index:9;transform:translateX(-50%);min-width:470px;max-width:60%;opacity:0;transition:opacity .55s}
+ #info.show{opacity:1}
+ #info .box{position:relative;background:linear-gradient(180deg,#152536,#0d1826);border:1.5px solid var(--ac,#5aa0ff);
+   border-radius:18px;padding:15px 24px 17px;box-shadow:0 20px 50px rgba(0,0,0,.6)}
+ #info .hd{display:flex;align-items:center;gap:11px;margin-bottom:9px}
+ #info .hd .ic{font-size:25px}
+ #info .hd .tit{font-size:15px;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:var(--ac,#9fb2c6)}
+ #info .big{font-size:27px;font-weight:900;color:#fff;line-height:1.1;margin-bottom:9px}
+ #info .ln{display:flex;flex-direction:column;gap:6px}
+ #info .ln .w{font-size:20px;font-weight:800;color:#eaf2fb;background:rgba(255,255,255,.05);border-radius:10px;padding:9px 13px}
+ #info .ln .w.warn{background:rgba(209,64,58,.15);border:1px solid rgba(209,64,58,.42);color:#ffd7d4}
+ #info .ln .w.ok{color:#5ff0a8}
+ #info .tail{position:absolute;left:50%;bottom:-13px;width:26px;height:14px;transform:translateX(-50%);overflow:hidden}
+ #info .tail:after{content:"";position:absolute;left:50%;top:-14px;width:18px;height:18px;transform:translateX(-50%) rotate(45deg);
+   background:#0d1826;border-right:1.5px solid var(--ac,#5aa0ff);border-bottom:1.5px solid var(--ac,#5aa0ff)}
  #prog{position:absolute;left:0;bottom:0;height:4px;width:0;background:var(--ac,#ffd14d);z-index:10;transition:width .3s linear,background .6s}
  /* --- capa de VIDA: indicadores de actividad sobre los escritorios (se mueven) --- */
  .act{position:absolute;transform:translate(-50%,-50%);z-index:3;display:flex;gap:3px;align-items:center;
@@ -137,10 +153,18 @@
    <div class="more" id="bmore"></div>
    <div class="tail"></div>
  </div></div>
+ <div id="info"><div class="box">
+   <div class="hd"><span class="ic" id="iic"></span><span class="tit" id="itit"></span></div>
+   <div class="big" id="ibig"></div>
+   <div class="ln" id="iln"></div>
+   <div class="tail"></div>
+ </div></div>
  <div id="prog"></div>
 </div>
 <script>
 const ESTADO_URL="https://script.google.com/macros/s/AKfycbxVYNdaEsXvCgrwZFtyPhkeWkQUXF0HpOSqlr7x-Ap_BfDtA09lG4uN2FoJ8sHmnjkj/exec";
+const COBROS_URL="https://script.google.com/macros/s/AKfycbzPa-w8t8w-atOvJjYR-S7KHksg5acgdnARlMAUF5uRvPJxMAOe4BvJBF2K058a16I/exec";
+const VENC_URL="https://script.google.com/macros/s/AKfycbwers-ywe28U2zsp0d3DaJKkU4_pN0zB5dNUp95F5b-_sJWPPbBi_RjHdXlT6m1fYz0/exec";
 const BGIMG="edificio_base.jpg?v=16";
 const IMGW=1600, IMGH=899;
 const FLOORS={
@@ -158,12 +182,54 @@ const TOUR=[
  {k:'vg',fx:890,fy:392,z:2.05,dur:7000,sp:'Gabi'},
  {k:'ai',fx:430,fy:566,z:2.00,dur:6000,sp:'GabiAima'},
  {k:'ai',fx:730,fy:566,z:2.00,dur:5200,sp:'AimaMas'},
- {k:'dg',fx:360,fy:735,z:2.05,dur:5000,sp:'DobleG'}
+ {k:'dg',fx:360,fy:735,z:2.05,dur:5000,sp:'DobleG'},
+ {k:'vg',fx:620,fy:392,z:1.55,dur:6200,info:'cobros'},
+ {k:'vg',fx:620,fy:392,z:1.55,dur:6200,info:'venc'},
+ {k:null,fx:800,fy:470,z:1.10,dur:5800,info:'bots'}
 ];
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 function isAima(t){return /aima|asamblea\s*aima|\bsocio/i.test(t);}
 function isUrg(t){return /(vence|vencim|urgent|hoy|ma[ñn]ana|presentar|ddjj|declaraci|pagar|pago|multa|plazo|antes de|cierre)/i.test(t);}
-let TEAM=null;
+let TEAM=null, MAIN=null, COBROS=null, VENC=null;
+function fmtG(n){return String(Math.round(+n||0)).replace(/\B(?=(\d{3})+(?!\d))/g,'.');}
+/* --- tarjetas de informe (cobros / vencimientos / robots) --- */
+function infoCard(type){
+ if(type==='cobros'){
+   if(!COBROS) return {ac:'#2f9e6b',ic:'💰',tit:'Cobros · Cartera',big:'Cargando…',lines:[]};
+   const cl=COBROS.clientes||[];
+   const pend=cl.reduce((a,c)=>a+(+c.pendiente||0),0);
+   const atras=cl.filter(c=>c.estado==='atrasado');
+   const atM=atras.reduce((a,c)=>a+(+c.pendiente||0),0);
+   const vgMora=((MAIN&&MAIN.procesoMes&&MAIN.procesoMes.moraAnterior)||[]).filter(m=>String(m.estado||'').toLowerCase()!=='cobrado');
+   const vgMoraM=vgMora.reduce((a,m)=>a+(+m.monto||0),0);
+   const lines=[`Por cobrar ahora: ₲ ${fmtG(pend)}`];
+   lines.push(atras.length?`⚠ Atrasado: ₲ ${fmtG(atM)} — ${atras.length} cliente${atras.length!=1?'s':''}`:'Cartera al día ✓');
+   if(vgMora.length) lines.push(`⚠ Mora del mes: ₲ ${fmtG(vgMoraM)} — ${vgMora.length} cliente${vgMora.length!=1?'s':''}`);
+   return {ac:'#2f9e6b',ic:'💰',tit:'Cobros y mora',big:'Estado de la cartera',lines};
+ }
+ if(type==='venc'){
+   const vs=(VENC&&VENC.vencimientos)||[];
+   if(!VENC) return {ac:'#e0922a',ic:'📅',tit:'Vencimientos · DDJJ',big:'Cargando…',lines:[]};
+   const prox=vs.find(v=>v.estado==='proximo')||vs[0];
+   const ci=(MAIN&&MAIN.cierre)||[];
+   const pag=ci.filter(c=>c.pago).length;
+   const lines=[];
+   if(prox) lines.push(`Próximo: día ${prox.dia} — ${(prox.obligaciones||[]).length} obligaciones · ${(prox.clientes||[]).length} clientes`);
+   if(ci.length) lines.push(ci.length-pag>0?`⚠ Cierre del mes: ${ci.length-pag} sin pagar de ${ci.length} clientes`:`Cierre del mes: ${ci.length} clientes al día ✓`);
+   return {ac:'#e0922a',ic:'📅',tit:'Vencimientos y DDJJ',big:'Impuestos por presentar',lines};
+ }
+ if(type==='bots'){
+   const ag=(MAIN&&MAIN.agentes)||{};
+   const ks=Object.keys(ag);
+   if(!ks.length) return {ac:'#5aa0ff',ic:'🤖',tit:'Robots · Automatizaciones',big:'Cargando…',lines:[]};
+   const work=ks.filter(k=>String(ag[k]).toLowerCase()==='trabajando').length;
+   const down=ks.filter(k=>/ca[ií]do|error|apagad|off|down|falla/i.test(String(ag[k])));
+   const lines=[`${work} robots trabajando ahora mismo`,`${ks.length} automatizaciones en total`];
+   lines.push(down.length?`⚠ ${down.length} con problema — el guardián avisa`:'Todos operativos ✓');
+   return {ac:'#5aa0ff',ic:'🤖',tit:'El equipo invisible',big:'Robots de Grupo G',lines};
+ }
+ return {ac:'#888',ic:'',tit:'',big:'',lines:[]};
+}
 /* tareas vivas por persona */
 function pers(){
  const T=TEAM||{}; const gabi=(T.gabi||[]);
@@ -286,6 +352,15 @@ function paintShot(){
    document.getElementById('bmore').textContent=d.more||'';
    bub.classList.add('show');
  } else bub.classList.remove('show');
+ // tarjeta de informe (cobros / vencimientos / robots)
+ const info=document.getElementById('info');
+ if(s.info){ const d=infoCard(s.info); info.style.setProperty('--ac',d.ac);
+   document.getElementById('iic').textContent=d.ic;
+   document.getElementById('itit').textContent=d.tit;
+   document.getElementById('ibig').textContent=d.big;
+   document.getElementById('iln').innerHTML=(d.lines||[]).map(l=>{const w=/⚠/.test(l)?'warn':(/✓/.test(l)?'ok':'');return `<div class="w ${w}">${esc(l)}</div>`;}).join('');
+   info.classList.add('show');
+ } else info.classList.remove('show');
  // capa de vida: actividad del piso activo + foco sobre la persona
  document.querySelectorAll('.act').forEach(a=>a.classList.toggle('on',a.dataset.k===s.k));
  document.getElementById('spot').classList.toggle('show', !!s.sp);
@@ -308,16 +383,19 @@ function loop(now){
 }
 /* --- datos vivos --- */
 async function cargar(){
- try{
-  const c=new AbortController(); setTimeout(()=>c.abort(),25000);
-  const j=await (await fetch(ESTADO_URL+"?t="+Date.now(),{signal:c.signal})).json();
-  const pend=o=>((o&&o.tareas)||[]).filter(t=>t&&t.pendiente).map(t=>String(t.tarea||"").trim()).filter(Boolean);
-  TEAM={ledy:pend(j.tareasPendLedy),nahobi:pend(j.tareasPendMaga),gabi:pend(j.rodyTareasPend)};
-  const lv=document.getElementById('live'); lv.classList.remove('load');
-  document.getElementById('livet').textContent='EN VIVO';
-  document.getElementById('lives').textContent='tareas del equipo';
-  pintarScore(); paintShot();
- }catch(e){ document.getElementById('lives').textContent='sin conexión — reintentando…'; }
+ const get=async u=>{ const c=new AbortController(); setTimeout(()=>c.abort(),25000);
+   return (await fetch(u+"?t="+Date.now(),{signal:c.signal})).json(); };
+ const [m,cb,vn]=await Promise.allSettled([get(ESTADO_URL),get(COBROS_URL),get(VENC_URL)]);
+ if(m.status==='fulfilled'){ MAIN=m.value; const j=m.value;
+   const pend=o=>((o&&o.tareas)||[]).filter(t=>t&&t.pendiente).map(t=>String(t.tarea||"").trim()).filter(Boolean);
+   TEAM={ledy:pend(j.tareasPendLedy),nahobi:pend(j.tareasPendMaga),gabi:pend(j.rodyTareasPend)};
+   const lv=document.getElementById('live'); lv.classList.remove('load');
+   document.getElementById('livet').textContent='EN VIVO';
+   document.getElementById('lives').textContent='datos del equipo';
+ } else { document.getElementById('lives').textContent='sin conexión — reintentando…'; }
+ if(cb.status==='fulfilled') COBROS=cb.value;
+ if(vn.status==='fulfilled') VENC=vn.value;
+ pintarScore(); paintShot();
 }
 /* --- arranque --- */
 function start(){ buildActs(); layout(); pintarScore(); paintShot(); requestAnimationFrame(loop); cargar(); setInterval(cargar,60000); }
