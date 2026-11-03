@@ -1,150 +1,114 @@
 <!DOCTYPE html>
 <html lang="es"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Edificio Grupo G · vista al mar (borrador v2)</title>
+<title>Oficinas Grupo G · vista al mar (borrador v3)</title>
 <style>
  *{box-sizing:border-box;margin:0;padding:0}
  html,body{height:100%;background:#0b2a4a;overflow:hidden;font-family:"Avenir Next","Helvetica Neue",Helvetica,Arial,sans-serif;cursor:none}
  #cv{position:fixed;inset:0;width:100vw;height:100vh;display:block}
- #hd{position:fixed;top:0;left:0;right:0;display:flex;align-items:center;gap:16px;padding:12px 24px;z-index:5;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.5)}
+ #hd{position:fixed;top:0;left:0;right:0;display:flex;align-items:center;gap:14px;padding:12px 26px;z-index:5;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.55)}
  #hd h1{font:800 30px Georgia,serif;white-space:nowrap}
  #hd .sub{font-size:16px;opacity:.92;font-weight:600}
- #hd .tag{margin-left:auto;background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.35);border-radius:20px;padding:5px 14px;font-size:14px;font-weight:700}
+ #hd .tag{margin-left:auto;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.35);border-radius:20px;padding:5px 14px;font-size:14px;font-weight:700}
+ #nm{position:fixed;left:0;right:0;bottom:30px;text-align:center;z-index:5;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.6)}
+ #nm b{font:800 46px Georgia,serif;display:block}
+ #nm span{font-size:22px;opacity:.95;font-weight:600}
+ #dots{position:fixed;left:0;right:0;bottom:12px;text-align:center;z-index:5}
+ #dots i{display:inline-block;width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.4);margin:0 5px}
+ #dots i.on{background:#fff;transform:scale(1.3)}
 </style></head><body>
 <canvas id="cv"></canvas>
-<div id="hd"><h1>Grupo G</h1><span class="sub">Edificio corporativo · vista al mar</span><span class="tag">BORRADOR v2 — para el Sr. Hermann</span></div>
+<div id="hd"><h1>Grupo G</h1><span class="sub">Oficinas · vista al mar</span><span class="tag">BORRADOR v3 — para el Sr. Hermann</span></div>
+<div id="nm"><b id="nmb">—</b><span id="nms"></span></div>
+<div id="dots"></div>
 <script>
 const cv=document.getElementById("cv"),ctx=cv.getContext("2d");
-let CW=0,CH=0,DPR=1,S=46,OX=0,OY=0;
+let CW=0,CH=0,DPR=1,S=60;
+let CAM={ox:0,oy:0}, TGT={ox:0,oy:0};
 function resize(){const b=cv.getBoundingClientRect();DPR=Math.min(2,window.devicePixelRatio||1);CW=b.width;CH=b.height;
- cv.width=Math.round(CW*DPR);cv.height=Math.round(CH*DPR);
- S=Math.min(CW/18, CH/15); OX=CW*0.39; OY=CH*0.62;}
-function P(x,y,z){return[OX+(x-y)*S*0.5, OY+(x+y)*S*0.25 - z*S*0.5];}
+ cv.width=Math.round(CW*DPR);cv.height=Math.round(CH*DPR);S=Math.min(CW/12.5, CH/8.5);}
+function P(x,y,z){return[CAM.ox+(x-y)*S*0.5, CAM.oy+(x+y)*S*0.25 - z*S*0.5];}
 const _cc={};function C(h){if(_cc[h])return _cc[h];const n=parseInt(h.slice(1),16),r=n>>16,g=n>>8&255,b=n&255;
  const m=(f)=>`rgb(${Math.min(255,r*f|0)},${Math.min(255,g*f|0)},${Math.min(255,b*f|0)})`;return _cc[h]=[m(1),m(.78),m(.6)];}
 const OUT="rgba(20,20,30,.16)";
 function poly(pts,fill,stroke,w){ctx.beginPath();pts.forEach((q,i)=>i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]));ctx.closePath();
  if(fill){ctx.fillStyle=fill;ctx.fill();}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=w||1;ctx.stroke();}}
 function box(x,y,z,w,d,h,col,faces){const c=typeof col==="string"?C(col):col;const f=faces||{};
- poly([P(x+w,y,z),P(x+w,y+d,z),P(x+w,y+d,z+h),P(x+w,y,z+h)], f.r||c[2], OUT);
- poly([P(x,y+d,z),P(x+w,y+d,z),P(x+w,y+d,z+h),P(x,y+d,z+h)], f.l||c[1], OUT);
- poly([P(x,y,z+h),P(x+w,y,z+h),P(x+w,y+d,z+h),P(x,y+d,z+h)], f.t||c[0], OUT);}
+ poly([P(x+w,y,z),P(x+w,y+d,z),P(x+w,y+d,z+h),P(x+w,y,z+h)],f.r||c[2],OUT);
+ poly([P(x,y+d,z),P(x+w,y+d,z),P(x+w,y+d,z+h),P(x,y+d,z+h)],f.l||c[1],OUT);
+ poly([P(x,y,z+h),P(x+w,y,z+h),P(x+w,y+d,z+h),P(x,y+d,z+h)],f.t||c[0],OUT);}
 function cyl(x,y,z,r,h,col){const c=C(col),q0=P(x,y,z),q1=P(x,y,z+h),rx=.7071*r*S,ry=.3536*r*S;
  ctx.fillStyle=c[1];ctx.beginPath();ctx.ellipse(q0[0],q0[1],rx,ry,0,0,Math.PI);ctx.lineTo(q1[0]-rx,q1[1]);ctx.ellipse(q1[0],q1[1],rx,ry,0,Math.PI,0,true);ctx.closePath();ctx.fill();
  ctx.fillStyle=c[0];ctx.beginPath();ctx.ellipse(q1[0],q1[1],rx,ry,0,0,7);ctx.fill();ctx.strokeStyle=OUT;ctx.stroke();}
 function ball(x,y,z,r,col){const q=P(x,y,z),R=r*S*.5,c=C(col),g=ctx.createRadialGradient(q[0]-R*.35,q[1]-R*.4,R*.1,q[0],q[1],R);
  g.addColorStop(0,c[0]);g.addColorStop(1,c[2]);ctx.fillStyle=g;ctx.beginPath();ctx.arc(q[0],q[1],R,0,7);ctx.fill();}
-function shadow(x,y,r){const q=P(x,y,0);ctx.fillStyle="rgba(10,20,30,.14)";ctx.beginPath();ctx.ellipse(q[0],q[1],r*S*.6,r*S*.3,0,0,7);ctx.fill();}
-// texto en la pared y=const (mirando hacia el frente), queda derecho
+function shadow(x,y,r){const q=P(x,y,0);ctx.fillStyle="rgba(10,20,30,.13)";ctx.beginPath();ctx.ellipse(q[0],q[1],r*S*.6,r*S*.3,0,0,7);ctx.fill();}
 function wallText(txt,x,yFix,z,size,col,bold){const q=P(x,yFix,z);ctx.save();
  ctx.setTransform(DPR*S*.5,DPR*S*.25,0,DPR*S*.52,DPR*q[0],DPR*q[1]);ctx.scale(1/40,1/40);
  ctx.font=`${bold||800} ${size*40}px "Avenir Next",Helvetica,Arial,sans-serif`;ctx.fillStyle=col;ctx.textBaseline="alphabetic";ctx.fillText(txt,0,0);ctx.restore();}
-
 const SKIN=["#f1c9a0","#e0ac80","#c68b5e","#fadcbc"],SHIRT=["#4caf6a","#e86f9a","#f08a3c","#3d8fe0","#8a5ad0","#e6b422","#2fb5a4","#d9453d"];
-function persona(x,y,z,shirt,skin){shadow(x,y,.28);
- box(x-.1,y-.1,z,.2,.2,.1,"#2b3350");box(x-.1,y-.1,z+.1,.2,.2,.32,shirt);box(x-.12,y-.12,z+.42,.24,.24,.24,C(skin));}
-function escritorio(x,y,z,n){shadow(x+.5,y+.35,.85);box(x,y,z,1.3,0.7,0.5,"#e0d4bd");
- box(x+.35,y+.14,z+0.5,0.62,0.07,0.42,"#2b2f3a");
- poly([P(x+.4,y+.17,z+.54),P(x+.9,y+.17,z+.54),P(x+.9,y+.17,z+.9),P(x+.4,y+.17,z+.9)],"#8fd0ef");
- box(x+.3,y+.4,z+.5,.55,.2,.04,"#d4c7ad");
- persona(x+.6,y+.95,z,SHIRT[(n*3)%SHIRT.length],SKIN[n%4]);}
+function persona(x,y,z,shirt,skin){shadow(x,y,.3);box(x-.12,y-.12,z,.24,.24,.12,"#2b3350");box(x-.12,y-.12,z+.12,.24,.24,.4,shirt);box(x-.14,y-.14,z+.52,.28,.28,.3,C(skin));}
+function escritorio(x,y,z,n){shadow(x+.6,y+.4,1.0);box(x,y,z,1.5,0.8,0.55,"#e2d6bf");
+ box(x+.42,y+.16,z+0.55,0.72,0.08,0.5,"#2b2f3a");
+ poly([P(x+.48,y+.2,z+.6),P(x+1.08,y+.2,z+.6),P(x+1.08,y+.2,z+1.02),P(x+.48,y+.2,z+1.02)],"#8fd0ef");
+ box(x+.35,y+.46,z+.55,.65,.24,.05,"#d4c7ad");
+ persona(x+.72,y+1.1,z,SHIRT[(n*3)%SHIRT.length],SKIN[n%4]);}
 
-const FP={x0:0,y0:0,w:11,d:7};
-const FH=3.0;
-const PISOS=[
- {key:'pb', n:'PLANTA BAJA', s:'Cafetería · Cowork', c:'#7a7366', z:0.0,  tipo:'pb'},
- {key:'dg', n:'DOBLE G',      s:'Consultoría y fondos',                       c:'#623F98', z:FH},
- {key:'aima',n:'AIMA',        s:'Grupos y socios',                            c:'#9b3fae', z:2*FH},
- {key:'vg', n:'VG ASOCIADOS', s:'Contabilidad · Administración · Asociados',  c:'#4a2064', z:3*FH},
- {key:'gg', n:'GRUPO G',      s:'Dirección y control',                        c:'#1D1D1B', z:4*FH, top:true},
+// --- oficinas en FILA horizontal ---
+const OW=8, OD=6, GAP=5, STEP=OW+GAP;  // ancho, prof, separación
+const OFIS=[
+ {key:'gg',  n:'GRUPO G',       s:'Dirección y control',                       c:'#1D1D1B'},
+ {key:'vg',  n:'VG ASOCIADOS',  s:'Contabilidad · Administración · Asociados',  c:'#4a2064'},
+ {key:'aima',n:'AIMA',          s:'Grupos y socios',                            c:'#9b2fae'},
+ {key:'dg',  n:'DOBLE G',       s:'Consultoría y fondos',                       c:'#623F98'},
 ];
-const TOPZ=4*FH+FH;
+OFIS.forEach((o,i)=>{o.x0=i*STEP; o.y0=0;});
+let idx=0, t0=performance.now();
+const DUR=7000;
 
-function fondoMar(){
+function fondo(){
  let g=ctx.createLinearGradient(0,0,0,CH);
- g.addColorStop(0,"#cfeef8");g.addColorStop(.40,"#9bd6f1");g.addColorStop(.50,"#7cc3e8");
+ g.addColorStop(0,"#cfeef8");g.addColorStop(.42,"#9bd6f1");g.addColorStop(.5,"#7cc3e8");
  g.addColorStop(.515,"#2f86bd");g.addColorStop(1,"#0d4a80");
  ctx.fillStyle=g;ctx.fillRect(0,0,CW,CH);
- let sg=ctx.createRadialGradient(CW*.82,CH*.20,4,CW*.82,CH*.20,CH*.18);
- sg.addColorStop(0,"#fff9db");sg.addColorStop(1,"rgba(255,249,219,0)");ctx.fillStyle=sg;ctx.beginPath();ctx.arc(CW*.82,CH*.20,CH*.18,0,7);ctx.fill();
+ let sg=ctx.createRadialGradient(CW*.84,CH*.18,4,CW*.84,CH*.18,CH*.2);
+ sg.addColorStop(0,"#fff9db");sg.addColorStop(1,"rgba(255,249,219,0)");ctx.fillStyle=sg;ctx.beginPath();ctx.arc(CW*.84,CH*.18,CH*.2,0,7);ctx.fill();
  ctx.strokeStyle="rgba(255,255,255,.4)";const hz=CH*.515;
- for(let k=0;k<8;k++){const yy=hz+(CH-hz)*(k/8);ctx.globalAlpha=.18+.3*(k/8);ctx.lineWidth=1.5;ctx.beginPath();
-  for(let xx=0;xx<=CW;xx+=16){const o=Math.sin(xx*0.018+Date.now()/800+k)*3;ctx.lineTo(xx,yy+o);}ctx.stroke();}
+ for(let k=0;k<7;k++){const yy=hz+(CH-hz)*(k/7);ctx.globalAlpha=.16+.3*(k/7);ctx.lineWidth=1.5;ctx.beginPath();
+  for(let xx=0;xx<=CW;xx+=18){const o=Math.sin(xx*0.016+Date.now()/800+k)*3;ctx.lineTo(xx,yy+o);}ctx.stroke();}
  ctx.globalAlpha=1;
 }
-
-function piso(f){
- const {x0,y0,w,d}=FP,z=f.z,top=f.top;
- // losa
- box(x0,y0,z,w,d,0.3,"#eae4d7",{t:"#f4efe3"});
- // fascia frontal (borde del piso, con color de la empresa)
- poly([P(x0,y0+d,z),P(x0+w,y0+d,z),P(x0+w,y0+d,z+0.3),P(x0,y0+d,z+0.3)], C(f.c)[2]);
- poly([P(x0+w,y0,z),P(x0+w,y0+d,z),P(x0+w,y0+d,z+0.3),P(x0+w,y0,z+0.3)], C(f.c)[2]);
- const wallH=FH-0.3;
- if(!top){ // paredes del fondo
-  box(x0,y0,z+0.3,w,0.18,wallH,f.c);                               // pared trasera y=0
-  box(x0,y0,z+0.3,0.18,d,wallH,[C(f.c)[1],C(f.c)[1],C(f.c)[2]]);   // pared izq x=0
-  // franja de nombre
-  box(x0+0.18,y0+0.18,z+0.3,w-0.18,0.14,0.95,f.c,{t:C(f.c)[0]});
-  wallText(f.n,  x0+0.55,y0+0.19,z+0.72,0.6,"#ffffff");
-  wallText(f.s,  x0+0.55,y0+0.19,z+0.46,0.28,"rgba(255,255,255,.9)");
- }
- // contenido
- if(f.tipo==='pb'){ // cafetería + cowork
-  [[x0+1.6,y0+1.6],[x0+1.6,y0+3.6],[x0+3.4,y0+2.6]].forEach(([mx,my])=>{shadow(mx,my,.5);cyl(mx,my,z+.3,0.32,0.5,"#d9cdb8");ball(mx,my,z+1.1,0.95,"#e0584a");cyl(mx,my,z+.5,0.05,0.6,"#b8a888");});
-  for(let i=0;i<3;i++){const ex=x0+5.4+i*1.7;box(ex,y0+1.4,z+.3,1.2,0.7,0.45,"#cdbfa6");persona(ex+.55,y0+2.3,z+.3,SHIRT[i+2],SKIN[i%4]);}
-  for(let i=0;i<2;i++){const ex=x0+6+i*2;box(ex,y0+4,z+.3,1.2,0.7,0.45,"#cdbfa6");persona(ex+.55,y0+4.9,z+.3,SHIRT[i+4],SKIN[i%4]);}
- }else{ // oficinas: escritorios
-  let n=0;for(let j=0;j<2;j++)for(let i=0;i<3;i++){const ex=x0+2.2+i*2.6,ey=y0+2.0+j*2.4;if(ex>x0+w-1.4||ey>y0+d-1.2)continue;escritorio(ex,ey,z+0.3,n+f.key.length);n++;}
- }
- if(top){ // terraza GG con baranda y plantas (vista al mar)
-  box(x0,y0,z+0.3,w,0.1,0.55,"#2a2a2a",{t:"#3a3a3a"});
-  wallText("GRUPO G",x0+0.6,y0+0.12,z+0.5,0.6,"#ffffff");
-  wallText("Dirección · control · vista al mar",x0+0.6,y0+0.12,z+0.28,0.26,"rgba(255,255,255,.85)");
-  // baranda de vidrio al frente y derecha
-  poly([P(x0,y0+d,z+0.3),P(x0+w,y0+d,z+0.3),P(x0+w,y0+d,z+1.0),P(x0,y0+d,z+1.0)],"rgba(190,225,240,.2)","rgba(255,255,255,.55)",2);
-  poly([P(x0+w,y0,z+0.3),P(x0+w,y0+d,z+0.3),P(x0+w,y0+d,z+1.0),P(x0+w,y0,z+1.0)],"rgba(190,225,240,.2)","rgba(255,255,255,.55)",2);
-  ball(x0+1.2,y0+1.2,z+0.6,0.8,"#3fa95a");ball(x0+w-1.2,y0+1.2,z+0.6,0.8,"#3fa95a");
-  for(let i=0;i<4;i++){const ex=x0+2.4+i*2;escritorio(ex,y0+3.4,z+0.3,i);}
- }
+function oficina(o,activa){
+ const {x0,y0}=o, z=0, c=o.c;
+ box(x0,y0,z-0.3,OW,OD,0.3,"#eae4d7",{t:activa?"#f6f1e6":"#e9e3d6"});   // piso
+ const wallH=2.6;
+ box(x0,y0,z,OW,0.2,wallH,c);                                   // pared trasera
+ box(x0,y0,z,0.2,OD,wallH,[C(c)[1],C(c)[1],C(c)[2]]);           // pared izquierda
+ // ventana al mar en la pared trasera
+ poly([P(x0+1.2,y0,z+0.9),P(x0+OW-0.6,y0,z+0.9),P(x0+OW-0.6,y0,z+2.1),P(x0+1.2,y0,z+2.1)],"#bfe6f7","rgba(255,255,255,.5)",2);
+ poly([P(x0+(OW+0.6)/2,y0,z+0.9),P(x0+(OW+0.6)/2+0.03,y0,z+0.9),P(x0+(OW+0.6)/2+0.03,y0,z+2.1),P(x0+(OW+0.6)/2,y0,z+2.1)],"rgba(255,255,255,.5)");
+ // cartel grande con el nombre
+ box(x0+0.2,y0+0.2,z+0.0,OW-0.4,0.14,1.0,c,{t:C(c)[0]});
+ wallText(o.n, x0+0.6,y0+0.21,z+0.68,0.78,"#ffffff");
+ wallText(o.s, x0+0.6,y0+0.21,z+0.4,0.32,"rgba(255,255,255,.9)");
+ // escritorios (2 filas)
+ let n=0;for(let j=0;j<2;j++)for(let i=0;i<3;i++){const ex=x0+1.3+i*2.1,ey=y0+2.3+j*1.9;escritorio(ex,ey,z,n+o.key.length);n++;}
 }
+function centrar(i,inst){const o=OFIS[i], cx=o.x0+OW/2, cy=o.y0+OD/2;
+ TGT.ox=CW*0.40-(cx-cy)*S*0.5; TGT.oy=CH*0.56-(cx+cy)*S*0.25+1.3*S*0.5;
+ if(inst){CAM.ox=TGT.ox;CAM.oy=TGT.oy;}}
+function setDots(){const d=document.getElementById("dots");d.innerHTML=OFIS.map((_,i)=>'<i class="'+(i===idx?'on':'')+'"></i>').join('');}
+function mostrarNombre(){document.getElementById("nmb").textContent=OFIS[idx].n;document.getElementById("nms").textContent=OFIS[idx].s;}
 
-function auto(x,y,col,badge){
- shadow(x,y,1.1);
- box(x-0.9,y-0.5,0.02,1.8,1.0,0.32,col);
- box(x-0.35,y-0.38,0.34,0.9,0.76,0.3,[C(col)[0],C(col)[1],C(col)[2]]);
- poly([P(x+0.55,y-0.3,0.37),P(x+0.55,y+0.3,0.37),P(x+0.55,y+0.3,0.62),P(x+0.55,y-0.3,0.62)],"#bfe0ef");
- [[x-0.6,y-0.52],[x+0.6,y-0.52],[x-0.6,y+0.52],[x+0.6,y+0.52]].forEach(([wx,wy])=>cyl(wx,wy,-0.02,0.2,0.1,"#17171c"));
- const q=P(x+0.9,y,0.28);ctx.fillStyle="#eef2f4";ctx.beginPath();ctx.arc(q[0],q[1],S*.12,0,7);ctx.fill();
- if(badge==="bmw"){ctx.fillStyle="#2f6fdc";ctx.beginPath();ctx.moveTo(q[0],q[1]);ctx.arc(q[0],q[1],S*.11,-1.57,0);ctx.closePath();ctx.fill();
-   ctx.beginPath();ctx.moveTo(q[0],q[1]);ctx.arc(q[0],q[1],S*.11,1.57,3.14);ctx.closePath();ctx.fill();
-   ctx.strokeStyle="#2f6fdc";ctx.lineWidth=2;ctx.beginPath();ctx.arc(q[0],q[1],S*.11,0,7);ctx.stroke();}
- else{ctx.strokeStyle="#2b2b2b";ctx.lineWidth=2;ctx.beginPath();ctx.arc(q[0],q[1],S*.11,0,7);ctx.stroke();
-   for(let a=0;a<3;a++){ctx.beginPath();ctx.moveTo(q[0],q[1]);ctx.lineTo(q[0]+Math.cos(-1.57+a*2.09)*S*.1,q[1]+Math.sin(-1.57+a*2.09)*S*.1);ctx.stroke();}}
-}
-
-function estacionamiento(){
- const {x0,y0,w,d}=FP, py=y0+d+2.6;
- // vereda/plaza frente al edificio
- poly([P(x0-1,y0+d,0),P(x0+w+1,y0+d,0),P(x0+w+4,y0+d+6,0),P(x0-4,y0+d+6,0)],"#dad4c6");
- // playa de estacionamiento
- poly([P(x0,py-1.2,0),P(x0+w-2,py-1.2,0),P(x0+w-2,py+1.4,0),P(x0,py+1.4,0)],"#55595f");
- ctx.strokeStyle="rgba(255,255,255,.75)";ctx.lineWidth=2;
- for(let k=0;k<4;k++){const a=P(x0+0.8+k*2.5,py-1.1,0),b=P(x0+0.8+k*2.5,py+1.3,0);ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();}
- auto(x0+1.9,py,"#161619","mercedes");
- auto(x0+4.4,py,"#1e2f5a","bmw");
- auto(x0+6.9,py,"#eceff2","mercedes");
- wallText("ESTACIONAMIENTO",x0+0.2,py+2.0,0,0.34,"#3a3630");
-}
-
-function frame(){
+function frame(now){
+ if(now-t0>DUR){idx=(idx+1)%OFIS.length;t0=now;centrar(idx);mostrarNombre();setDots();}
+ CAM.ox+=(TGT.ox-CAM.ox)*0.08; CAM.oy+=(TGT.oy-CAM.oy)*0.08;
  ctx.setTransform(DPR,0,0,DPR,0,0);ctx.clearRect(0,0,CW,CH);
- fondoMar();
- PISOS.forEach(f=>piso(f));   // de abajo hacia arriba
- estacionamiento();           // al frente, último
+ fondo();
+ OFIS.forEach((o,i)=>oficina(o,i===idx));
  requestAnimationFrame(frame);
 }
-window.addEventListener("resize",resize);
-resize();requestAnimationFrame(frame);
+window.addEventListener("resize",()=>{resize();centrar(idx,true);});
+resize();centrar(0,true);mostrarNombre();setDots();requestAnimationFrame(frame);
 </script>
 </body></html>
