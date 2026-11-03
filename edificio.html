@@ -22,15 +22,10 @@
  #seam{position:absolute;top:0;bottom:0;right:0;width:120px;pointer-events:none;
    background:linear-gradient(90deg,rgba(9,16,28,0),rgba(9,16,28,.9))}
  /* --- guardián que recorre oficina por oficina --- */
- #guard{position:absolute;left:0;top:0;z-index:5;pointer-events:none;display:flex;flex-direction:column;align-items:center;
-   will-change:transform;filter:drop-shadow(0 6px 10px rgba(0,0,0,.55))}
- #guard .av{width:46px;height:46px;border-radius:50%;border:2px solid #063f39;font-size:23px;
-   background:radial-gradient(circle at 34% 28%,#b9fff2,#19b6a3 60%,#0c7d70);
-   display:flex;align-items:center;justify-content:center;animation:gpulse 1.6s ease-in-out infinite}
- #guard .lb{margin-top:4px;background:rgba(10,20,28,.9);color:#b8f7ec;font-weight:800;font-size:12.5px;
-   padding:2px 9px;border-radius:9px;white-space:nowrap}
- @keyframes gpulse{0%,100%{box-shadow:0 0 0 3px rgba(255,255,255,.55),0 0 16px 3px rgba(45,220,200,.5)}
-   50%{box-shadow:0 0 0 3px rgba(255,255,255,.6),0 0 26px 8px rgba(45,220,200,.85)}}
+ #guard{position:absolute;left:0;top:0;z-index:5;pointer-events:none;display:flex;flex-direction:column;align-items:center;will-change:transform}
+ #guard .av-img{height:54px;width:auto;display:block;filter:drop-shadow(0 4px 5px rgba(0,0,0,.6))}
+ #guard .lb{margin-bottom:3px;background:rgba(10,20,28,.9);color:#ffe08a;font-weight:800;font-size:12px;
+   padding:2px 9px;border-radius:9px;white-space:nowrap;box-shadow:0 2px 7px rgba(0,0,0,.45)}
  /* --- panel de reportes (derecha, limpio, fondo sólido) --- */
  #panel{position:absolute;right:0;top:0;bottom:0;width:38%;min-width:380px;z-index:3;
    background:linear-gradient(180deg,#0e1a2b,#0a1320);box-shadow:-24px 0 60px rgba(0,0,0,.5);
@@ -72,7 +67,7 @@
  @media (max-width:900px){ #scene{right:0;bottom:46%} #panel{width:100%;top:54%;min-width:0} }
 </style></head><body>
 <div id="stage">
- <div id="scene"><div id="bg"></div><div id="seam"></div><div id="guard"><div class="av">🕵️</div><div class="lb">Auditor</div></div></div>
+ <div id="scene"><div id="bg"></div><div id="seam"></div><div id="guard"><div class="lb">Auditor</div><img class="av-img" src="auditor.png" alt="Auditor"></div></div>
  <div id="panel">
    <div id="hdr">
      <h1>Edificio Grupo G</h1>
@@ -159,7 +154,9 @@ function tick(now){ const dt=Math.min(.05,(now-last)/1000); last=now;
  if(gPhase==='toElev'){ gY=FLOORY[gFrom]; gX+=(ELEVX-gX)*Math.min(1,dt*3.4); if(ELEVX-gX<12) gPhase='ride'; }
  else if(gPhase==='ride'){ gX=ELEVX; gY+=(FLOORY[idx]-gY)*Math.min(1,dt*2.6); if(Math.abs(FLOORY[idx]-gY)<6){ gPhase='patrol'; gDir=-1; } }
  else { gY=FLOORY[idx]; const rr=(idx===3?900:OFF_R); gX+=gDir*(rr-OFF_L)/5*dt; if(gX<OFF_L){gX=OFF_L;gDir=1;} if(gX>rr){gX=rr;gDir=-1;} }
- const p=mapImg(gX,gY); document.getElementById('guard').style.transform=`translate(${(p[0]-23).toFixed(1)}px,${(p[1]-62).toFixed(1)}px)`;
+ const p=mapImg(gX,gY); const G=document.getElementById('guard');
+ G.style.transform=`translate(${(p[0]-30).toFixed(1)}px,${(p[1]-74).toFixed(1)}px)`;
+ const im=G.querySelector('.av-img'); if(im) im.style.transform='scaleX('+(gDir>=0?1:-1)+')';
  requestAnimationFrame(tick);
 }
 /* --- datos vivos --- */
