@@ -72,15 +72,15 @@
  @media (max-width:900px){ #scene{right:0;bottom:46%} #panel{width:100%;top:54%;min-width:0} }
 </style></head><body>
 <div id="stage">
- <div id="scene"><div id="bg"></div><div id="seam"></div><div id="guard"><div class="av">🛡️</div><div class="lb">Guardián</div></div></div>
+ <div id="scene"><div id="bg"></div><div id="seam"></div><div id="guard"><div class="av">🕵️</div><div class="lb">Auditor</div></div></div>
  <div id="panel">
    <div id="hdr">
      <h1>Edificio Grupo G</h1>
-     <p>El guardián recorre cada oficina y controla el trabajo en vivo</p>
+     <p>El auditor recorre cada oficina, revisa y reporta todo en vivo</p>
      <span class="chip load" id="chip"><i></i><span id="chipt">Conectando con el equipo…</span></span>
    </div>
    <div id="cards"></div>
-   <div id="foot"><span class="eye">🛡️</span><span class="txt">Guardián en: <b id="supn">—</b></span><div id="bar"></div></div>
+   <div id="foot"><span class="eye">🕵️</span><span class="txt">Auditor revisando: <b id="supn">—</b></span><div id="bar"></div></div>
  </div>
 </div>
 <script>
@@ -149,7 +149,7 @@ function marcarActiva(){
 }
 /* mapea coordenadas de la imagen (1600x899, "contain") a la pantalla */
 const sceneEl=document.getElementById('scene'), IMGW=1600, IMGH=899;
-const FLOORY=[225,455,615,850], ELEVX=1165, OFF_L=330, OFF_R=1030;   // y del piso por empresa, x del ascensor
+const FLOORY=[225,440,620,845], ELEVX=1170, OFF_L=270, OFF_R=1000;   // y del piso por empresa, x del ascensor
 function mapImg(ix,iy){ const SW=sceneEl.clientWidth, SH=sceneEl.clientHeight, sc=Math.min(SW/IMGW,SH/IMGH);
  return [ (SW-IMGW*sc)/2+ix*sc, (SH-IMGH*sc)/2+iy*sc ]; }
 let gPhase='patrol', gFrom=0, gX=OFF_L, gY=FLOORY[0], gDir=1;
