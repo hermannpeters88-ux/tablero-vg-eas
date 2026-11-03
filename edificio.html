@@ -21,6 +21,16 @@
  .wall.on{opacity:1;box-shadow:0 10px 24px rgba(0,0,0,.5),0 0 0 3px var(--ac)}
  #seam{position:absolute;top:0;bottom:0;right:0;width:120px;pointer-events:none;
    background:linear-gradient(90deg,rgba(9,16,28,0),rgba(9,16,28,.9))}
+ /* --- guardián que recorre oficina por oficina --- */
+ #guard{position:absolute;left:0;top:0;z-index:5;pointer-events:none;display:flex;flex-direction:column;align-items:center;
+   will-change:transform;filter:drop-shadow(0 6px 10px rgba(0,0,0,.55))}
+ #guard .av{width:46px;height:46px;border-radius:50%;border:2px solid #063f39;font-size:23px;
+   background:radial-gradient(circle at 34% 28%,#b9fff2,#19b6a3 60%,#0c7d70);
+   display:flex;align-items:center;justify-content:center;animation:gpulse 1.6s ease-in-out infinite}
+ #guard .lb{margin-top:4px;background:rgba(10,20,28,.9);color:#b8f7ec;font-weight:800;font-size:12.5px;
+   padding:2px 9px;border-radius:9px;white-space:nowrap}
+ @keyframes gpulse{0%,100%{box-shadow:0 0 0 3px rgba(255,255,255,.55),0 0 16px 3px rgba(45,220,200,.5)}
+   50%{box-shadow:0 0 0 3px rgba(255,255,255,.6),0 0 26px 8px rgba(45,220,200,.85)}}
  /* --- panel de reportes (derecha, limpio, fondo sólido) --- */
  #panel{position:absolute;right:0;top:0;bottom:0;width:38%;min-width:380px;z-index:3;
    background:linear-gradient(180deg,#0e1a2b,#0a1320);box-shadow:-24px 0 60px rgba(0,0,0,.5);
@@ -62,15 +72,15 @@
  @media (max-width:900px){ #scene{right:0;bottom:46%} #panel{width:100%;top:54%;min-width:0} }
 </style></head><body>
 <div id="stage">
- <div id="scene"><div id="bg"></div><div id="seam"></div></div>
+ <div id="scene"><div id="bg"></div><div id="seam"></div><div id="guard"><div class="av">🛡️</div><div class="lb">Guardián</div></div></div>
  <div id="panel">
    <div id="hdr">
      <h1>Edificio Grupo G</h1>
-     <p>El supervisor recorre cada piso y controla el trabajo en vivo</p>
+     <p>El guardián recorre cada oficina y controla el trabajo en vivo</p>
      <span class="chip load" id="chip"><i></i><span id="chipt">Conectando con el equipo…</span></span>
    </div>
    <div id="cards"></div>
-   <div id="foot"><span class="eye">🔍</span><span class="txt">Supervisando: <b id="supn">—</b></span><div id="bar"></div></div>
+   <div id="foot"><span class="eye">🛡️</span><span class="txt">Guardián en: <b id="supn">—</b></span><div id="bar"></div></div>
  </div>
 </div>
 <script>
@@ -130,18 +140,26 @@ function pintar(){
  }).join('');
  marcarActiva();
 }
-/* --- recorrido: cámara + tarjeta activa + cartel de pared activo --- */
-let idx=0, t0=performance.now(), DWELL=7000;
+/* --- recorrido del guardián + tarjeta activa --- */
+let idx=0, t0=performance.now(), last=performance.now(), DWELL=7000;
 function marcarActiva(){
  const e=EMP[idx];
  document.querySelectorAll('.card').forEach(c=>c.classList.toggle('active',c.dataset.k===e.k));
- document.querySelectorAll('#scene .wall').forEach(w=>w.classList.toggle('on',w.dataset.k===e.k));
  document.getElementById('supn').textContent=e.nm;
- const bg=document.getElementById('bg'); bg.style.transformOrigin='50% '+e.yo; bg.style.transform='scale(1.05)';
 }
-function tick(now){
+/* mapea coordenadas de la imagen (1600x899, "contain") a la pantalla */
+const sceneEl=document.getElementById('scene'), IMGW=1600, IMGH=899;
+const FLOORY=[225,455,615,850], ELEVX=1165, OFF_L=330, OFF_R=1030;   // y del piso por empresa, x del ascensor
+function mapImg(ix,iy){ const SW=sceneEl.clientWidth, SH=sceneEl.clientHeight, sc=Math.min(SW/IMGW,SH/IMGH);
+ return [ (SW-IMGW*sc)/2+ix*sc, (SH-IMGH*sc)/2+iy*sc ]; }
+let gPhase='patrol', gFrom=0, gX=OFF_L, gY=FLOORY[0], gDir=1;
+function tick(now){ const dt=Math.min(.05,(now-last)/1000); last=now;
  const el=now-t0; document.getElementById('bar').style.width=Math.min(100,el/DWELL*100)+'%';
- if(el>=DWELL){ idx=(idx+1)%EMP.length; t0=now; marcarActiva(); }
+ if(el>=DWELL){ gFrom=idx; idx=(idx+1)%EMP.length; t0=now; marcarActiva(); gPhase='toElev'; }
+ if(gPhase==='toElev'){ gY=FLOORY[gFrom]; gX+=(ELEVX-gX)*Math.min(1,dt*3.4); if(ELEVX-gX<12) gPhase='ride'; }
+ else if(gPhase==='ride'){ gX=ELEVX; gY+=(FLOORY[idx]-gY)*Math.min(1,dt*2.6); if(Math.abs(FLOORY[idx]-gY)<6){ gPhase='patrol'; gDir=-1; } }
+ else { gY=FLOORY[idx]; const rr=(idx===3?900:OFF_R); gX+=gDir*(rr-OFF_L)/5*dt; if(gX<OFF_L){gX=OFF_L;gDir=1;} if(gX>rr){gX=rr;gDir=-1;} }
+ const p=mapImg(gX,gY); document.getElementById('guard').style.transform=`translate(${(p[0]-23).toFixed(1)}px,${(p[1]-62).toFixed(1)}px)`;
  requestAnimationFrame(tick);
 }
 /* --- datos vivos --- */
