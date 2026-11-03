@@ -3,161 +3,209 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Edificio Grupo G · recorrido en vivo</title>
 <style>
- :root{--ink:#10243a;--mut:#5a6b7e;--red:#d1403a}
- *{box-sizing:border-box}
- html,body{margin:0;height:100%;overflow:hidden;background:#0b1626;font-family:"Avenir Next",Helvetica,Arial,sans-serif;color:#fff}
- #stage{position:fixed;inset:0;overflow:hidden}
- /* --- escena: edificio realista con cámara que recorre los pisos --- */
- #scene{position:absolute;left:0;top:0;bottom:0;right:38%;overflow:hidden;background:#0b1626}
- #bg{position:absolute;inset:0;background:#0b1626 center/contain no-repeat;
-     transform-origin:50% 50%;transform:scale(1);
-     transition:transform 2.6s cubic-bezier(.4,0,.2,1),transform-origin 2.6s cubic-bezier(.4,0,.2,1);will-change:transform}
- /* logos como placas fijas en la pared de cada piso */
- .wall{position:absolute;left:4%;z-index:2;display:flex;align-items:center;justify-content:center;
-   background:rgba(255,255,255,.93);border-radius:10px;padding:7px 12px;
-   box-shadow:0 6px 16px rgba(0,0,0,.4),0 0 0 2px rgba(255,255,255,.25) inset;
-   transform:translateY(-50%);transition:opacity .5s,box-shadow .5s;opacity:.95}
- .wall img{display:block;width:auto}
- .wall.on{opacity:1;box-shadow:0 10px 24px rgba(0,0,0,.5),0 0 0 3px var(--ac)}
- #seam{position:absolute;top:0;bottom:0;right:0;width:120px;pointer-events:none;
-   background:linear-gradient(90deg,rgba(9,16,28,0),rgba(9,16,28,.9))}
- /* --- guardián que recorre oficina por oficina --- */
- #guard{position:absolute;left:0;top:0;z-index:5;pointer-events:none;display:flex;flex-direction:column;align-items:center;will-change:transform}
- #guard .av-img{height:54px;width:auto;display:block;filter:drop-shadow(0 4px 5px rgba(0,0,0,.6))}
- #guard .lb{margin-bottom:3px;background:rgba(10,20,28,.9);color:#ffe08a;font-weight:800;font-size:12px;
-   padding:2px 9px;border-radius:9px;white-space:nowrap;box-shadow:0 2px 7px rgba(0,0,0,.45)}
- /* --- panel de reportes (derecha, limpio, fondo sólido) --- */
- #panel{position:absolute;right:0;top:0;bottom:0;width:38%;min-width:380px;z-index:3;
-   background:linear-gradient(180deg,#0e1a2b,#0a1320);box-shadow:-24px 0 60px rgba(0,0,0,.5);
-   display:flex;flex-direction:column;padding:22px 26px}
- #hdr h1{margin:0;font-size:28px;font-weight:800;letter-spacing:.3px}
- #hdr p{margin:4px 0 0;font-size:15px;font-weight:600;color:#9db0c4}
- .chip{display:inline-flex;align-items:center;gap:8px;margin-top:11px;background:rgba(255,255,255,.06);
-   border:1px solid rgba(255,255,255,.16);border-radius:999px;padding:6px 14px;font-size:14px;font-weight:700}
- .chip i{width:10px;height:10px;border-radius:50%;background:#21c776;box-shadow:0 0 0 4px rgba(33,199,118,.22);display:inline-block}
- .chip.load i{background:#f0a93a;box-shadow:0 0 0 4px rgba(240,169,58,.22)}
- #cards{flex:1;display:flex;flex-direction:column;gap:11px;justify-content:center;margin:14px 0}
- .card{position:relative;background:#121f33;border:1px solid rgba(255,255,255,.08);
-   border-left:7px solid var(--ac,#888);border-radius:15px;padding:13px 18px;
-   transition:transform .5s cubic-bezier(.3,0,.2,1),box-shadow .5s,background .5s,opacity .5s;opacity:.72}
- .card .top{display:flex;align-items:center;gap:11px}
- .card .dot{width:15px;height:15px;border-radius:50%;background:var(--ac);flex:0 0 auto;box-shadow:0 0 0 4px rgba(255,255,255,.08)}
- .card .nm{font-size:22px;font-weight:800;letter-spacing:.3px}
- .card .sub{font-size:13px;font-weight:600;color:#8ba0b5;margin-left:auto;text-align:right}
- .card .cnt{font-size:14px;font-weight:700;margin-top:7px;color:#cdd9e6}
- .card .cnt b{color:#fff;font-size:16px}
- .card .cnt .ok{color:#49d98b}
- .card ul{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:5px}
- .card li{font-size:14px;line-height:1.3;background:rgba(255,255,255,.05);border-radius:8px;padding:6px 10px;display:flex;gap:8px;align-items:baseline}
- .card li .who{font-weight:800;color:#fff;flex:0 0 auto}
- .card li .tk{color:#d0dbe6;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
- .card.active{opacity:1;transform:scale(1.03);background:#17273e;box-shadow:0 14px 36px rgba(0,0,0,.5),0 0 0 2px var(--ac)}
- .card .need{margin-top:9px;display:none;font-size:15px;font-weight:700;border-radius:10px;padding:9px 12px;line-height:1.35}
- .card.active .need{display:block}
- .need.go{background:rgba(209,64,58,.16);border:1px solid rgba(209,64,58,.5);color:#ffd7d4}
- .need.ok{background:rgba(33,199,118,.12);border:1px solid rgba(33,199,118,.42);color:#c8f6dd}
- .need .lbl{display:block;font-size:11px;letter-spacing:.8px;text-transform:uppercase;opacity:.85;margin-bottom:3px}
- .need b{color:#fff}
- #foot{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);
-   border-radius:13px;padding:11px 15px;position:relative;overflow:hidden}
- #foot .eye{font-size:20px}
- #foot .txt{font-size:18px;font-weight:800}
- #foot .txt b{color:#ffd14d}
- #bar{position:absolute;left:0;bottom:0;height:4px;width:0;background:#ffd14d;transition:width .25s linear}
- @media (max-width:900px){ #scene{right:0;bottom:46%} #panel{width:100%;top:54%;min-width:0} }
+ *{box-sizing:border-box;margin:0;padding:0}
+ html,body{height:100%;overflow:hidden;background:#05070d;
+   font-family:"Avenir Next",Helvetica,Arial,sans-serif;color:#fff}
+ #stage{position:fixed;inset:0;overflow:hidden;background:#05070d}
+ /* --- mundo (imagen + logos) que la cámara recorre --- */
+ #world{position:absolute;transform-origin:0 0;will-change:transform;
+   transition:transform 2.3s cubic-bezier(.45,.05,.2,1)}
+ #bg{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;display:block}
+ /* logos NÍTIDOS pegados a la pared de cada piso (se mueven/zoomean con la cámara) */
+ .logoW{position:absolute;transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;
+   filter:drop-shadow(0 3px 7px rgba(0,0,0,.55));opacity:.42;transition:opacity .9s}
+ .logoW img{height:100%;width:auto;display:block}
+ .logoW.on{opacity:1}
+ /* --- marco cinematográfico --- */
+ #vig{position:absolute;inset:0;pointer-events:none;z-index:4;
+   box-shadow:inset 0 0 220px 40px rgba(0,0,0,.72);
+   background:radial-gradient(130% 90% at 50% 46%,rgba(0,0,0,0) 55%,rgba(0,0,0,.55) 100%)}
+ .bar{position:absolute;left:0;right:0;height:7.5%;background:#05070d;z-index:6;pointer-events:none}
+ .bar.top{top:0}.bar.bot{bottom:0}
+ /* --- chip EN VIVO --- */
+ #live{position:absolute;top:3.2%;left:2.4%;z-index:8;display:flex;align-items:center;gap:10px;
+   background:rgba(8,14,24,.72);border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(6px);
+   border-radius:999px;padding:8px 16px;font-weight:800;font-size:15px;letter-spacing:.4px}
+ #live .d{width:11px;height:11px;border-radius:50%;background:#ff4d4d;box-shadow:0 0 0 4px rgba(255,77,77,.25);
+   animation:pulse 1.4s infinite}
+ #live.load .d{background:#f0a93a;box-shadow:0 0 0 4px rgba(240,169,58,.25)}
+ #live small{font-weight:700;color:#9fb2c6;font-size:13px;letter-spacing:.3px}
+ @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+ /* --- título de piso (placa legible, abajo-izquierda) --- */
+ #title{position:absolute;left:2.4%;bottom:10%;z-index:8;display:flex;align-items:center;gap:16px;
+   background:linear-gradient(135deg,rgba(255,255,255,.97),rgba(243,246,250,.94));
+   border-radius:16px;padding:14px 22px 14px 18px;box-shadow:0 16px 40px rgba(0,0,0,.5);
+   border-left:8px solid var(--ac,#888);max-width:52%;
+   opacity:0;transform:translateY(14px);transition:opacity .7s,transform .7s}
+ #title.show{opacity:1;transform:none}
+ #title .lg{height:46px;display:flex;align-items:center}
+ #title .lg img{height:100%;width:auto;display:block}
+ #title .tx .nm{font-size:30px;font-weight:900;letter-spacing:.3px;color:var(--ac,#10243a);line-height:1}
+ #title .tx .sb{font-size:16px;font-weight:700;color:#5a6b7e;margin-top:4px}
+ /* --- globo de diálogo del compañero (arriba del centro) --- */
+ #bubble{position:absolute;left:50%;top:21%;z-index:9;transform:translateX(-50%);
+   min-width:320px;max-width:62%;opacity:0;transition:opacity .55s,transform .55s}
+ #bubble.show{opacity:1}
+ #bubble .box{position:relative;background:linear-gradient(180deg,#152536,#0d1826);
+   border:1.5px solid var(--ac,#5aa0ff);border-radius:18px;padding:15px 20px;
+   box-shadow:0 20px 50px rgba(0,0,0,.6)}
+ #bubble .who{display:inline-flex;align-items:center;gap:9px;font-size:16px;font-weight:900;
+   color:#fff;letter-spacing:.3px;margin-bottom:6px}
+ #bubble .who i{width:12px;height:12px;border-radius:50%;background:var(--ac,#5aa0ff);
+   box-shadow:0 0 0 4px rgba(255,255,255,.1)}
+ #bubble .who .rol{font-size:12px;font-weight:700;color:#8ba0b5;letter-spacing:.5px}
+ #bubble .line{font-size:21px;font-weight:800;line-height:1.3;color:#eaf2fb}
+ #bubble .line b{color:#ffd14d}
+ #bubble .line.ok b{color:#5ff0a8}
+ #bubble .more{margin-top:6px;font-size:14px;font-weight:700;color:#8ba0b5}
+ #bubble .tail{position:absolute;left:50%;bottom:-13px;width:26px;height:14px;transform:translateX(-50%);
+   overflow:hidden}
+ #bubble .tail:after{content:"";position:absolute;left:50%;top:-14px;width:18px;height:18px;
+   transform:translateX(-50%) rotate(45deg);background:#0d1826;border-right:1.5px solid var(--ac,#5aa0ff);
+   border-bottom:1.5px solid var(--ac,#5aa0ff)}
+ /* --- progreso del recorrido --- */
+ #prog{position:absolute;left:0;bottom:0;height:4px;width:0;background:var(--ac,#ffd14d);z-index:10;
+   transition:width .3s linear,background .6s}
 </style></head><body>
 <div id="stage">
- <div id="scene"><div id="bg"></div><div id="seam"></div><div id="guard"><div class="lb">Auditor</div><img class="av-img" src="auditor.png" alt="Auditor"></div></div>
- <div id="panel">
-   <div id="hdr">
-     <h1>Edificio Grupo G</h1>
-     <p>El auditor recorre cada oficina, revisa y reporta todo en vivo</p>
-     <span class="chip load" id="chip"><i></i><span id="chipt">Conectando con el equipo…</span></span>
-   </div>
-   <div id="cards"></div>
-   <div id="foot"><span class="eye">🕵️</span><span class="txt">Auditor revisando: <b id="supn">—</b></span><div id="bar"></div></div>
+ <div id="world">
+   <img id="bg" alt="">
+   <div class="logoW" data-k="gg"><img src="l_gg.png" alt="Grupo G"></div>
+   <div class="logoW" data-k="vg"><img src="l_vg.png" alt="VG Asociados"></div>
+   <div class="logoW" data-k="ai"><img src="l_ai.png" alt="AIMA"></div>
+   <div class="logoW" data-k="dg"><img src="l_dg.png" alt="Doble G"></div>
  </div>
+ <div class="bar top"></div><div class="bar bot"></div>
+ <div id="vig"></div>
+ <div id="live" class="load"><span class="d"></span><span id="livet">CONECTANDO</span><small id="lives">buscando al equipo…</small></div>
+ <div id="title"><div class="lg"><img id="titlg" alt=""></div><div class="tx"><div class="nm" id="titnm"></div><div class="sb" id="titsb"></div></div></div>
+ <div id="bubble"><div class="box"><div class="who"><i></i><span id="bwho"></span><span class="rol" id="brol"></span></div><div class="line" id="bline"></div><div class="more" id="bmore"></div><div class="tail"></div></div></div>
+ <div id="prog"></div>
 </div>
 <script>
 const ESTADO_URL="https://script.google.com/macros/s/AKfycbxVYNdaEsXvCgrwZFtyPhkeWkQUXF0HpOSqlr7x-Ap_BfDtA09lG4uN2FoJ8sHmnjkj/exec";
-const BGIMG="edificio_fondo.jpg?v=15";
-/* empresas, de arriba (último piso) hacia abajo. 'wy' = alto del cartel en la pared */
-const EMP=[
- {k:'gg', nm:'GRUPO G',      sub:'Dirección',                    ac:'#c9a24a', yo:'16%', logo:'logo_gg.png', wy:46},
- {k:'vg', nm:'VG ASOCIADOS', sub:'Contabilidad y administración',ac:'#8b5cf6', yo:'40%', logo:'logo_vg.png', wy:30},
- {k:'ai', nm:'AIMA',         sub:'Comunidad de inversores',      ac:'#d14fb0', yo:'62%', logo:'logo_ai.png', wy:28},
- {k:'dg', nm:'DOBLE G',      sub:'Consultoría y fondos',         ac:'#7c4fd0', yo:'82%', logo:'logo_dg.png', wy:26}
+const BGIMG="edificio_base.jpg?v=16";
+const IMGW=1600, IMGH=899;
+/* --- empresas por piso (y de pared para el logo, color, datos) --- */
+const FLOORS={
+ gg:{ac:'#c9a24a',nm:'GRUPO G',sub:'Dirección',logo:'l_gg.png',       wx:600,wy:72, wh:78},
+ vg:{ac:'#8b5cf6',nm:'VG ASOCIADOS',sub:'Contabilidad y administración',logo:'l_vg.png',wx:600,wy:272,wh:40},
+ ai:{ac:'#d14fb0',nm:'AIMA',sub:'Comunidad de inversores',logo:'l_ai.png',wx:600,wy:476,wh:42},
+ dg:{ac:'#7c4fd0',nm:'DOBLE G',sub:'Consultoría y fondos',logo:'l_dg.png', wx:430,wy:668,wh:40}
+};
+/* --- el GUION de la película: cámara que entra piso por piso y habla con cada uno --- */
+const TOUR=[
+ {k:null,fx:800,fy:440,z:1.00,dur:3400,est:true},
+ {k:'gg',fx:560,fy:180,z:1.85,dur:4200,sp:'ggDir'},
+ {k:'vg',fx:360,fy:392,z:2.00,dur:3900,sp:'Ledy'},
+ {k:'vg',fx:650,fy:392,z:2.00,dur:3900,sp:'Nahobi'},
+ {k:'vg',fx:890,fy:392,z:2.00,dur:3900,sp:'Gabi'},
+ {k:'ai',fx:430,fy:566,z:2.00,dur:3900,sp:'GabiAima'},
+ {k:'ai',fx:730,fy:566,z:2.00,dur:3900,sp:'AimaMas'},
+ {k:'dg',fx:360,fy:735,z:2.05,dur:4200,sp:'DobleG'}
 ];
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 function isAima(t){return /aima|asamblea\s*aima|\bsocio/i.test(t);}
 let TEAM=null;
-/* --- carteles de pared (dentro de #bg, se mueven con la cámara) --- */
-function pintarParedes(){
- const sc=document.getElementById('scene');
- sc.querySelectorAll('.wall').forEach(w=>w.remove());
- EMP.forEach(e=>{
-  const d=document.createElement('div'); d.className='wall'; d.dataset.k=e.k;
-  d.style.top=e.yo; d.style.setProperty('--ac',e.ac);
-  d.innerHTML=`<img src="${e.logo}" alt="${esc(e.nm)}" style="height:${e.wy}px">`;
-  sc.appendChild(d);
+/* --- reparte las tareas vivas por persona --- */
+function pers(){
+ const T=TEAM||{};
+ const gabi=(T.gabi||[]);
+ return {
+  Ledy:  {who:'Ledy',  rol:'Directora Contable',  tasks:(T.ledy||[])},
+  Nahobi:{who:'Nahobi',rol:'Contadora Junior',    tasks:(T.nahobi||[])},
+  Gabi:  {who:'Gabi',  rol:'Ejecutiva de Cuentas',tasks:gabi.filter(t=>!isAima(t))},
+  GabiAima:{who:'Gabi',rol:'AIMA',                tasks:gabi.filter(t=>isAima(t))}
+ };
+}
+/* --- texto del globo según el compañero del plano --- */
+function speaker(sp){
+ const P=pers();
+ const totalAll=()=>{const p=pers();return p.Ledy.tasks.length+p.Nahobi.tasks.length+p.Gabi.tasks.length+p.GabiAima.tasks.length;};
+ if(sp==='ggDir'){
+   if(!TEAM) return {who:'Dirección',rol:'Grupo G',line:'Conectando con el equipo…',ok:false,more:''};
+   const n=totalAll();
+   return n ? {who:'Dirección',rol:'Grupo G',line:`El equipo tiene <b>${n}</b> pendiente${n!=1?'s':''}. Te muestro cuáles y de quién.`,ok:false,more:'Recorrido en vivo ↓'}
+            : {who:'Dirección',rol:'Grupo G',line:'Todo al día en las tres empresas.',ok:true,more:''};
+ }
+ if(sp==='AimaMas'){
+   const t=P.GabiAima.tasks;
+   if(!TEAM) return {who:'AIMA',rol:'Comunidad',line:'Conectando…',ok:false,more:''};
+   return t.length>1 ? {who:'Gabi',rol:'AIMA',line:`También → <b>${esc(t[1])}</b>`,ok:false,more:t.length>2?`(+${t.length-2} más)`:''}
+                     : {who:'AIMA',rol:'Comunidad de inversores',line:'Comunidad al día ✓',ok:true,more:''};
+ }
+ if(sp==='DobleG'){
+   return {who:'Doble G',rol:'Consultoría y fondos',line:'Acompañando a los clientes y al Fondo Doble G.',ok:true,more:''};
+ }
+ const p=P[sp]||{who:sp,rol:'',tasks:[]};
+ if(!TEAM) return {who:p.who,rol:p.rol,line:'Cargando…',ok:false,more:''};
+ const t=p.tasks;
+ if(t.length) return {who:p.who,rol:p.rol,line:`Te necesita para → <b>${esc(t[0])}</b>`,ok:false,more:t.length>1?`(+${t.length-1} pendiente${t.length-1!=1?'s':''} más)`:''};
+ return {who:p.who,rol:p.rol,line:'Todo al día ✓',ok:true,more:''};
+}
+/* --- layout del mundo (contain) + posición de logos de pared --- */
+const stage=document.getElementById('stage'), world=document.getElementById('world');
+let VW,VH,base,w0,h0,left0,top0;
+function layout(){
+ VW=stage.clientWidth; VH=stage.clientHeight;
+ base=Math.min(VW/IMGW, VH/IMGH);
+ w0=IMGW*base; h0=IMGH*base; left0=(VW-w0)/2; top0=(VH-h0)/2;
+ world.style.width=w0+'px'; world.style.height=h0+'px'; world.style.left=left0+'px'; world.style.top=top0+'px';
+ document.querySelectorAll('.logoW').forEach(el=>{
+   const f=FLOORS[el.dataset.k];
+   el.style.left=(f.wx/IMGW*100)+'%'; el.style.top=(f.wy/IMGH*100)+'%'; el.style.height=(f.wh/IMGH*100)+'%';
  });
+ applyShot(false);
 }
-/* --- reparte tareas vivas por empresa --- */
-function porEmpresa(){
- const vg=[],ai=[],dg=[]; const T=TEAM||{};
- (T.nahobi||[]).forEach(t=>vg.push(['Nahobi',t]));
- (T.ledy||[]).forEach(t=>vg.push(['Ledy',t]));
- (T.gabi||[]).forEach(t=>(isAima(t)?ai:vg).push(['Gabi',t]));
- const total=vg.length+ai.length+dg.length;
- return {gg:{list:[],total}, vg:{list:vg}, ai:{list:ai}, dg:{list:dg}};
+/* --- aplica el plano actual (mueve la cámara) --- */
+let idx=0;
+function applyShot(animate){
+ const s=TOUR[idx];
+ if(!animate) world.style.transition='none'; else world.style.transition='';
+ const Tx=VW/2-left0-s.fx*base*s.z, Ty=VH/2-top0-s.fy*base*s.z;
+ world.style.transform=`translate(${Tx.toFixed(1)}px,${Ty.toFixed(1)}px) scale(${s.z})`;
+ if(!animate){ void world.offsetWidth; world.style.transition=''; }
 }
-/* --- tarjetas de reporte (limpias, con puntito + nombre, sin logo) --- */
-function pintar(){
- const data=porEmpresa(), cont=document.getElementById('cards');
- cont.innerHTML=EMP.map(e=>{
-  const d=data[e.k]||{list:[]}, list=d.list||[], n=list.length;
-  let cnt, need;
-  if(e.k==='gg'){
-   const tt=data.gg.total;
-   cnt = TEAM ? `El equipo tiene <b>${tt}</b> tarea${tt!==1?'s':''} pendiente${tt!==1?'s':''} en todas las empresas.` : `Cargando las tareas del equipo…`;
-   need = tt ? `<div class="need go"><span class="lbl">Resumen para usted</span><b>${tt}</b> pendientes en total · el recorrido muestra cuáles y de quién.</div>`
-             : `<div class="need ok"><span class="lbl">Resumen para usted</span>Todo al día ✓</div>`;
-  } else {
-   cnt = !TEAM ? `Cargando tareas…` : n ? `<b>${n}</b> tarea${n!==1?'s':''} pendiente${n!==1?'s':''}.` : `<span class="ok">Al día ✓ — sin pendientes.</span>`;
-   if(n){ const [who,tk]=list[0];
-    need=`<div class="need go"><span class="lbl">⚠ Te necesita acá</span><b>${esc(who)}</b> → ${esc(tk)}${n>1?` <span style="opacity:.75">(+${n-1} más)</span>`:''}</div>`;
-   } else { need=`<div class="need ok"><span class="lbl">Estado</span>Nadie espera su decisión acá por ahora.</div>`; }
-  }
-  const lis = e.k!=='gg' ? `<ul>${list.slice(0,3).map(([who,tk])=>`<li><span class="who">${esc(who)}</span><span class="tk">${esc(tk)}</span></li>`).join('')}</ul>` : '';
-  return `<div class="card" data-k="${e.k}" style="--ac:${e.ac}">
-    <div class="top"><span class="dot"></span><span class="nm">${e.nm}</span><span class="sub">${e.sub}</span></div>
-    <div class="cnt">${cnt}</div>${lis}${need}</div>`;
- }).join('');
- marcarActiva();
+/* --- pinta títulos / globo del plano actual --- */
+function paintShot(){
+ const s=TOUR[idx];
+ document.querySelectorAll('.logoW').forEach(el=>el.classList.toggle('on',el.dataset.k===s.k));
+ const title=document.getElementById('bubble'), tt=document.getElementById('title');
+ // título de piso
+ if(s.k){
+   const f=FLOORS[s.k]; tt.style.setProperty('--ac',f.ac);
+   document.getElementById('titlg').src=f.logo;
+   document.getElementById('titnm').textContent=f.nm;
+   document.getElementById('titsb').textContent=f.sub;
+   tt.classList.add('show');
+ } else { tt.classList.remove('show'); }
+ // globo
+ const bub=document.getElementById('bubble');
+ if(s.sp){
+   const d=speaker(s.sp), ac=(FLOORS[s.k]||{}).ac||'#5aa0ff';
+   bub.style.setProperty('--ac',ac);
+   document.getElementById('bwho').textContent=d.who;
+   document.getElementById('brol').textContent=d.rol?('· '+d.rol):'';
+   const ln=document.getElementById('bline'); ln.innerHTML=d.line; ln.className='line'+(d.ok?' ok':'');
+   document.getElementById('bmore').textContent=d.more||'';
+   bub.classList.add('show');
+ } else { bub.classList.remove('show'); }
 }
-/* --- recorrido del guardián + tarjeta activa --- */
-let idx=0, t0=performance.now(), last=performance.now(), DWELL=7000;
-function marcarActiva(){
- const e=EMP[idx];
- document.querySelectorAll('.card').forEach(c=>c.classList.toggle('active',c.dataset.k===e.k));
- document.getElementById('supn').textContent=e.nm;
-}
-/* mapea coordenadas de la imagen (1600x899, "contain") a la pantalla */
-const sceneEl=document.getElementById('scene'), IMGW=1600, IMGH=899;
-const FLOORY=[155,360,565,820], ELEVX=1135, OFF_L=260, OFF_R=1010;   // y REAL del piso por empresa, x del ascensor
-function mapImg(ix,iy){ const SW=sceneEl.clientWidth, SH=sceneEl.clientHeight, sc=Math.min(SW/IMGW,SH/IMGH);
- return [ (SW-IMGW*sc)/2+ix*sc, (SH-IMGH*sc)/2+iy*sc ]; }
-let gPhase='patrol', gFrom=0, gX=OFF_L, gY=FLOORY[0], gDir=1;
-function tick(now){ const dt=Math.min(.05,(now-last)/1000); last=now;
- const el=now-t0; document.getElementById('bar').style.width=Math.min(100,el/DWELL*100)+'%';
- if(el>=DWELL){ gFrom=idx; idx=(idx+1)%EMP.length; t0=now; marcarActiva(); gPhase='toElev'; }
- if(gPhase==='toElev'){ gY=FLOORY[gFrom]; gX+=(ELEVX-gX)*Math.min(1,dt*3.4); if(ELEVX-gX<12) gPhase='ride'; }
- else if(gPhase==='ride'){ gX=ELEVX; gY+=(FLOORY[idx]-gY)*Math.min(1,dt*2.6); if(Math.abs(FLOORY[idx]-gY)<6){ gPhase='patrol'; gDir=-1; } }
- else { gY=FLOORY[idx]; const rr=(idx===3?700:OFF_R); gX+=gDir*(rr-OFF_L)/5*dt; if(gX<OFF_L){gX=OFF_L;gDir=1;} if(gX>rr){gX=rr;gDir=-1;} }
- const p=mapImg(gX,gY); const G=document.getElementById('guard');
- G.style.transform=`translate(${(p[0]-30).toFixed(1)}px,${(p[1]-40).toFixed(1)}px)`;
- const im=G.querySelector('.av-img'); if(im) im.style.transform='scaleX('+(gDir>=0?1:-1)+')';
- requestAnimationFrame(tick);
+/* --- motor del recorrido --- */
+let t0=performance.now();
+function loop(now){
+ const s=TOUR[idx], el=now-t0;
+ document.getElementById('prog').style.width=Math.min(100,el/s.dur*100)+'%';
+ if(el>=s.dur){
+   // ocultar overlays, avanzar, mover cámara, repintar al asentarse
+   document.getElementById('bubble').classList.remove('show');
+   document.getElementById('title').classList.remove('show');
+   idx=(idx+1)%TOUR.length; t0=now;
+   const f=FLOORS[TOUR[idx].k]; document.getElementById('prog').style.background=(f&&f.ac)||'#ffd14d';
+   applyShot(true);
+   setTimeout(paintShot, 650);
+ }
+ requestAnimationFrame(loop);
 }
 /* --- datos vivos --- */
 async function cargar(){
@@ -166,17 +214,21 @@ async function cargar(){
   const j=await (await fetch(ESTADO_URL+"?t="+Date.now(),{signal:c.signal})).json();
   const pend=o=>((o&&o.tareas)||[]).filter(t=>t&&t.pendiente).map(t=>String(t.tarea||"").trim()).filter(Boolean);
   TEAM={ledy:pend(j.tareasPendLedy),nahobi:pend(j.tareasPendMaga),gabi:pend(j.rodyTareasPend)};
-  const chip=document.getElementById('chip'); chip.classList.remove('load');
-  document.getElementById('chipt').innerHTML='<b>EN VIVO</b> · tareas del equipo';
-  pintar();
- }catch(e){ document.getElementById('chipt').textContent='Sin conexión — reintentando…'; }
+  const lv=document.getElementById('live'); lv.classList.remove('load');
+  document.getElementById('livet').textContent='EN VIVO';
+  document.getElementById('lives').textContent='tareas del equipo';
+  paintShot();
+ }catch(e){ document.getElementById('lives').textContent='sin conexión — reintentando…'; }
 }
 /* --- arranque --- */
-const img=new Image();
-img.onload=()=>{document.getElementById('bg').style.backgroundImage=`url('${BGIMG}')`;};
-img.onerror=()=>{document.getElementById('bg').style.background='linear-gradient(160deg,#14365c,#0b1626)';};
-img.src=BGIMG;
-pintar(); cargar(); setInterval(cargar,60000);
-requestAnimationFrame(tick);
+function start(){
+ layout(); paintShot(); requestAnimationFrame(loop);
+ cargar(); setInterval(cargar,60000);
+}
+const im=new Image();
+im.onload=()=>{ document.getElementById('bg').src=BGIMG; start(); };
+im.onerror=()=>{ document.getElementById('stage').style.background='linear-gradient(160deg,#14365c,#0b1626)'; start(); };
+im.src=BGIMG;
+window.addEventListener('resize',layout);
 setTimeout(()=>location.reload(),6*60*60*1000);
 </script></body></html>
