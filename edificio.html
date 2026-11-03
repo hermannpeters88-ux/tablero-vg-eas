@@ -30,8 +30,10 @@
    border:1px solid rgba(255,255,255,.14);border-left:7px solid var(--ac,#888);border-radius:18px;
    padding:15px 20px;box-shadow:0 12px 34px rgba(0,0,0,.4);
    transition:transform .5s cubic-bezier(.3,0,.2,1),box-shadow .5s,background .5s,opacity .5s;opacity:.82}
- .card .top{display:flex;align-items:center;gap:12px}
- .card .dot{width:16px;height:16px;border-radius:50%;background:var(--ac);flex:0 0 auto;box-shadow:0 0 0 4px rgba(255,255,255,.1)}
+ .card .top{display:flex;align-items:center;gap:13px}
+ .card .plate{background:#fff;border-radius:12px;padding:8px 14px;display:flex;align-items:center;
+   box-shadow:0 3px 10px rgba(0,0,0,.28);flex:0 0 auto}
+ .card .plate img{display:block;width:auto}
  .card .nm{font-size:25px;font-weight:800;letter-spacing:.3px}
  .card .sub{font-size:14px;font-weight:600;color:#aebccb;margin-left:auto;text-align:right}
  .card .cnt{font-size:15px;font-weight:700;margin-top:9px;color:#cdd9e6}
@@ -78,10 +80,10 @@ const ESTADO_URL="https://script.google.com/macros/s/AKfycbxVYNdaEsXvCgrwZFtyPhk
 const BGIMG="edificio_fondo.jpg";
 /* empresas, de arriba (último piso) hacia abajo */
 const EMP=[
- {k:'gg', nm:'GRUPO G',      sub:'Dirección',                    ac:'#c9a24a', yo:'18%'},
- {k:'vg', nm:'VG ASOCIADOS', sub:'Contabilidad y administración',ac:'#8b5cf6', yo:'42%'},
- {k:'ai', nm:'AIMA',         sub:'Comunidad de inversores',      ac:'#d14fb0', yo:'62%'},
- {k:'dg', nm:'DOBLE G',      sub:'Consultoría y fondos',         ac:'#7c4fd0', yo:'82%'}
+ {k:'gg', nm:'GRUPO G',      sub:'Dirección',                    ac:'#c9a24a', yo:'18%', logo:'logo_gg.png', lh:58},
+ {k:'vg', nm:'VG ASOCIADOS', sub:'Contabilidad y administración',ac:'#8b5cf6', yo:'42%', logo:'logo_vg.png', lh:40},
+ {k:'ai', nm:'AIMA',         sub:'Comunidad de inversores',      ac:'#d14fb0', yo:'62%', logo:'logo_ai.png', lh:38},
+ {k:'dg', nm:'DOBLE G',      sub:'Consultoría y fondos',         ac:'#7c4fd0', yo:'82%', logo:'logo_dg.png', lh:34}
 ];
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 function isAima(t){return /aima|asamblea\s*aima|\bsocio/i.test(t);}
@@ -119,7 +121,7 @@ function pintar(){
   }
   const lis = e.k!=='gg' ? `<ul>${list.slice(0,3).map(([who,tk])=>`<li><span class="who">${esc(who)}</span><span class="tk">${esc(tk)}</span></li>`).join('')}</ul>` : '';
   return `<div class="card" data-k="${e.k}" style="--ac:${e.ac}">
-    <div class="top"><span class="dot"></span><span class="nm">${e.nm}</span><span class="sub">${e.sub}</span></div>
+    <div class="top"><span class="plate"><img src="${e.logo}" alt="${esc(e.nm)}" style="height:${e.lh}px"></span><span class="sub">${e.sub}</span></div>
     <div class="cnt">${cnt}</div>${lis}${need}</div>`;
  }).join('');
  marcarActiva();
