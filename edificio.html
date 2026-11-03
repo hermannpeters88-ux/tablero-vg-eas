@@ -43,9 +43,40 @@ function wallText(txt,x,yFix,z,size,col,bold){const q=P(x,yFix,z);ctx.save();
  ctx.setTransform(DPR*S*.5,DPR*S*.25,0,DPR*S*.52,DPR*q[0],DPR*q[1]);ctx.scale(1/40,1/40);
  ctx.font=`${bold||800} ${size*40}px "Avenir Next",Helvetica,Arial,sans-serif`;ctx.fillStyle=col;ctx.textBaseline="alphabetic";ctx.fillText(txt,0,0);ctx.restore();}
 const SKIN=["#f1c9a0","#e0ac80","#c68b5e","#fadcbc"],SHIRT=["#4caf6a","#e86f9a","#f08a3c","#3d8fe0","#8a5ad0","#e6b422","#2fb5a4","#d9453d"];
-function persona(x,y,z,shirt,skin,sit){shadow(x,y,z,.3);
- if(sit){box(x-.12,y-.12,z+.28,.24,.24,.1,"#2b3350");}else{box(x-.11,y-.11,z,.22,.22,.12,"#2b3350");}
- box(x-.12,y-.12,z+(sit?.36:.12),.24,.24,.36,shirt);box(x-.14,y-.14,z+(sit?.72:.48),.28,.28,.3,C(skin));}
+// --- minifigura LEGO (dibujada de frente, estilo juguete) ---
+const LEGS_C=["#6b4423","#2b3350","#3a3a40","#8a2f2f","#245a3a","#555"],HAIR_C=["#15151c","#3a2a1c","#7a4a2a","#c9a14a","#2a2a38"];
+function legoMinifig(cx,cy,H,o){o=o||{};
+ const shirt=o.shirt||"#3d8fe0",legs=o.legs||"#6b4423",skin=o.skin||"#f4c842",hair=o.hair||"#15151c",st="rgba(35,28,20,.55)";
+ const lw=Math.max(1,H*0.013);
+ function rr(x,y,w,h,r,fill,noStroke){ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fillStyle=fill;ctx.fill();if(!noStroke){ctx.lineWidth=lw;ctx.strokeStyle=st;ctx.stroke();}}
+ ctx.save();ctx.fillStyle="rgba(10,20,30,.16)";ctx.beginPath();ctx.ellipse(cx,cy,H*0.25,H*0.08,0,0,7);ctx.fill();ctx.restore();
+ const legH=H*0.40,legW=H*0.185,torH=H*0.30,torWb=H*0.5,torWt=H*0.4,headW=H*0.36,headH=H*0.23,hairH=H*0.15;
+ const topLegs=cy-legH, torTop=topLegs-torH, headTop=torTop-headH;
+ // piernas
+ rr(cx-legW-H*0.015,topLegs,legW,legH,H*0.03,legs);rr(cx+H*0.015,topLegs,legW,legH,H*0.03,legs);
+ rr(cx-torWb/2,topLegs-H*0.05,torWb,H*0.08,H*0.02,"#2b2b30");
+ // brazos (atrás del torso)
+ rr(cx-torWb/2-H*0.085,torTop+H*0.03,H*0.11,torH*0.78,H*0.05,shirt);rr(cx+torWb/2-H*0.025,torTop+H*0.03,H*0.11,torH*0.78,H*0.05,shirt);
+ rr(cx-torWb/2-H*0.08,torTop+torH*0.72,H*0.1,H*0.1,H*0.045,skin);rr(cx+torWb/2-H*0.02,torTop+torH*0.72,H*0.1,H*0.1,H*0.045,skin);
+ // torso (trapecio)
+ ctx.beginPath();ctx.moveTo(cx-torWt/2,torTop);ctx.lineTo(cx+torWt/2,torTop);ctx.lineTo(cx+torWb/2,topLegs-H*0.01);ctx.lineTo(cx-torWb/2,topLegs-H*0.01);ctx.closePath();
+ ctx.fillStyle=shirt;ctx.fill();ctx.lineWidth=lw;ctx.strokeStyle=st;ctx.stroke();
+ // collar
+ ctx.fillStyle="rgba(255,255,255,.9)";ctx.beginPath();ctx.moveTo(cx-torWt*0.3,torTop+H*0.005);ctx.lineTo(cx+torWt*0.3,torTop+H*0.005);ctx.lineTo(cx,torTop+H*0.085);ctx.closePath();ctx.fill();
+ if(o.tie){ctx.fillStyle=o.tie===true?"#c0392b":o.tie;ctx.beginPath();ctx.moveTo(cx,torTop+H*0.03);ctx.lineTo(cx-H*0.028,torTop+H*0.07);ctx.lineTo(cx-H*0.02,topLegs-H*0.04);ctx.lineTo(cx+H*0.02,topLegs-H*0.04);ctx.lineTo(cx+H*0.028,torTop+H*0.07);ctx.closePath();ctx.fill();}
+ // cabeza
+ rr(cx-headW/2,headTop,headW,headH,headW*0.44,skin);
+ // cara
+ ctx.fillStyle="#2a1d12";ctx.beginPath();ctx.arc(cx-headW*0.18,headTop+headH*0.4,H*0.021,0,7);ctx.fill();ctx.beginPath();ctx.arc(cx+headW*0.18,headTop+headH*0.4,H*0.021,0,7);ctx.fill();
+ ctx.lineWidth=Math.max(1,H*0.015);ctx.strokeStyle="#2a1d12";ctx.beginPath();ctx.arc(cx,headTop+headH*0.5,headW*0.22,0.2,Math.PI-0.2);ctx.stroke();
+ if(o.beard){ctx.fillStyle="#241810";ctx.beginPath();ctx.arc(cx,headTop+headH*0.58,headW*0.33,0.05,Math.PI-0.05);ctx.fill();
+  ctx.fillStyle=skin;ctx.beginPath();ctx.arc(cx,headTop+headH*0.5,headW*0.19,0.3,Math.PI-0.3);ctx.fill();}
+ // pelo
+ ctx.fillStyle=hair;ctx.beginPath();ctx.roundRect(cx-headW/2-H*0.012,headTop-hairH*0.45,headW+H*0.024,hairH,[headW*0.5,headW*0.5,H*0.02,H*0.02]);ctx.fill();
+ ctx.beginPath();ctx.moveTo(cx-headW/2-H*0.01,headTop+headH*0.12);ctx.lineTo(cx-headW/2-H*0.03,headTop+headH*0.5);ctx.lineTo(cx-headW/2+H*0.05,headTop+headH*0.22);ctx.closePath();ctx.fill();
+}
+function persona(x,y,z,shirt,skin,sit){const q=P(x,y,z);
+ legoMinifig(q[0],q[1],S*0.92,{shirt:shirt,legs:LEGS_C[((Math.floor(x*3+z*2)%LEGS_C.length)+LEGS_C.length)%LEGS_C.length],skin:"#f4c842",hair:HAIR_C[((Math.floor(x*2+y*3)%HAIR_C.length)+HAIR_C.length)%HAIR_C.length]});}
 function escritorio(x,y,z,n){shadow(x+.55,y+.35,z,.9);box(x,y,z,1.4,0.75,0.52,"#e2d6bf");
  box(x+.4,y+.15,z+0.52,0.66,0.08,0.46,"#2b2f3a");
  poly([P(x+.46,y+.19,z+.56),P(x+1.0,y+.19,z+.56),P(x+1.0,y+.19,z+.96),P(x+.46,y+.19,z+.96)],"#8fd0ef");
