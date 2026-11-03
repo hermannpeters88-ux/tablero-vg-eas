@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Oficinas Grupo G · vista al mar (borrador v3)</title>
+<title>Edificio Grupo G · recorrido del supervisor (v4)</title>
 <style>
  *{box-sizing:border-box;margin:0;padding:0}
  html,body{height:100%;background:#0b2a4a;overflow:hidden;font-family:"Avenir Next","Helvetica Neue",Helvetica,Arial,sans-serif;cursor:none}
@@ -10,23 +10,19 @@
  #hd h1{font:800 30px Georgia,serif;white-space:nowrap}
  #hd .sub{font-size:16px;opacity:.92;font-weight:600}
  #hd .tag{margin-left:auto;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.35);border-radius:20px;padding:5px 14px;font-size:14px;font-weight:700}
- #nm{position:fixed;left:0;right:0;bottom:30px;text-align:center;z-index:5;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.6)}
- #nm b{font:800 46px Georgia,serif;display:block}
- #nm span{font-size:22px;opacity:.95;font-weight:600}
- #dots{position:fixed;left:0;right:0;bottom:12px;text-align:center;z-index:5}
- #dots i{display:inline-block;width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.4);margin:0 5px}
- #dots i.on{background:#fff;transform:scale(1.3)}
+ #nm{position:fixed;left:0;right:0;bottom:26px;text-align:center;z-index:5;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.7)}
+ #nm b{font:800 42px Georgia,serif;display:block}
+ #nm span{font-size:21px;opacity:.95;font-weight:600}
 </style></head><body>
 <canvas id="cv"></canvas>
-<div id="hd"><h1>Grupo G</h1><span class="sub">Oficinas · vista al mar</span><span class="tag">BORRADOR v3 — para el Sr. Hermann</span></div>
+<div id="hd"><h1>Grupo G</h1><span class="sub">El supervisor recorre el edificio · vista al mar</span><span class="tag">BORRADOR v4 — para el Sr. Hermann</span></div>
 <div id="nm"><b id="nmb">—</b><span id="nms"></span></div>
-<div id="dots"></div>
 <script>
 const cv=document.getElementById("cv"),ctx=cv.getContext("2d");
-let CW=0,CH=0,DPR=1,S=60;
-let CAM={ox:0,oy:0}, TGT={ox:0,oy:0};
+let CW=0,CH=0,DPR=1,S=46;
+let CAM={ox:0,oy:0},TGT={ox:0,oy:0},CAMinit=false;
 function resize(){const b=cv.getBoundingClientRect();DPR=Math.min(2,window.devicePixelRatio||1);CW=b.width;CH=b.height;
- cv.width=Math.round(CW*DPR);cv.height=Math.round(CH*DPR);S=Math.min(CW/12.5, CH/8.5);}
+ cv.width=Math.round(CW*DPR);cv.height=Math.round(CH*DPR);S=Math.min(CW/15, CH/8.2);}
 function P(x,y,z){return[CAM.ox+(x-y)*S*0.5, CAM.oy+(x+y)*S*0.25 - z*S*0.5];}
 const _cc={};function C(h){if(_cc[h])return _cc[h];const n=parseInt(h.slice(1),16),r=n>>16,g=n>>8&255,b=n&255;
  const m=(f)=>`rgb(${Math.min(255,r*f|0)},${Math.min(255,g*f|0)},${Math.min(255,b*f|0)})`;return _cc[h]=[m(1),m(.78),m(.6)];}
@@ -42,73 +38,120 @@ function cyl(x,y,z,r,h,col){const c=C(col),q0=P(x,y,z),q1=P(x,y,z+h),rx=.7071*r*
  ctx.fillStyle=c[0];ctx.beginPath();ctx.ellipse(q1[0],q1[1],rx,ry,0,0,7);ctx.fill();ctx.strokeStyle=OUT;ctx.stroke();}
 function ball(x,y,z,r,col){const q=P(x,y,z),R=r*S*.5,c=C(col),g=ctx.createRadialGradient(q[0]-R*.35,q[1]-R*.4,R*.1,q[0],q[1],R);
  g.addColorStop(0,c[0]);g.addColorStop(1,c[2]);ctx.fillStyle=g;ctx.beginPath();ctx.arc(q[0],q[1],R,0,7);ctx.fill();}
-function shadow(x,y,r){const q=P(x,y,0);ctx.fillStyle="rgba(10,20,30,.13)";ctx.beginPath();ctx.ellipse(q[0],q[1],r*S*.6,r*S*.3,0,0,7);ctx.fill();}
+function shadow(x,y,z,r){const q=P(x,y,z||0);ctx.fillStyle="rgba(10,20,30,.16)";ctx.beginPath();ctx.ellipse(q[0],q[1],r*S*.55,r*S*.28,0,0,7);ctx.fill();}
 function wallText(txt,x,yFix,z,size,col,bold){const q=P(x,yFix,z);ctx.save();
  ctx.setTransform(DPR*S*.5,DPR*S*.25,0,DPR*S*.52,DPR*q[0],DPR*q[1]);ctx.scale(1/40,1/40);
  ctx.font=`${bold||800} ${size*40}px "Avenir Next",Helvetica,Arial,sans-serif`;ctx.fillStyle=col;ctx.textBaseline="alphabetic";ctx.fillText(txt,0,0);ctx.restore();}
 const SKIN=["#f1c9a0","#e0ac80","#c68b5e","#fadcbc"],SHIRT=["#4caf6a","#e86f9a","#f08a3c","#3d8fe0","#8a5ad0","#e6b422","#2fb5a4","#d9453d"];
-function persona(x,y,z,shirt,skin){shadow(x,y,.3);box(x-.12,y-.12,z,.24,.24,.12,"#2b3350");box(x-.12,y-.12,z+.12,.24,.24,.4,shirt);box(x-.14,y-.14,z+.52,.28,.28,.3,C(skin));}
-function escritorio(x,y,z,n){shadow(x+.6,y+.4,1.0);box(x,y,z,1.5,0.8,0.55,"#e2d6bf");
- box(x+.42,y+.16,z+0.55,0.72,0.08,0.5,"#2b2f3a");
- poly([P(x+.48,y+.2,z+.6),P(x+1.08,y+.2,z+.6),P(x+1.08,y+.2,z+1.02),P(x+.48,y+.2,z+1.02)],"#8fd0ef");
- box(x+.35,y+.46,z+.55,.65,.24,.05,"#d4c7ad");
- persona(x+.72,y+1.1,z,SHIRT[(n*3)%SHIRT.length],SKIN[n%4]);}
+function persona(x,y,z,shirt,skin,sit){shadow(x,y,z,.3);
+ if(sit){box(x-.12,y-.12,z+.28,.24,.24,.1,"#2b3350");}else{box(x-.11,y-.11,z,.22,.22,.12,"#2b3350");}
+ box(x-.12,y-.12,z+(sit?.36:.12),.24,.24,.36,shirt);box(x-.14,y-.14,z+(sit?.72:.48),.28,.28,.3,C(skin));}
+function escritorio(x,y,z,n){shadow(x+.55,y+.35,z,.9);box(x,y,z,1.4,0.75,0.52,"#e2d6bf");
+ box(x+.4,y+.15,z+0.52,0.66,0.08,0.46,"#2b2f3a");
+ poly([P(x+.46,y+.19,z+.56),P(x+1.0,y+.19,z+.56),P(x+1.0,y+.19,z+.96),P(x+.46,y+.19,z+.96)],"#8fd0ef");
+ persona(x+.68,y+1.0,z,SHIRT[(n*3)%SHIRT.length],SKIN[n%4]);}
+// --- supervisor (personaje con traje + planilla + cartelito) ---
+function supervisor(x,y,z,t){shadow(x,y,z,.36);
+ const bob=Math.abs(Math.sin(t*7))*0.02;
+ box(x-.13,y-.13,z,.26,.26,.14,"#14203a");
+ box(x-.13,y-.13,z+.14+bob,.26,.26,.46,"#243a66");
+ box(x-.06,y-.07,z+.24+bob,.12,.06,.3,"#eef3fb");
+ box(x-.02,y-.09,z+.24+bob,.05,.04,.24,"#c0392b");           // corbata
+ box(x-.15,y-.15,z+.6+bob,.3,.3,.3,C("#e8b98a"));            // cabeza
+ box(x-.16,y-.16,z+.86+bob,.32,.32,.1,"#2a2a35");           // pelo
+ box(x+.16,y-.03,z+.34+bob,.1,.16,.02,"#cdae70");           // planilla
+ // cartelito flotante
+ const q=P(x,y,z+1.5+bob);ctx.save();ctx.font=`800 ${Math.max(13,S*.26)}px "Avenir Next",Helvetica,sans-serif`;
+ const txt="👁 SUPERVISOR",tw=ctx.measureText(txt).width,w=tw+26,h=S*.44;
+ ctx.fillStyle="rgba(20,22,30,.9)";ctx.beginPath();ctx.roundRect(q[0]-w/2,q[1]-h,w,h,9);ctx.fill();
+ ctx.fillStyle="#fff";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(txt,q[0],q[1]-h/2);ctx.textAlign="left";ctx.restore();}
 
-// --- oficinas en FILA horizontal ---
-const OW=8, OD=6, GAP=5, STEP=OW+GAP;  // ancho, prof, separación
-const OFIS=[
- {key:'gg',  n:'GRUPO G',       s:'Dirección y control',                       c:'#1D1D1B'},
- {key:'vg',  n:'VG ASOCIADOS',  s:'Contabilidad · Administración · Asociados',  c:'#4a2064'},
- {key:'aima',n:'AIMA',          s:'Grupos y socios',                            c:'#9b2fae'},
- {key:'dg',  n:'DOBLE G',       s:'Consultoría y fondos',                       c:'#623F98'},
+const FP={x0:0,y0:0,W:9,D:5}, FH=3.0, EX=9.25, EW=1.1, EY=1.7, ED=1.6; // edificio + hueco ascensor
+const PISOS=[
+ {n:'PLANTA BAJA', s:'Cafetería · Cowork',              c:'#7a7366', tipo:'pb'},
+ {n:'DOBLE G',      s:'Consultoría y fondos',            c:'#623F98'},
+ {n:'AIMA',         s:'Grupos y socios',                 c:'#9b2fae'},
+ {n:'VG ASOCIADOS', s:'Contabilidad · Admin. · Asociados',c:'#4a2064'},
+ {n:'GRUPO G',      s:'Dirección y control',             c:'#1D1D1B'},
 ];
-OFIS.forEach((o,i)=>{o.x0=i*STEP; o.y0=0;});
-let idx=0, t0=performance.now();
-const DUR=7000;
+const TOPZ=PISOS.length*FH;
 
-function fondo(){
- let g=ctx.createLinearGradient(0,0,0,CH);
- g.addColorStop(0,"#cfeef8");g.addColorStop(.42,"#9bd6f1");g.addColorStop(.5,"#7cc3e8");
- g.addColorStop(.515,"#2f86bd");g.addColorStop(1,"#0d4a80");
+function fondo(){let g=ctx.createLinearGradient(0,0,0,CH);
+ g.addColorStop(0,"#cfeef8");g.addColorStop(.42,"#9bd6f1");g.addColorStop(.5,"#7cc3e8");g.addColorStop(.515,"#2f86bd");g.addColorStop(1,"#0d4a80");
  ctx.fillStyle=g;ctx.fillRect(0,0,CW,CH);
- let sg=ctx.createRadialGradient(CW*.84,CH*.18,4,CW*.84,CH*.18,CH*.2);
- sg.addColorStop(0,"#fff9db");sg.addColorStop(1,"rgba(255,249,219,0)");ctx.fillStyle=sg;ctx.beginPath();ctx.arc(CW*.84,CH*.18,CH*.2,0,7);ctx.fill();
+ let sg=ctx.createRadialGradient(CW*.85,CH*.16,4,CW*.85,CH*.16,CH*.2);sg.addColorStop(0,"#fff9db");sg.addColorStop(1,"rgba(255,249,219,0)");
+ ctx.fillStyle=sg;ctx.beginPath();ctx.arc(CW*.85,CH*.16,CH*.2,0,7);ctx.fill();
  ctx.strokeStyle="rgba(255,255,255,.4)";const hz=CH*.515;
  for(let k=0;k<7;k++){const yy=hz+(CH-hz)*(k/7);ctx.globalAlpha=.16+.3*(k/7);ctx.lineWidth=1.5;ctx.beginPath();
-  for(let xx=0;xx<=CW;xx+=18){const o=Math.sin(xx*0.016+Date.now()/800+k)*3;ctx.lineTo(xx,yy+o);}ctx.stroke();}
- ctx.globalAlpha=1;
-}
-function oficina(o,activa){
- const {x0,y0}=o, z=0, c=o.c;
- box(x0,y0,z-0.3,OW,OD,0.3,"#eae4d7",{t:activa?"#f6f1e6":"#e9e3d6"});   // piso
- const wallH=2.6;
- box(x0,y0,z,OW,0.2,wallH,c);                                   // pared trasera
- box(x0,y0,z,0.2,OD,wallH,[C(c)[1],C(c)[1],C(c)[2]]);           // pared izquierda
- // ventana al mar en la pared trasera
- poly([P(x0+1.2,y0,z+0.9),P(x0+OW-0.6,y0,z+0.9),P(x0+OW-0.6,y0,z+2.1),P(x0+1.2,y0,z+2.1)],"#bfe6f7","rgba(255,255,255,.5)",2);
- poly([P(x0+(OW+0.6)/2,y0,z+0.9),P(x0+(OW+0.6)/2+0.03,y0,z+0.9),P(x0+(OW+0.6)/2+0.03,y0,z+2.1),P(x0+(OW+0.6)/2,y0,z+2.1)],"rgba(255,255,255,.5)");
- // cartel grande con el nombre
- box(x0+0.2,y0+0.2,z+0.0,OW-0.4,0.14,1.0,c,{t:C(c)[0]});
- wallText(o.n, x0+0.6,y0+0.21,z+0.68,0.78,"#ffffff");
- wallText(o.s, x0+0.6,y0+0.21,z+0.4,0.32,"rgba(255,255,255,.9)");
- // escritorios (2 filas)
- let n=0;for(let j=0;j<2;j++)for(let i=0;i<3;i++){const ex=x0+1.3+i*2.1,ey=y0+2.3+j*1.9;escritorio(ex,ey,z,n+o.key.length);n++;}
-}
-function centrar(i,inst){const o=OFIS[i], cx=o.x0+OW/2, cy=o.y0+OD/2;
- TGT.ox=CW*0.40-(cx-cy)*S*0.5; TGT.oy=CH*0.56-(cx+cy)*S*0.25+1.3*S*0.5;
- if(inst){CAM.ox=TGT.ox;CAM.oy=TGT.oy;}}
-function setDots(){const d=document.getElementById("dots");d.innerHTML=OFIS.map((_,i)=>'<i class="'+(i===idx?'on':'')+'"></i>').join('');}
-function mostrarNombre(){document.getElementById("nmb").textContent=OFIS[idx].n;document.getElementById("nms").textContent=OFIS[idx].s;}
+  for(let xx=0;xx<=CW;xx+=18){const o=Math.sin(xx*0.016+Date.now()/800+k)*3;ctx.lineTo(xx,yy+o);}ctx.stroke();}ctx.globalAlpha=1;}
 
-function frame(now){
- if(now-t0>DUR){idx=(idx+1)%OFIS.length;t0=now;centrar(idx);mostrarNombre();setDots();}
- CAM.ox+=(TGT.ox-CAM.ox)*0.08; CAM.oy+=(TGT.oy-CAM.oy)*0.08;
+function piso(f,i,activo){const z=i*FH,{x0,y0,W,D}=FP,c=f.c,wallH=FH-0.35;
+ ctx.globalAlpha=activo?1:0.82;
+ box(x0,y0,z,W,D,0.28,"#eae4d7",{t:activo?"#f6f1e6":"#e7e1d4"});
+ box(x0,y0,z+0.28,W,0.16,wallH,c);                              // pared trasera
+ box(x0,y0,z+0.28,0.16,D,wallH,[C(c)[1],C(c)[1],C(c)[2]]);      // pared izq
+ poly([P(x0,y0+D,z),P(x0+W,y0+D,z),P(x0+W,y0+D,z+0.28),P(x0,y0+D,z+0.28)],C(c)[2]); // fascia frente
+ // ventana al mar
+ poly([P(x0+1.2,y0,z+0.95),P(x0+W-0.6,y0,z+0.95),P(x0+W-0.6,y0,z+2.0),P(x0+1.2,y0,z+2.0)],"#bfe6f7","rgba(255,255,255,.5)",1.5);
+ // cartel nombre
+ box(x0+0.16,y0+0.16,z+0.28,W-0.3,0.12,0.85,c,{t:C(c)[0]});
+ wallText(f.n,x0+0.5,y0+0.17,z+0.62,0.52,"#ffffff");
+ wallText(f.s,x0+0.5,y0+0.17,z+0.4,0.24,"rgba(255,255,255,.9)");
+ // contenido
+ if(f.tipo==='pb'){[[x0+1.6,y0+2],[x0+1.6,y0+3.4],[x0+3,y0+2.7]].forEach(([mx,my])=>{shadow(mx,my,z,.5);cyl(mx,my,z+.28,0.3,0.5,"#d9cdb8");ball(mx,my,z+1.0,0.85,"#e0584a");});
+  for(let k=0;k<2;k++){const ex=x0+5+k*1.7;box(ex,y0+1.6,z+.28,1.2,0.7,0.45,"#cdbfa6");persona(ex+.55,y0+2.5,z+.28,SHIRT[k+2],SKIN[k%4]);}}
+ else{let n=0;for(let j=0;j<2;j++)for(let k=0;k<3;k++){const ex=x0+1.2+k*2.0,ey=y0+2.2+j*1.5;if(ex>x0+W-1.3)continue;escritorio(ex,ey,z+0.28,n+i);n++;}}
+ ctx.globalAlpha=1;}
+
+function hueco(){ // caja/hueco del ascensor a la derecha, toda la altura
+ box(EX,EY,0,EW,ED,TOPZ,"rgba(210,224,236,0.18)",{t:"rgba(210,224,236,0.28)",l:"rgba(160,185,210,0.22)",r:"rgba(130,160,190,0.22)"});
+ // guías/puertas por piso
+ for(let i=0;i<PISOS.length;i++){const z=i*FH;poly([P(EX,EY,z+0.28),P(EX,EY+ED,z+0.28),P(EX,EY+ED,z+0.3),P(EX,EY,z+0.3)],"#9fb6cc");}}
+function cabina(z){box(EX+0.12,EY+0.12,z+0.28,EW-0.24,ED-0.24,2.3,"#3a4a63",{t:"#4a5c78"});
+ poly([P(EX+0.12,EY+0.12,z+0.5),P(EX+0.12,EY+ED-0.12,z+0.5),P(EX+0.12,EY+ED-0.12,z+1.9),P(EX+0.12,EY+0.12,z+1.9)],"#8fd0ef");}
+
+// ---- recorrido del supervisor ----
+const PATH=[];
+for(let i=0;i<PISOS.length;i++){const z=i*FH;
+ PATH.push({x:8.4,y:2.5,z,hold:.3});
+ PATH.push({x:1.3,y:2.5,z,hold:1.6});     // recorre/supervisa el piso
+ PATH.push({x:8.4,y:2.5,z,hold:.3});
+ if(i<PISOS.length-1){
+  PATH.push({x:9.8,y:2.5,z,hold:.5});       // entra al ascensor
+  PATH.push({x:9.8,y:2.5,z:z+FH,hold:.5});  // sube
+  PATH.push({x:8.4,y:2.5,z:z+FH,hold:.2});  // sale
+ }}
+const tz=(PISOS.length-1)*FH;
+PATH.push({x:9.8,y:2.5,z:tz,hold:.5});PATH.push({x:9.8,y:2.5,z:0,hold:.5});PATH.push({x:8.4,y:2.5,z:0,hold:.3});
+let seg=0,prog=0,holdT=0,sup={x:8.4,y:2.5,z:0},elevZ=0,last=performance.now();
+const SPD=3.2;
+
+function avanzar(dt){
+ if(holdT>0){holdT-=dt;return;}
+ const a=PATH[seg],b=PATH[(seg+1)%PATH.length];
+ const dist=Math.hypot(b.x-a.x,b.y-a.y)+Math.abs(b.z-a.z);
+ prog+=dt*SPD/Math.max(0.3,dist);
+ if(prog>=1){prog=0;seg=(seg+1)%PATH.length;holdT=PATH[seg].hold||0;sup.x=PATH[seg].x;sup.y=PATH[seg].y;sup.z=PATH[seg].z;}
+ else{sup.x=a.x+(b.x-a.x)*prog;sup.y=a.y+(b.y-a.y)*prog;sup.z=a.z+(b.z-a.z)*prog;}
+ if(sup.x>9.2)elevZ=sup.z;
+}
+function camara(){TGT.ox=CW*0.40-(sup.x-sup.y)*S*0.5;TGT.oy=CH*0.60-(sup.x+sup.y)*S*0.25+sup.z*S*0.5;
+ if(!CAMinit){CAM.ox=TGT.ox;CAM.oy=TGT.oy;CAMinit=true;}
+ CAM.ox+=(TGT.ox-CAM.ox)*0.07;CAM.oy+=(TGT.oy-CAM.oy)*0.07;}
+function etiqueta(){const i=Math.max(0,Math.min(PISOS.length-1,Math.round(sup.z/FH)));
+ document.getElementById("nmb").textContent=sup.x>9.2?"⬆ Subiendo…":PISOS[i].n;
+ document.getElementById("nms").textContent=sup.x>9.2?"el supervisor cambia de piso":PISOS[i].s;}
+
+function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;
+ avanzar(dt);camara();
  ctx.setTransform(DPR,0,0,DPR,0,0);ctx.clearRect(0,0,CW,CH);
  fondo();
- OFIS.forEach((o,i)=>oficina(o,i===idx));
- requestAnimationFrame(frame);
-}
-window.addEventListener("resize",()=>{resize();centrar(idx,true);});
-resize();centrar(0,true);mostrarNombre();setDots();requestAnimationFrame(frame);
+ for(let i=0;i<PISOS.length;i++){piso(PISOS[i],i,Math.round(sup.z/FH)===i||Math.abs(sup.z-i*FH)<FH*0.6);}
+ hueco();cabina(elevZ);
+ supervisor(sup.x,sup.y,sup.z,now/1000);
+ etiqueta();
+ requestAnimationFrame(frame);}
+window.addEventListener("resize",()=>{resize();CAMinit=false;});
+resize();requestAnimationFrame(frame);
 </script>
 </body></html>
