@@ -18,7 +18,7 @@
  #ctrl #auto.paused{background:#c6870d;border-color:#e9b24a}
  #ctrl .sep{width:2px;height:36px;background:#5c574e}
 </style></head><body>
-<iframe id="f" src="oficina.html" allow="autoplay"></iframe>
+<iframe id="f" src="edificio.html" allow="autoplay"></iframe>
 <div id="ctrl">
   <button data-s="0">🏢 Oficina</button>
   <button data-s="1">📊 Tablero</button>
@@ -31,7 +31,7 @@
    para ver un reporte puntual (pausa la rotación); vuelve solo a "auto" tras 15 min sin tocar. */
 if('serviceWorker' in navigator){try{navigator.serviceWorker.getRegistrations().then(rs=>rs.forEach(r=>r.unregister()));}catch(e){}}
 const SCENES=[
- {url:"oficina.html",min:7},   // Oficina de agentes (LEGOS) — arranca acá
+ {url:"edificio.html",min:7},   // Edificio realista + datos vivos — arranca acá
  {url:"tablero.html",min:18},  // Tablero VG EAS (operativo)
  {url:"equipo.html", min:5}    // Tareas del equipo
 ];
