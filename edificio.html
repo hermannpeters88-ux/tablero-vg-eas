@@ -92,6 +92,22 @@
  #bubble .tail:after{content:"";position:absolute;left:50%;top:-14px;width:18px;height:18px;
    transform:translateX(-50%) rotate(45deg);background:#0d1826;border-right:1.5px solid var(--ac,#5aa0ff);border-bottom:1.5px solid var(--ac,#5aa0ff)}
  #prog{position:absolute;left:0;bottom:0;height:4px;width:0;background:var(--ac,#ffd14d);z-index:10;transition:width .3s linear,background .6s}
+ /* --- capa de VIDA: indicadores de actividad sobre los escritorios (se mueven) --- */
+ .act{position:absolute;transform:translate(-50%,-50%);z-index:3;display:flex;gap:3px;align-items:center;
+   padding:4px 7px;border-radius:999px;background:rgba(10,18,30,.5);opacity:.32;transition:opacity 1s;
+   animation:bob 3.4s ease-in-out infinite}
+ .act.on{opacity:.9}
+ .act b{width:5px;height:5px;border-radius:50%;background:#7fe3ff;display:block;animation:blink 1.25s infinite}
+ .act b:nth-child(2){animation-delay:.18s}.act b:nth-child(3){animation-delay:.36s}
+ @keyframes blink{0%,78%,100%{opacity:.25;transform:translateY(0)}38%{opacity:1;transform:translateY(-2px)}}
+ @keyframes bob{0%,100%{transform:translate(-50%,-50%)}50%{transform:translate(-50%,-66%)}}
+ /* --- foco pulsante sobre la persona con la que se habla --- */
+ #spot{position:absolute;left:50%;top:50%;width:46vmin;height:46vmin;transform:translate(-50%,-50%);
+   z-index:3;pointer-events:none;border-radius:50%;opacity:0;transition:opacity .9s;
+   background:radial-gradient(circle,rgba(255,226,150,.17),rgba(255,226,150,0) 66%);
+   animation:spulse 2.8s ease-in-out infinite}
+ #spot.show{opacity:1}
+ @keyframes spulse{0%,100%{transform:translate(-50%,-50%) scale(.9)}50%{transform:translate(-50%,-50%) scale(1.08)}}
 </style></head><body>
 <div id="stage">
  <div id="world">
@@ -101,6 +117,7 @@
    <div class="logoW" data-k="ai"><img src="l_ai.png" alt="AIMA"></div>
    <div class="logoW" data-k="dg"><img src="l_dg.png" alt="Doble G"></div>
  </div>
+ <div id="spot"></div>
  <div class="bar top"></div><div class="bar bot"></div>
  <div id="vig"></div>
  <div id="live" class="load"><span class="d"></span><span id="livet">CONECTANDO</span><small id="lives">buscando al equipo…</small></div>
@@ -158,6 +175,21 @@ function pers(){
  };
 }
 function stat(tasks){return {n:tasks.length,u:tasks.filter(isUrg).length,list:tasks};}
+/* --- capa de vida: puntos de actividad sobre los escritorios de cada piso --- */
+const ACTS=[
+ ['gg',300,120],['gg',600,120],['gg',860,120],
+ ['vg',345,332],['vg',635,332],['vg',885,332],
+ ['ai',345,512],['ai',635,512],['ai',845,512],
+ ['dg',300,690],['dg',520,690]
+];
+function buildActs(){
+ ACTS.forEach(([k,ix,iy])=>{
+  const d=document.createElement('div'); d.className='act'; d.dataset.k=k;
+  d.style.left=(ix/IMGW*100)+'%'; d.style.top=(iy/IMGH*100)+'%';
+  d.innerHTML='<b></b><b></b><b></b>';
+  world.appendChild(d);
+ });
+}
 /* --- MARCADOR (totales + por persona) --- */
 const ROWS=[['Ledy','Ledy','#8b5cf6'],['Nahobi','Nahobi','#8b5cf6'],['Gabi','Gabi','#d14fb0']];
 function pintarScore(){
@@ -254,6 +286,9 @@ function paintShot(){
    document.getElementById('bmore').textContent=d.more||'';
    bub.classList.add('show');
  } else bub.classList.remove('show');
+ // capa de vida: actividad del piso activo + foco sobre la persona
+ document.querySelectorAll('.act').forEach(a=>a.classList.toggle('on',a.dataset.k===s.k));
+ document.getElementById('spot').classList.toggle('show', !!s.sp);
  marcarFila();
 }
 /* --- motor del recorrido --- */
@@ -285,7 +320,7 @@ async function cargar(){
  }catch(e){ document.getElementById('lives').textContent='sin conexión — reintentando…'; }
 }
 /* --- arranque --- */
-function start(){ layout(); pintarScore(); paintShot(); requestAnimationFrame(loop); cargar(); setInterval(cargar,60000); }
+function start(){ buildActs(); layout(); pintarScore(); paintShot(); requestAnimationFrame(loop); cargar(); setInterval(cargar,60000); }
 const im=new Image();
 im.onload=()=>{ document.getElementById('bg').src=BGIMG; start(); };
 im.onerror=()=>{ document.getElementById('stage').style.background='linear-gradient(160deg,#14365c,#0b1626)'; start(); };
