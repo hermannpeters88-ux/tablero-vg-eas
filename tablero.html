@@ -3930,7 +3930,7 @@ const rodyClientes = calcClientesStats(["rodi","rody","rodolfo","alejandra","gab
       card(`
         <div style="font-size:.72em;font-weight:700;margin-bottom:3px">💰 Cobros Cartera</div>
         <div style="flex:1;display:flex;flex-direction:column;gap:3px">
-          ${[{n:'ICHO',d:icho,c:'#7c3aed'},{n:'VG Contabilidad',d:vgc,c:'#22c55e'},{n:'AIMA',d:aima,c:'#f59e0b'}].map(({n,d,c})=>{
+          ${[{n:'VG Contabilidad',d:vgc,c:'#22c55e'},{n:'AIMA',d:aima,c:'#f59e0b'}].map(({n,d,c})=>{
             const im = n==='ICHO' ? (window.__ichoMora || appData?.ichoMora || {}) : {};
             const ar = n==='AIMA' ? (window.__aimaMes || appData?.aimaResumen || {}) : {};
             const _aFac = ar.facturadoMes!=null?ar.facturadoMes:ar.facturacion;
@@ -4035,6 +4035,17 @@ const rodyClientes = calcClientesStats(["rodi","rody","rodolfo","alejandra","gab
           </div>
         </div>
       `,'1.1','#ef4444'),
+      card(`
+        <div style="font-size:.72em;font-weight:700;margin-bottom:4px;color:#7c3aed">🏢 ICHO · Cobros y Mora ${(icho&&icho.pendientesCount)?`<span style="font-weight:400;color:#888;font-size:.85em">· ${icho.pendientesCount} pend.</span>`:''}</div>
+        ${(()=>{ const im=(window.__ichoMora||appData?.ichoMora||{});
+          const iPag=im.pagadoMes!=null?im.pagadoMes:(im.totalCobrado||0); const iMes=im.mes||'';
+          const iPend=im.pendiente!=null?im.pendiente:((icho&&icho.totalACobrar)||0); const iVenc=im.vencido||0;
+          return `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px">
+            <div style="background:#d1fae522;border-radius:4px;padding:6px 2px;text-align:center"><div style="font-size:.5em;color:#065f46;white-space:nowrap">Pagado ${iMes||'mes'}</div><div style="font-size:.82em;font-weight:800;color:#10b981;white-space:nowrap">${fmtG(iPag)}</div></div>
+            <div style="background:#ffedd522;border-radius:4px;padding:6px 2px;text-align:center"><div style="font-size:.5em;color:#9a3412;white-space:nowrap">Pendiente</div><div style="font-size:.82em;font-weight:800;color:#f97316;white-space:nowrap">${fmtG(iPend)}</div></div>
+            <div style="background:#fee2e222;border-radius:4px;padding:6px 2px;text-align:center"><div style="font-size:.5em;color:#991b1b;white-space:nowrap">Pend/Venc.</div><div style="font-size:.82em;font-weight:800;color:#ef4444;white-space:nowrap">${fmtG(iVenc)}</div></div>
+          </div>`; })()}
+      `,'0.7','#7c3aed'),
     ].join('');
 
     // ── BUILD TV ROOT ──
