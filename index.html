@@ -31,9 +31,9 @@
    para ver un reporte puntual (pausa la rotación); vuelve solo a "auto" tras 15 min sin tocar. */
 if('serviceWorker' in navigator){try{navigator.serviceWorker.getRegistrations().then(rs=>rs.forEach(r=>r.unregister()));}catch(e){}}
 const SCENES=[
- {url:"edificio.html",min:7},   // Edificio realista + datos vivos — arranca acá
- {url:"tablero.html",min:18},  // Tablero VG EAS (operativo)
- {url:"equipo.html", min:5}    // Tareas del equipo
+ {url:"edificio.html",min:12},  // Edificio realista + datos vivos — arranca acá (el principal)
+ {url:"tablero.html",min:10},  // Tablero VG EAS (operativo)
+ {url:"equipo.html", min:4}    // Tareas del equipo
 ];
 const f=document.getElementById("f"), ctrl=document.getElementById("ctrl"), autoBtn=document.getElementById("auto");
 const btns=[...ctrl.querySelectorAll("button[data-s]")];
