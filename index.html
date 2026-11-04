@@ -41,7 +41,7 @@ let i=0, manual=false, hideT, idleT, tourT;
 function paint(){ btns.forEach(b=>b.classList.toggle("on", +b.dataset.s===i));
  autoBtn.textContent = manual ? "▶ Volver a auto" : "🔄 Auto"; autoBtn.classList.toggle("paused", manual); }
 function show(n){ i=((n%SCENES.length)+SCENES.length)%SCENES.length;
- const s=SCENES[i]; if(f.getAttribute("src")!==s.url) f.src=s.url; paint(); }
+ const s=SCENES[i]; f.src=s.url+(s.url.includes("?")?"&":"?")+"r="+Date.now(); paint(); }
 function scheduleAuto(){ clearTimeout(tourT); if(manual) return;
  tourT=setTimeout(()=>{ show(i+1); scheduleAuto(); }, Math.max(1,SCENES[i].min)*60000); }
 function reveal(){ ctrl.classList.add("show"); clearTimeout(hideT); hideT=setTimeout(()=>ctrl.classList.remove("show"),5500); }
