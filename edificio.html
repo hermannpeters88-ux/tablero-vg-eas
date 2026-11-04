@@ -192,10 +192,10 @@ const VENC_URL="https://script.google.com/macros/s/AKfycbwers-ywe28U2zsp0d3DaJKk
 const BGIMG="edificio_base.jpg?v=16";
 const IMGW=1600, IMGH=899;
 const FLOORS={
- gg:{ac:'#c9a24a',nm:'GRUPO G',sub:'Dirección',logo:'l_gg.png',       wx:600,wy:72, wh:78},
- vg:{ac:'#8b5cf6',nm:'VG ASOCIADOS',sub:'Contabilidad y administración',logo:'l_vg.png',wx:600,wy:272,wh:40},
- ai:{ac:'#d14fb0',nm:'AIMA',sub:'Comunidad de inversores',logo:'l_ai.png',wx:600,wy:476,wh:42},
- dg:{ac:'#7c4fd0',nm:'DOBLE G',sub:'Consultoría y fondos',logo:'l_dg.png', wx:430,wy:668,wh:40}
+ gg:{ac:'#c9a24a',nm:'GRUPO G',sub:'Administradora de fondos',logo:'l_gg.png',       wx:600,wy:72, wh:78},
+ vg:{ac:'#8b5cf6',nm:'VG ASOCIADOS',sub:'Estudio contable',logo:'l_vg.png',wx:600,wy:272,wh:40},
+ ai:{ac:'#d14fb0',nm:'AIMA',sub:'Comunidad de aprendizaje colaborativo',logo:'l_ai.png',wx:600,wy:476,wh:42},
+ dg:{ac:'#7c4fd0',nm:'DOBLE G',sub:'Consultora estratégica',logo:'l_dg.png', wx:430,wy:668,wh:40}
 };
 /* === Oficina de Agentes: 46 bots reales como personajes [zona, cargo corto, nombre personaje] === */
 const AGMETA={
@@ -347,11 +347,11 @@ function speaker(sp){
  if(sp==='AimaMas'){
    if(!TEAM) return {who:'AIMA',rol:'Comunidad',line:'Conectando…'};
    const t=P.GabiAima.tasks;
-   if(t.length<=1) return {who:'AIMA',rol:'Comunidad de inversores',line:'Comunidad al día ✓',ok:true};
+   if(t.length<=1) return {who:'AIMA',rol:'Comunidad de aprendizaje',line:'Comunidad al día ✓',ok:true};
    return {who:'Gabi',rol:'AIMA',badge:{p:t.length},line:'En AIMA:',
      items:t.slice(0,3).map(x=>({t:x,urg:isUrg(x)})),more:t.length>3?`+${t.length-3} más`:''};
  }
- if(sp==='DobleG') return {who:'Doble G',rol:'Consultoría y fondos',line:'Acompañando a los clientes y al Fondo Doble G.',ok:true};
+ if(sp==='DobleG') return {who:'Doble G',rol:'Consultora estratégica',line:'Acompañamiento estratégico a cada cliente.',ok:true};
  const p=P[sp]||{who:sp,rol:'',tasks:[]};
  if(!TEAM) return {who:p.who,rol:p.rol,line:'Cargando…'};
  const t=p.tasks, u=t.filter(isUrg).length;
