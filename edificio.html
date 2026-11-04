@@ -9,7 +9,7 @@
  #stage{position:fixed;inset:0;overflow:hidden;background:#05070d}
  /* --- mundo (imagen + logos) que la cámara recorre --- */
  #world{position:absolute;transform-origin:0 0;will-change:transform;
-   transition:transform 2.6s cubic-bezier(.45,.05,.2,1)}
+   transition:transform 3.1s cubic-bezier(.45,.05,.2,1)}
  #bg{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;display:block}
  .logoW{position:absolute;transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;
    filter:drop-shadow(0 3px 7px rgba(0,0,0,.55));opacity:.42;transition:opacity .9s}
@@ -134,6 +134,19 @@
    animation:spulse 2.8s ease-in-out infinite}
  #spot.show{opacity:1}
  @keyframes spulse{0%,100%{transform:translate(-50%,-50%) scale(.9)}50%{transform:translate(-50%,-50%) scale(1.08)}}
+ /* --- barra de botones (manual) --- */
+ #nav{position:absolute;left:50%;bottom:4%;transform:translate(-50%,170%);z-index:20;
+   display:flex;gap:7px;align-items:center;flex-wrap:wrap;justify-content:center;max-width:94%;
+   background:rgba(8,14,24,.92);border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(8px);
+   border-radius:16px;padding:9px 12px;box-shadow:0 16px 44px rgba(0,0,0,.55);transition:transform .35s ease}
+ #nav.show{transform:translate(-50%,0)}
+ #nav button{font:800 15px "Avenir Next",Helvetica,Arial,sans-serif;color:#eaf2fb;background:rgba(255,255,255,.08);
+   border:1.5px solid rgba(255,255,255,.16);border-radius:11px;padding:8px 13px;cursor:pointer;white-space:nowrap}
+ #nav button.on{background:#2f6fdc;border-color:#fff;color:#fff}
+ #nav button:focus{outline:none;border-color:#ffd14d}
+ #nav .sep{width:1px;height:26px;background:rgba(255,255,255,.22)}
+ #nav #auto{background:#15935b;border-color:#4bbd88}
+ #nav #auto.paused{background:#c6870d;border-color:#e9b24a}
 </style></head><body>
 <div id="stage">
  <div id="world">
@@ -170,6 +183,7 @@
    <div class="tail"></div>
  </div></div>
  <div id="prog"></div>
+ <div id="nav"></div>
 </div>
 <script>
 const ESTADO_URL="https://script.google.com/macros/s/AKfycbxVYNdaEsXvCgrwZFtyPhkeWkQUXF0HpOSqlr7x-Ap_BfDtA09lG4uN2FoJ8sHmnjkj/exec";
@@ -212,17 +226,17 @@ const STCOL={work:'#4caf6a',wait:'#e6b422',free:'#8aa0b5'};
 const HUMAG={Ledy:'balanza',Nahobi:'cargador',Gabi:'cargador'};
 /* el GUION: cámara que entra piso por piso y habla con cada uno (más lento, más paradas) */
 const TOUR=[
- {k:null,fx:800,fy:440,z:1.00,dur:4200,est:true},
- {k:'gg',fx:560,fy:180,z:1.85,dur:5600,sp:'ggDir'},
- {k:'vg',fx:360,fy:392,z:2.05,dur:7000,sp:'Ledy'},
- {k:'vg',fx:650,fy:392,z:2.05,dur:7000,sp:'Nahobi'},
- {k:'vg',fx:890,fy:392,z:2.05,dur:7000,sp:'Gabi'},
- {k:'ai',fx:430,fy:566,z:2.00,dur:6000,sp:'GabiAima'},
- {k:'ai',fx:730,fy:566,z:2.00,dur:5200,sp:'AimaMas'},
- {k:'dg',fx:360,fy:735,z:2.05,dur:5000,sp:'DobleG'},
- {k:'vg',fx:620,fy:392,z:1.55,dur:6200,info:'cobros'},
- {k:'vg',fx:620,fy:392,z:1.55,dur:6200,info:'venc'},
- {k:null,fx:800,fy:470,z:1.10,dur:5800,info:'bots'}
+ {k:null,fx:800,fy:440,z:1.00,dur:6000,est:true,  nav:null},
+ {k:'gg',fx:560,fy:180,z:1.85,dur:7500,sp:'ggDir', nav:'Grupo G'},
+ {k:'vg',fx:360,fy:392,z:2.05,dur:9000,sp:'Ledy',  nav:'Ledy'},
+ {k:'vg',fx:650,fy:392,z:2.05,dur:9000,sp:'Nahobi',nav:'Nahobi'},
+ {k:'vg',fx:890,fy:392,z:2.05,dur:9000,sp:'Gabi',  nav:'Gabi'},
+ {k:'ai',fx:430,fy:566,z:2.00,dur:8000,sp:'GabiAima',nav:'AIMA'},
+ {k:'ai',fx:730,fy:566,z:2.00,dur:7000,sp:'AimaMas'},
+ {k:'dg',fx:360,fy:735,z:2.05,dur:7000,sp:'DobleG', nav:'Doble G'},
+ {k:'vg',fx:620,fy:392,z:1.55,dur:8000,info:'cobros',nav:'Cobros'},
+ {k:'vg',fx:620,fy:392,z:1.55,dur:8000,info:'venc',  nav:'Vencim.'},
+ {k:null,fx:800,fy:470,z:1.10,dur:7500,info:'bots',  nav:'Robots'}
 ];
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 function isAima(t){return /aima|asamblea\s*aima|\bsocio/i.test(t);}
@@ -407,20 +421,54 @@ function paintShot(){
  marcarFila();
 }
 /* --- motor del recorrido --- */
-let t0=performance.now();
+let t0=performance.now(), manual=false;
 function loop(now){
  const s=TOUR[idx], el=now-t0;
+ if(manual){ requestAnimationFrame(loop); return; }
  document.getElementById('prog').style.width=Math.min(100,el/s.dur*100)+'%';
  if(el>=s.dur){
    document.getElementById('bubble').classList.remove('show');
+   document.getElementById('info').classList.remove('show');
    document.getElementById('title').classList.remove('show');
    idx=(idx+1)%TOUR.length; t0=now;
    const f=FLOORS[TOUR[idx].k]; document.getElementById('prog').style.background=(f&&f.ac)||'#ffd14d';
-   applyShot(true);
-   setTimeout(paintShot, 750);
+   applyShot(true); setTimeout(paintShot, 850); paintNav();
  }
  requestAnimationFrame(loop);
 }
+/* --- barra de botones (manual + control remoto) --- */
+let navHideT, navIdleT;
+function buildNav(){
+ const nav=document.getElementById('nav'); let html='';
+ TOUR.forEach((s,i)=>{ if(s.nav) html+=`<button data-i="${i}">${esc(s.nav)}</button>`; });
+ html+=`<span class="sep"></span><button id="auto">🔄 Auto</button>`;
+ nav.innerHTML=html;
+ nav.querySelectorAll('button[data-i]').forEach(b=>b.addEventListener('click',()=>goTo(+b.dataset.i)));
+ document.getElementById('auto').addEventListener('click',()=>{ manual?volverAuto():pausar(); revelarNav(); });
+}
+function paintNav(){
+ document.querySelectorAll('#nav button[data-i]').forEach(b=>b.classList.toggle('on',+b.dataset.i===idx && manual));
+ const a=document.getElementById('auto'); if(a){ a.textContent=manual?'▶ Volver a auto':'🔄 Auto'; a.classList.toggle('paused',manual); }
+}
+function pausar(){ manual=true; paintNav(); reIdle(); }
+function volverAuto(){ manual=false; t0=performance.now(); paintNav(); }
+function goTo(i){ manual=true; idx=((i%TOUR.length)+TOUR.length)%TOUR.length; t0=performance.now();
+ document.getElementById('bubble').classList.remove('show'); document.getElementById('info').classList.remove('show'); document.getElementById('title').classList.remove('show');
+ const f=FLOORS[TOUR[idx].k]; document.getElementById('prog').style.background=(f&&f.ac)||'#ffd14d';
+ applyShot(true); setTimeout(paintShot,850); paintNav(); revelarNav(); reIdle(); }
+function revelarNav(){ const n=document.getElementById('nav'); n.classList.add('show'); clearTimeout(navHideT); navHideT=setTimeout(()=>n.classList.remove('show'),6500); }
+function reIdle(){ clearTimeout(navIdleT); navIdleT=setTimeout(()=>{ if(manual) volverAuto(); },120000); }
+// control remoto: flechas mueven el foco, OK/Enter activa (no usa números, que el rotador ya ocupa)
+let navFocus=0;
+function moverFoco(d){ const bs=[...document.querySelectorAll('#nav button')]; if(!bs.length) return;
+ navFocus=(navFocus+d+bs.length)%bs.length; bs[navFocus].focus(); }
+window.addEventListener('keydown',e=>{ revelarNav();
+ if(e.key==='ArrowRight'||e.key==='ArrowDown'){ moverFoco(1); e.preventDefault(); }
+ else if(e.key==='ArrowLeft'||e.key==='ArrowUp'){ moverFoco(-1); e.preventDefault(); }
+ else if(e.key==='Enter'){ const bs=[...document.querySelectorAll('#nav button')], b=bs[navFocus];
+   if(b){ if(b.id==='auto'){ manual?volverAuto():pausar(); } else goTo(+b.dataset.i); } }
+});
+['mousemove','pointerdown','touchstart'].forEach(ev=>window.addEventListener(ev,revelarNav,{passive:true}));
 /* --- datos vivos --- */
 async function cargar(){
  const get=async u=>{ const c=new AbortController(); setTimeout(()=>c.abort(),25000);
@@ -439,7 +487,9 @@ async function cargar(){
  pintarScore(); paintShot();
 }
 /* --- arranque --- */
-function start(){ buildAtags(); layout(); pintarScore(); paintShot(); requestAnimationFrame(loop); cargar(); setInterval(cargar,60000); }
+function start(){ buildAtags(); buildNav(); layout(); pintarScore(); paintShot(); requestAnimationFrame(loop); cargar(); setInterval(cargar,60000);
+ paintNav(); const n=document.getElementById('nav'); if(window.self!==window.top) n.style.bottom='13%';
+ n.classList.add('show'); navHideT=setTimeout(()=>n.classList.remove('show'),8000); }
 const im=new Image();
 im.onload=()=>{ document.getElementById('bg').src=BGIMG; start(); };
 im.onerror=()=>{ document.getElementById('stage').style.background='linear-gradient(160deg,#14365c,#0b1626)'; start(); };
